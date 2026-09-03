@@ -84,7 +84,7 @@ MCP（Phase 8）与 Skill（Phase 9）在 V1 核心链路稳定后启动，不�
 
 ## 3. Phase 0 — Repository
 
-**状态**：进行中（2026-09-03 用户审核通过）
+**状态**：进行中（2026-09-03 用户审核通过；交付完成，待用户验收）
 
 **目标**：建立可构建、可测试、可 lint 的 pnpm workspace Monorepo 骨架。
 
@@ -92,17 +92,17 @@ MCP（Phase 8）与 Skill（Phase 9）在 V1 核心链路稳定后启动，不�
 
 ### Checklist
 
-- [ ] 初始化 git 首个 commit（包含 `.docs/`）
-- [ ] `pnpm-workspace.yaml`（`apps/*`、`packages/*`）
-- [ ] 根 `package.json`（private，统一 scripts：`build` / `lint` / `test` / `typecheck` / `format`）
-- [ ] 根 `tsconfig.json`（strict）+ 各包继承
-- [ ] ESLint（typescript-eslint）+ Prettier 配置
-- [ ] Vitest 根配置（各包可独立运行测试）
-- [ ] `.gitignore`（node_modules、dist、.wrangler、.dev.vars 等）、`.editorconfig`
-- [ ] `LICENSE`
-- [ ] `README.md` 骨架（项目定位 + 一句话使用示例，后续 Phase 7 完善）
-- [ ] `docs/architecture.md` 初版（提炼自《基线》§7-§10、§64）
-- [ ] GitHub Actions CI（lint + typecheck + test，仅工程效率用途，不引入额外基础设施）
+- [x] 初始化 git 首个 commit（包含 `.docs/`）
+- [x] `pnpm-workspace.yaml`（`apps/*`、`packages/*`）
+- [x] 根 `package.json`（private，统一 scripts：`build` / `lint` / `test` / `typecheck` / `format`）
+- [x] 根 `tsconfig.json`（strict）+ 各包继承
+- [x] ESLint（typescript-eslint）+ Prettier 配置
+- [x] Vitest 根配置（各包可独立运行测试）
+- [x] `.gitignore`（node_modules、dist、.wrangler、.dev.vars 等）、`.editorconfig`
+- [x] `LICENSE`
+- [x] `README.md` 骨架（项目定位 + 一句话使用示例，后续 Phase 7 完善）
+- [x] `docs/architecture.md` 初版（提炼自《基线》§7-§10、§64）
+- [x] GitHub Actions CI（lint + typecheck + test，仅工程效率用途，不引入额外基础设施）
 
 ### 交付标准
 
