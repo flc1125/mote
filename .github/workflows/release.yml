@@ -47,18 +47,39 @@ jobs:
         working-directory: apps/cli
         run: pnpm pack
 
+      # Everything fallible is validated BEFORE the irreversible npm publish.
+      - name: Extract changelog notes for this version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk "/^## \[$VERSION\]/{flag=1;next} /^## \[/{if(flag)exit} flag" CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "No changelog section found for $VERSION in CHANGELOG.md" >&2
+            exit 1
+          fi
+
       # npm >= 11.5.1 is required for OIDC Trusted Publishing.
       - run: npm install -g npm@latest
 
+      # Idempotent: a rerun after a failed release step must not die here —
+      # a name@version on npm can never be published twice.
       - name: Publish to npm (OIDC Trusted Publishing)
         working-directory: apps/cli
-        run: npm publish mote-cli-*.tgz --access public
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if npm view "mote-cli@$VERSION" version >/dev/null 2>&1; then
+            echo "mote-cli@$VERSION already published, skipping"
+          else
+            npm publish mote-cli-*.tgz --access public
+          fi
 
-      - name: Create GitHub Release
+      # Idempotent: update in place when the release already exists.
+      - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          # Extract this version's section from CHANGELOG.md
-          awk "/^## \[$VERSION\]/{flag=1;next} /^## \[/{if(flag)exit} flag" CHANGELOG.md > /tmp/notes.md
-          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file /tmp/notes.md apps/cli/mote-cli-*.tgz
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --notes-file release-notes.md
+            gh release upload "$GITHUB_REF_NAME" apps/cli/mote-cli-*.tgz --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file release-notes.md apps/cli/mote-cli-*.tgz
+          fi
