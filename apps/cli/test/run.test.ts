@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import packageJson from '../package.json' with { type: 'json' };
 import { formatBytes, run, type CliIO } from '../src/run.js';
 
 function capture(): { io: CliIO; out: string[]; err: string[] } {
@@ -20,6 +21,7 @@ describe('run — argument handling', () => {
 
     const version = capture();
     expect(await run(['--version'], version.io, { env: {} })).toBe(0);
+    expect(version.out).toEqual([packageJson.version]);
   });
 
   it('fails without a file argument', async () => {

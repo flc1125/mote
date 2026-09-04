@@ -10,6 +10,10 @@ mote publish <markdown-file>
 
 ## Installation
 
+```bash
+npm install -g mote-cli
+```
+
 **From source** (requires Node.js ≥ 20 and pnpm):
 
 ```bash
@@ -19,8 +23,6 @@ pnpm install
 pnpm --filter @mote/cli build
 cd apps/cli && npm install -g .
 ```
-
-**From npm** — coming with the v0.1.0 release (`npm install -g …`).
 
 Verify:
 

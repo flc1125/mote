@@ -7,12 +7,25 @@ import {
   normalizeRelativePath,
   sha256Hex,
   validateBundleSize,
-  type SupportedImageMimeType,
 } from '@mote/core';
-import { assetFieldName, type PublishManifest } from '@mote/protocol';
+import { assetFieldName } from '@mote/protocol';
 
 import { CliError } from './errors.js';
 import { extractLocalImageReferences } from './scanner.js';
+
+export type SupportedImageMimeType =
+  'image/png' | 'image/jpeg' | 'image/webp' | 'image/gif' | 'image/avif';
+
+export interface PublishManifestAsset {
+  field: string;
+  references: string[];
+}
+
+export interface PublishManifest {
+  version: 1;
+  entry: string;
+  assets: PublishManifestAsset[];
+}
 
 export interface BundleAsset {
   field: string;

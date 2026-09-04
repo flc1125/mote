@@ -50,20 +50,19 @@ importers:
         version: 4.128.0(@cloudflare/workers-types@5.20260903.1)
 
   apps/cli:
-    dependencies:
+    devDependencies:
       '@mote/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@mote/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
-      markdown-it:
-        specifier: ^15.0.1
-        version: 15.0.1
-    devDependencies:
       esbuild:
         specifier: ^0.25.0
         version: 0.25.12
+      markdown-it:
+        specifier: ^15.0.1
+        version: 15.0.1
       miniflare:
         specifier: ^4.0.0
         version: 4.20260730.0

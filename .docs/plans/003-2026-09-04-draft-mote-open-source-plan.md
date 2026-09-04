@@ -22,7 +22,7 @@
 
 | 决策点 | 选项 |
 |---|---|
-| npm 包名 | A. `@mote/cli`（需注册/拥有 npm `@mote` org）；B. `mote-cli`（立即可用）；C. `@flc1125/mote`（个人 ID scope） |
+| npm 包名 | **已定：`mote-cli`**（`@mote` org 不可用；`mote.sh`/`mote-cli`/`@flc1125/mote` 中用户选择 `mote-cli`） |
 
 ## 阶段状态总览
 
@@ -33,7 +33,7 @@
 | Phase 2 — 英文 README | 已完成 |
 | Phase 3 — 仓库元数据 | 已完成 |
 | Phase 4 — 自托管指南 | 已完成 |
-| Phase 5 — npm 发布 | 待审核 |
+| Phase 5 — npm 发布 | 进行中 |
 | Phase 6 — CHANGELOG 与 v0.1.0 Release | 待审核 |
 
 ---
@@ -161,21 +161,31 @@
 
 ## 6. Phase 5 — npm 发布
 
-**状态**：待审核
+**状态**：进行中（2026-09-04 用户审核通过；交付完成，待用户验收）
 
 **前置决策**：npm 包名（见「待决策」）。
 
 ### Checklist
 
-- [ ] 包名确定并验证可用性（`npm view <name>` 404 / scope 可注册）
-- [ ] `apps/cli/package.json`：`private: false`、version `0.1.0`、description、keywords、repository、homepage、license、engines、files（仅 dist）、`preferGlobal: true`
-- [ ] 发布（首次可手动 `npm publish --access public`；OIDC 自动化在 Phase 6）
-- [ ] `npm install -g <name>` 真实安装并 `mote --help` / 发布一篇文档验证
-- [ ] README 安装方式更新为 `npm install -g <name>` 为主、源码构建为辅
+- [x] 包名确定并验证可用性（`npm view <name>` 404 / scope 可注册）
+- [x] `apps/cli/package.json`：`private: false`、version `0.1.0`、description、keywords、repository、homepage、license、engines、files（仅 dist）、`preferGlobal: true`
+- [x] 发布（首次手动发布已完成；后续使用 `cd apps/cli && pnpm publish --access public`，OIDC 自动化在 Phase 6）
+- [x] `npm install -g <name>` 真实安装并 `mote --help` / 发布一篇文档验证
+- [x] README 安装方式更新为 `npm install -g <name>` 为主、源码构建为辅
 
 ### 交付标准
 
-1. 任意机器 `npm install -g <name>` 后可完成发布全流程。
+1. 任意机器 `npm install -g <name>` 后可完成发布全流程。 ✅
+
+### 交付备注（2026-09-04）
+
+- 包名 `mote-cli@0.1.0` 已发布：<https://www.npmjs.com/package/mote-cli>（`npm view` 验证）。
+- 依赖全部归入 devDependencies（esbuild 打包后 dist 自包含）；`mote-cli@0.1.0` 发布包为 177.8 KB。
+- `prepublishOnly` 自动构建；`--version` 与包版本对齐 0.1.0。
+- 验证链：tarball 本地安装发布 ✅ → registry 全新安装发布 ✅（`82bFuC9TfLrTGrxp` 页面 HTTP 200）。
+- README 中英 + docs/cli.md 安装方式已切换为 `npm install -g mote-cli` 为主、源码构建折叠为辅。
+- 发布过程 npm 需 OTP 二次验证（用户交互完成）；Phase 6 的 OIDC Trusted Publishing 将免除手动发布。
+- PR review 后续修复已准备为 `0.1.1`：workspace 内继续使用 `@mote/cli`，通过 `publishConfig.name` 发布为 `mote-cli`；补齐可导入的 `dist/index.js`、类型声明和安装冒烟测试。待 PR 合并后发布补丁版本。
 
 ---
 
@@ -188,7 +198,7 @@
 ### Checklist
 
 - [ ] `CHANGELOG.md`：Keep a Changelog 格式 + 头部 semver 说明；回填 `0.1.0`（V1 + 远程 MCP + Skill + 开源化的完整特性清单）
-- [ ] `.github/workflows/release.yml`：tag `v*` 触发 → CI 全量验证 → GitHub Release（附 CHANGELOG 节录）→ npm publish（Trusted Publishing/OIDC，不在仓库存 npm token）
+- [ ] `.github/workflows/release.yml`：tag `v*` 触发 → CI 全量验证 → GitHub Release（附 CHANGELOG 节录）→ `pnpm publish`（Trusted Publishing/OIDC，不在仓库存 npm token）
 - [ ] 打 `v0.1.0` tag，验证 Release 与 npm 版本产出
 - [ ] README 加 npm version badge
 
@@ -203,7 +213,7 @@
 | 风险 | 影响 | 应对 |
 |---|---|---|
 | npm `@mote` scope 已被他人注册 | 首选包名不可用 | 备选 `mote-cli` / `@flc1125/mote`（发布前验证） |
-| Trusted Publishing 配置复杂 | Release 流程阻塞 | 首次发布允许手动 `npm publish`，OIDC 流程后补或降级为手动 |
+| Trusted Publishing 配置复杂 | Release 流程阻塞 | 首次发布允许手动 `pnpm publish`，OIDC 流程后补或降级为手动 |
 | Logo 生成效果不理想 | 阻塞 README | 多方向提示词迭代；最终可用极简文字标作为兜底 |
 | 英译与实现漂移 | 文档误导 | README 命令全部实跑验证；自托管步骤对照真实部署记录 |
 

@@ -26,4 +26,8 @@ jobs:
 
       - run: pnpm test
 
+      - run: pnpm build
+
+      - run: pnpm --filter @mote/cli test:package
+
       - run: pnpm format:check

@@ -36,7 +36,11 @@ https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
 
 ## 快速开始
 
-需要 Node.js ≥ 20 与 pnpm。
+```bash
+npm install -g mote-cli
+```
+
+<details><summary>从源码构建（需要 Node.js ≥ 20 与 pnpm）</summary>
 
 ```bash
 git clone https://github.com/flc1125/mote.git
@@ -46,7 +50,7 @@ pnpm --filter @mote/cli build
 cd apps/cli && npm install -g .
 ```
 
-> npm 包（`npm install -g …`）将随 v0.1.0 发布提供。
+</details>
 
 配置 token（来自你的 Mote 实例，见[自托管指南](docs/self-hosting.md)）：
 
