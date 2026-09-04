@@ -2,7 +2,7 @@
 
 > **计划编号**：003
 > **日期**：2026-09-04
-> **状态**：draft
+> **状态**：done
 > **上游计划**：001（V1，done）、002（远程 MCP，done）
 > **后续计划**：`.docs/plans/004-2026-09-04-draft-mote-open-source-followup-plan.md`（发布后锦上添花项）
 > **架构基线**：`.docs/arcs/Mote：不可变 Markdown 在线发布服务方案.md`
@@ -34,7 +34,7 @@
 | Phase 3 — 仓库元数据 | 已完成 |
 | Phase 4 — 自托管指南 | 已完成 |
 | Phase 5 — npm 发布 | 进行中 |
-| Phase 6 — CHANGELOG 与 v0.1.0 Release | 进行中 |
+| Phase 6 — CHANGELOG 与 v0.1.0 Release | 已完成 |
 
 ---
 
@@ -161,7 +161,7 @@
 
 ## 6. Phase 5 — npm 发布
 
-**状态**：进行中（2026-09-04 用户审核通过；交付完成，待用户验收）
+**状态**：已完成（2026-09-04 用户验收通过）
 
 **前置决策**：npm 包名（见「待决策」）。
 
@@ -191,20 +191,27 @@
 
 ## 7. Phase 6 — CHANGELOG 与 v0.1.0 Release
 
-**状态**：进行中（2026-09-04 用户审核通过）
+**状态**：已完成（2026-09-04 用户验收通过）
 
 **前置条件**：Phase 0–5 全部完成。
 
 ### Checklist
 
-- [ ] `CHANGELOG.md`：Keep a Changelog 格式 + 头部 semver 说明；回填 `0.1.0`（V1 + 远程 MCP + Skill + 开源化的完整特性清单）
-- [ ] `.github/workflows/release.yml`：tag `v*` 触发 → CI 全量验证 → GitHub Release（附 CHANGELOG 节录）→ `pnpm publish`（Trusted Publishing/OIDC，不在仓库存 npm token）
-- [ ] 打 `v0.1.0` tag，验证 Release 与 npm 版本产出
-- [ ] README 加 npm version badge
+- [x] `CHANGELOG.md`：Keep a Changelog 格式 + 头部 semver 说明；回填 `0.1.0`（V1 + 远程 MCP + Skill + 开源化的完整特性清单）
+- [x] `.github/workflows/release.yml`：tag `v*` 触发 → CI 全量验证 → GitHub Release（附 CHANGELOG 节录）→ `pnpm publish`（Trusted Publishing/OIDC，不在仓库存 npm token）
+- [x] 打 `v0.1.0` tag，验证 Release 与 npm 版本产出
+- [x] README 加 npm version badge
 
 ### 交付标准
 
-1. `v0.1.0` GitHub Release 存在，npm 包版本与 tag 一致，`npm view <name>` 可见。
+1. `v0.1.0` GitHub Release 存在，npm 包版本与 tag 一致，`npm view <name>` 可见。 ✅（以 v0.1.1 收官：tag `v0.1.1` → Release 工作流全绿 → npm `0.1.1` + GitHub Release 均产出）
+
+### 交付备注（2026-09-04）
+
+- 发布链：tag `v*` → CI 全量验证 → 版本一致性检查 → CHANGELOG 非空校验（fail fast）→ pnpm pack → npm OIDC 发布 → GitHub Release；幂等可重跑（Codex review 两条 P2 已修复）。
+- 实际发布版本为 0.1.1（0.1.0 为 Phase 5 手动首发；0.1.1 含包元数据修复）。
+- npm Trusted Publishing 已配置（repo + release.yml + npm publish 动作），后续发版零手动。
+- 过程中的流程适配：main 分支保护已启用（走 PR），PR #3 合并后打 tag 发布。
 
 ---
 
