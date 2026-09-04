@@ -1,7 +1,7 @@
 # Mote 项目交接文档（Handoff）
 
 > 写给接续的 AI 或协作者。生成于 2026-09-04，当时仓库状态：v0.1.1 已发布，计划 001–003 全部完成。
-> 阅读顺序建议：本文 → 架构基线 → 计划 004。
+> 阅读顺序建议：本文 → 架构基线 → 当前执行的计划 005；计划 004 保持待做。
 
 ## 1. 项目是什么
 
@@ -17,7 +17,8 @@
 | 位置 | 内容 |
 |---|---|
 | `.docs/arcs/` | 架构基线（产品/安全/协议的最终裁决者） |
-| `.docs/plans/` | 实施计划：001（V1，done）、002（远程 MCP，done）、003（开源化 v0.1.1，done）、**004（待做，见 §6）** |
+| `.docs/plans/` | 实施计划：001（V1，done）、002（远程 MCP，done）、003（开源化 v0.1.1，done）、004（待做）、005（Access OAuth，Phase 0 进行中）；见 §6 |
+| `.docs/reports/` | 阶段验证记录；区分本地检查、官方资料和真实环境实测，不能用待验证项代替通过结果 |
 | `docs/` | architecture / protocol / security / cli / mcp / skill / self-hosting（英文为主）+ `docs/zh-CN/`（中文副本） |
 | `SECURITY.md` | 漏洞报告政策（根目录，GitHub 约定位置） |
 
@@ -55,6 +56,17 @@
 - **Phase 1** 首页落地页：`GET /` 目前 404，要变成静态介绍页（设计方案已写在计划里待用户确认；约束：不做列表/搜索/上传表单，无 JS，复用文档页 CSS）
 - **Phase 2** favicon 与品牌延伸（资产已就绪：`docs/assets/favicon-32/16.png`，剩 Viewer 集成 + `<link rel="icon">`）
 - **Phase 3** 收尾可选项（dependabot、demo 截图、FUNDING）
+
+### 当前执行：计划 005 Phase 0
+
+- 计划：[005 Access OAuth](plans/005-2026-09-04-active-mote-cloudflare-access-oauth-plan.md)，工作分支 `feat/cloudflare-access-oauth`。
+- 用户于 2026-09-04 明确要求开始 **Phase 0 — 兼容性与架构验证**；状态为进行中，Phase 1–5 仍待审核，不得自行推进。
+- [验证记录](reports/005-2026-09-04-phase-0-access-oauth.md)：已完成本地盘点、官方资料核验、生产只读基线及控制台只读检查。用户已确认测试域名 `mote-oauth-test.flc.io`、资源前缀 `mote-oauth-test`，本轮先测 Codex，其余目标暂缓但不视为通过。
+- 用户已登录 FLC 账号并提供准入邮箱（不在公开文档记录明文）。控制台实测已有 `flc1125.cloudflareaccess.com` 团队、One-time PIN / Cloudflare 登录源及其他应用和隧道；用户已同意复用，不再创建或改名为 `mote-test`。不要改动既有团队、IdP、应用或隧道。
+- 已创建 `mote-oauth-test` Access 应用，ID `4c2df629-1c20-4ebc-a740-eb37f057a4bc`，关联单邮箱 Allow 策略 `mote-oauth-test-publisher`（ID `722cc89f-5015-4b10-9773-a2e7105833fb`）。API 读回已核对三个保护路径、仅 One-time PIN、仅 localhost / loopback 回调及空公网回调清单。
+- 控制台 24 小时菜单限制已通过 API 验证澄清：创建 HTTP 201，独立 GET 仍返回 `access_token_lifetime: 168h`、`session_duration: 720h`。这是配置写入/读回通过，不是实际令牌签发、刷新、撤权或 Codex 登录通过；不要用控制台默认值覆盖这组 API 配置。应用 AUD 与公开 JWKS 结果见验证记录 §10。
+- 用户批准的临时 API 凭据仅有当前账号的 Access 应用/策略编辑权限；有效期截至 `2026-09-04T23:59:59Z`（北京时间 9 月 5 日 07:59:59），ID `c1ceb20a6f0a8f2d8772eed514cb5578`。验证进程已退出，未持久化凭据；未主动撤销云端令牌，也没有扩大为 DNS、Workers 或 R2 管理权限。
+- 冻结锁文件安装已成功（pnpm 11.23.0），依赖清单与锁文件不变。测试 DNS、Worker、R2 及 OAuth 验证原型仍待准备，先按 Phase 0 范围继续隔离环境与 Codex 实测。生产未改，未提交、推送或部署；Phase 1–5 未启动。
 
 ## 7. 已知遗留与坑
 
