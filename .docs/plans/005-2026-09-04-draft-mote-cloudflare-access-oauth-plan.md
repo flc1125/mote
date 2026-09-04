@@ -12,7 +12,7 @@
 
 目标体验：
 
-- Mote CLI：运行 `mote login`，浏览器登录并授权后，继续使用 `mote README.md` 发布。
+- Mote CLI：运行 `mote auth login`，浏览器登录并授权后显示当前登录账号；之后使用 `mote README.md` 发布，在有效授权会话内自动续期，不反复要求用户登录。
 - 远程 MCP：配置 Mote 服务地址，在客户端完成连接授权，之后直接调用发布工具。
 - 本地 MCP：复用同一用户的 Mote CLI 登录凭据，继续支持发布本地文件和图片。
 - 访问权限：Cloudflare Access 决定谁可以发布；文档阅读继续使用 Capability URL 模型。
@@ -73,7 +73,8 @@ Managed OAuth 给客户端的令牌是 opaque token；Worker 验证的是 `Cf-Ac
 - 优先复用现有身份提供方；尚未配置时，建议先以指定邮箱白名单 + 邮箱验证码打通，再按需要接入 Google / GitHub 或已有组织 SSO。具体允许账号在配置阶段确定。
 - 以身份策略作为所有客户端共用的基础。云端 MCP 调用不能依赖用户本机的 WARP、固定出口 IP 或设备证书；需要更严格设备策略时，另行评估浏览器登录与后台刷新两段的兼容性。
 - 原生客户端按需启用 localhost / loopback 回调，云端客户端逐个登记实际 HTTPS 回调 URI；不配置任意公网域名的回调通配。
-- 建议初始访问令牌 15 分钟、授权会话 7 天，这是拟议参数，最终在 Phase 0 确认。策略更新、会话撤销与 JWT 失效的传播时间要实测，不能宣称撤销后所有已签发凭据立刻失效。
+- 按用户本机自用、长期登录的偏好，已确认的目标参数为访问令牌 7 天、授权会话 30 天。这是当前实例偏便利的部署配置，不在 CLI 中硬编码；同一 Access 应用保护的远程 MCP 也受该策略约束。Phase 0 核验平台是否接受这组时长及其实际生命周期；若不支持，记录限制与可选参数，再由用户确认调整。
+- 访问令牌到期由客户端自动刷新，授权会话到期或刷新凭据失效时才提示重新登录；不承诺被撤权后仍可用满 30 天。本机保存不意味着令牌只能在本机使用，长有效期可能扩大令牌泄露后的可用窗口；策略更新、会话撤销与 JWT 失效的传播时间要实测，不能宣称撤销后所有已签发凭据立刻失效。
 
 路径保护依据 [Application paths](https://developers.cloudflare.com/cloudflare-one/access-controls/policies/app-paths/)；回调与令牌设置依据 [Managed OAuth settings](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/managed-oauth/#managed-oauth-settings)。
 
@@ -91,23 +92,24 @@ Managed OAuth 给客户端的令牌是 opaque token；Worker 验证的是 `Cf-Ac
 
 ### 3.3 CLI 与本地 MCP
 
-拟新增命令（尚未实现）：
+认证命令统一放在 `mote auth` 命令组下（尚未实现）：
 
 ```bash
-mote login --api https://mote.flc.io
+mote auth login --api https://mote.flc.io
 mote auth status
-mote logout
+mote auth logout
 mote README.md
 ```
 
-- `login`：发现授权配置，执行 Authorization Code + PKCE S256；使用随机 `state` 和临时 loopback 回调，只监听本机，设置超时并关闭监听器。浏览器无法自动打开时给出登录 URL。
+- `mote auth login`：发现授权配置，执行 Authorization Code + PKCE S256；使用随机 `state` 和临时 loopback 回调，只监听本机，设置超时并关闭监听器。浏览器无法自动打开时给出登录 URL；成功后通过身份检查端点确认并显示当前账号及 API 目标，不显示凭据。
 - 公共客户端不内置 client secret。客户端注册、resource、issuer、scope 从经过校验的发现结果获取；优先评估仓库已使用的 MCP SDK OAuth helper，验证 Node 20、打包体积和 API 适用性后定依赖。
 - 身份提供方与资源 URL 的关系必须被校验；凭据按 API 目标、issuer 和 resource 隔离。上传拒绝跨源重定向，发现/注册请求使用独立的 URL 安全策略，防止把内容或令牌发往其他服务。
-- 凭据与普通配置分开保存，不把 access/refresh token 写进仓库、命令行参数或日志。首版使用用户私有目录：POSIX 目录 0700、文件 0600，Windows 验证等价用户访问权限；采用原子写入。
-- CLI 与本地 MCP 共用凭据存储、刷新函数及进程间刷新锁，避免同时刷新造成凭据覆盖。刷新凭据失效后明确要求重新 `mote login`。
-- `auth status` 区分本地缓存状态与在线确认结果；`logout` 清理本机当前目标凭据。全局撤销由 Access 管理，若其支持合适的 OAuth 撤销端点，再增加远端注销；不把本地删文件描述为所有设备退出。
+- 凭据与普通配置分开保存，不把 access/refresh token 写进仓库、命令行参数或日志。优先使用系统凭据库：macOS Keychain、Windows Credential Manager、Linux Secret Service；具体依赖与三平台可用性在实现阶段验证。无可用凭据库时明确告知用户并降级到私有凭据文件：POSIX 目录 0700、文件 0600，Windows 验证等价用户访问权限；文件采用原子写入，不因凭据库临时锁定或访问失败而静默切换存储后端。
+- CLI 与本地 MCP 共用凭据存储、自动刷新函数及进程间刷新锁，避免同时刷新造成凭据覆盖。在有效授权会话内自动续期，不要求用户手动执行刷新命令；刷新凭据失效后明确要求重新 `mote auth login`。
+- `mote auth status` 显示当前账号、API 地址、认证模式和授权会话状态，区分本地缓存状态与在线确认结果；仅在服务端提供相应信息时显示会话到期时间，未知时明确标注，不用 access token 到期时间替代授权会话到期时间。
+- `mote auth logout` 清理本机当前目标凭据，并明确提示这不等于远端授权已撤销或所有设备退出。全局撤销由 Access 管理，若其支持合适的 OAuth 撤销端点，再增加明确区分的远端注销方式。
 - 发布前先完成凭据准备；只对明确认证拒绝、且确认没有进入写入流程的请求考虑单次刷新重试。网络超时、5xx、结果不明确的发布不自动重放，防止重复生成文档。
-- 首版显式 `mote login`；发布失败、`--json`、非交互执行和 MCP tool 调用不自动弹浏览器或等待用户输入。过期时返回可执行的重新登录提示。
+- 首版显式 `mote auth login`；发布失败、`--json`、非交互执行和 MCP tool 调用不自动弹浏览器或等待用户输入。无法自动续期时返回可执行的 `mote auth login` 提示。
 - 本地 MCP 启动和调用保持 stdio 协议输出纯净。它复用 CLI 登录态，不读取或复制 Cursor / Codex / Claude 各自的凭据库。
 - OAuth 模式下忽略旧环境 token 的隐式覆盖；显式选择静态 token 模式才使用旧配置优先级。迁移文档解释旧 `MOTE_TOKEN` 与新登录态的选择规则。
 
@@ -117,7 +119,7 @@ mote README.md
 
 | 客户端 / 入口 | 首选方式 | 必须验证的差异 |
 |---|---|---|
-| Mote CLI | 内置浏览器登录 | macOS / Linux / Windows，loopback、刷新、无浏览器提示、JSON 模式 |
+| Mote CLI | `mote auth login` 浏览器登录 | macOS / Linux / Windows，loopback、系统凭据库与文件降级、自动刷新、无浏览器提示、JSON 模式 |
 | Mote 本地 MCP（stdio） | 复用 CLI 凭据 | 本地文件和图片、并发刷新、登录失效提示 |
 | Cursor IDE / Agent | 原生远程 MCP OAuth | 桌面与云端分别记录；回调、发现和重连 |
 | Claude Code | 原生远程 MCP OAuth | `/mcp` 登录、动态端口、DCR / 客户端元数据注册选择 |
@@ -143,13 +145,21 @@ mote README.md
 
 ## 5. 实施阶段
 
-沿用 Handoff 的阶段审核流程：待审核 → 已审核 → 进行中 → 用户验收后已完成。下表仅为执行计划，本次不创建 Cloudflare 资源、不启动登录、不发布测试文档、不提交或推送。
+沿用 Handoff 的阶段审核流程：待审核 → 已审核 → 进行中 → 用户验收后已完成。已创建本地工作分支 `feat/cloudflare-access-oauth`，现有计划修改保留为未提交状态；创建分支不代表任何实施阶段已获执行授权。
+
+执行约定（用户于 2026-09-04 明确）：
+
+1. **逐阶段执行**：只有用户明确要求执行某个阶段后，才开始该阶段；阶段交付后等待用户验收与下一阶段指令，不自行连续推进。整体同意计划不等于一次性授权所有阶段。
+2. **提交与推送单独授权**：实施时保持变更在工作区；提交和推送分别以用户明确指令为准。阶段执行授权不包含提交或推送授权。
+3. **Cloudflare 尚未配置自动化部署**：不假定提交、推送或现有 Release 流程会部署 Worker。部署和 Access 配置变更在获授权阶段内按确认的目标环境与清单单独执行；搭建自动化部署流水线不属于本次默认范围。
+
+下表各阶段尚未启动。本次分支准备不创建 Cloudflare 资源、不启动登录、不发布测试文档、不提交或推送。
 
 | 阶段 | 状态 | 交付内容 | 阶段通过条件 |
 |---|---|---|---|
 | Phase 0 — 兼容性与架构验证 | 待审核 | 独立测试域名 / Worker / R2，Access 测试应用，实际元数据、回调、策略与客户端记录 | 全部目标完成最小 OAuth + MCP 调用验证；路径/resource、刷新和账号限制有证据；确定首选方案可行性 |
 | Phase 1 — 服务端鉴权 | 待审核 | 鉴权模式、JWT 验证、身份检查端点、类型及针对性测试、基线鉴权说明 | 有效身份可发布；伪造/过期/错误受众被拒；旧 token 不能绕过 Access 模式；拒绝请求零 R2 写入 |
-| Phase 2 — CLI 登录与凭据管理 | 待审核 | login / status / logout，共享 OAuth 客户端、存储、刷新、旧配置兼容 | 三平台目标用例通过；跨目标隔离、并发刷新、异常退出、无重复发布 |
+| Phase 2 — CLI 登录与凭据管理 | 待审核 | `mote auth login` / `mote auth status` / `mote auth logout`，共享 OAuth 客户端、系统凭据库与文件降级、自动刷新、旧配置兼容 | 三平台目标用例通过；跨目标隔离、并发刷新、异常退出、无重复发布；状态与退出语义准确 |
 | Phase 3 — 本地与远程 MCP 适配 | 待审核 | stdio 复用登录态；远程协议/发现/工具元数据的必要适配 | 两条 MCP 路径复用发布实现，全部目标客户端重新验收真实发布链路 |
 | Phase 4 — 文档与发布准备 | 待审核 | README、CLI/MCP/安全/自托管指南、迁移说明、变更日志、基线与 Handoff 更新 | 用户按文档能登录发布；配置无秘密；全量仓库门禁、CLI 构建与打包检查通过 |
 | Phase 5 — 生产迁移与回退演练 | 待审核 | 按下节顺序迁移、生产冒烟、凭据撤销验证和回退记录 | 新鉴权与目标客户端达标，旧凭据绕过失败，健康检查及已发布页面通过验证 |
@@ -162,14 +172,16 @@ Phase 0 只使用隔离环境和无敏感内容的测试文档。测试资源名
 
 - 服务端：JWT 签名、issuer、aud、过期、未来生效时间、缺失配置、伪造头、JWKS 轮换/故障及主机入口覆盖；静态 token 与 Access 两种模式的边界。
 - 登录客户端：state / PKCE、issuer/resource 不一致、恶意发现地址、非本机回调、用户取消、端口占用、超时、缓存损坏、权限错误和跨账号/跨站点隔离。
-- 凭据刷新：访问令牌到期、刷新凭据失效、CLI/stdio 并发、进程中断后恢复；移除用户权限后验证实际拒绝时效。
+- 凭据存储：三平台系统凭据库读写、库不可用时的显式文件降级、临时锁定或访问失败处理、文件权限与原子写入；CLI/stdio 使用一致的存储后端。
+- 凭据刷新：7 天目标访问令牌与 30 天目标授权会话配置、访问令牌到期后自动续期、刷新凭据失效、CLI/stdio 并发、进程中断后恢复；移除用户权限后验证实际拒绝时效。
+- 认证命令：示例、帮助与错误提示统一使用 `mote auth login` / `mote auth status` / `mote auth logout`；状态输出区分缓存与在线结果；退出只清理当前目标，未执行远端撤销时不声称授权已撤销。
 - 发布：401 发生在写入之前；超时和未知结果不会触发自动重复发布；Markdown、本地图片、manifest 最后提交及返回 URL 行为回归。
 - 协议：认证挑战和发现端点可达；同域 Viewer 路由不会吞掉 OAuth 元数据；服务身份端点不缓存；已有健康检查正常。
 - 验证门禁：实施阶段运行相关测试；集成完成后执行仓库现有 lint、typecheck、test、build、CLI test:package、format:check。规划文档本身只检查格式和差异。
 
 ## 7. 生产迁移顺序
 
-生产动作在实现、隔离环境验证及具体迁移清单准备完成后执行。
+生产动作在实现、隔离环境验证及具体迁移清单准备完成，且用户明确要求执行 Phase 5 后进行。当前 Cloudflare 无自动化部署，Worker 部署与 npm/GitHub Release 分别处理；不得以已提交、已推送或 CLI 已发布作为 Worker 已部署的证据。
 
 1. 记录当前 Worker 版本、路由、Access 应用配置及旧凭据使用者，准备回退配置；避免日志和变更记录包含秘密值。
 2. 发布支持两种部署模式的新服务端版本，生产暂保持 `token` 模式；发布并验证新版 CLI，让现有调用可继续工作。
