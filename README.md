@@ -36,7 +36,11 @@ https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
 
 ## Quick Start
 
-Requires Node.js ≥ 20 and pnpm.
+```bash
+npm install -g mote-cli
+```
+
+<details><summary>From source (requires Node.js ≥ 20 and pnpm)</summary>
 
 ```bash
 git clone https://github.com/flc1125/mote.git
@@ -46,7 +50,7 @@ pnpm --filter @mote/cli build
 cd apps/cli && npm install -g .
 ```
 
-> An npm package (`npm install -g …`) is coming with the v0.1.0 release.
+</details>
 
 Configure a token from your Mote instance (see [Self-hosting](docs/self-hosting.md)):
 

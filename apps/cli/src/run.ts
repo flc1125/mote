@@ -5,7 +5,7 @@ import { publishBundle } from './client.js';
 import { resolveConfig } from './config.js';
 import { CliError } from './errors.js';
 
-export const CLI_VERSION = '0.0.0';
+export const CLI_VERSION = '0.1.0';
 
 export interface CliIO {
   stdout: (text: string) => void;

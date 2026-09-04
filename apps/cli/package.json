@@ -1,8 +1,30 @@
 {
-  "name": "@mote/cli",
-  "version": "0.0.0",
-  "private": true,
+  "name": "mote-cli",
+  "version": "0.1.0",
+  "private": false,
   "type": "module",
+  "description": "Mote = Markdown in, URL out. Publish Markdown as immutable, unguessable web pages.",
+  "keywords": [
+    "markdown",
+    "publish",
+    "cli",
+    "cloudflare-workers",
+    "mcp",
+    "immutable",
+    "static"
+  ],
+  "license": "MIT",
+  "author": "flc1125",
+  "homepage": "https://github.com/flc1125/mote#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flc1125/mote.git",
+    "directory": "apps/cli"
+  },
+  "bugs": "https://github.com/flc1125/mote/issues",
+  "engines": {
+    "node": ">=20"
+  },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "bin": {
@@ -11,18 +33,21 @@
   "files": [
     "dist"
   ],
+  "preferGlobal": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/cli.js",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@mote/core": "workspace:*",
-    "@mote/protocol": "workspace:*",
-    "markdown-it": "^15.0.1"
+    "test": "vitest run",
+    "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
+    "@mote/core": "workspace:*",
+    "@mote/protocol": "workspace:*",
     "esbuild": "^0.25.0",
+    "markdown-it": "^15.0.1",
     "miniflare": "^4.0.0"
   }
 }
