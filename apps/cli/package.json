@@ -1,0 +1,28 @@
+{
+  "name": "@mote/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "bin": {
+    "mote": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/cli.js",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mote/core": "workspace:*",
+    "@mote/protocol": "workspace:*",
+    "markdown-it": "^15.0.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "miniflare": "^4.0.0"
+  }
+}

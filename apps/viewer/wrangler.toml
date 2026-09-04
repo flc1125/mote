@@ -1,0 +1,24 @@
+name = "mote-viewer"
+main = "src/index.ts"
+# Pinned to the oldest workerd in our toolchain (vitest-pool-workers bundles
+# workerd 1.20260815.x); workerd rejects compatibility dates newer than its
+# own build. We use no compat flags, so this loses nothing vs. the baseline's
+# example date (baseline §52, §65.14 equivalent implementation).
+compatibility_date = "2026-08-15"
+
+# Path-based routing: the API Worker owns the more specific
+# mote.flc.io/api/* route, everything else on the host lands here.
+# NOTE: must stay a route pattern, NOT a Custom Domain — a Custom Domain on
+# mote.flc.io would shadow the API Worker's route on the same host.
+routes = [{ pattern = "mote.flc.io/*", zone_name = "flc.io" }]
+
+# Workers Cache: cache HIT requests are served before the Worker executes
+# (baseline §35, §53). cross_version_cache intentionally NOT set: the Worker
+# version stays part of the cache key, so a new Renderer/Theme deploy gets a
+# fresh cache namespace without any purge (baseline §36).
+[cache]
+enabled = true
+
+[[r2_buckets]]
+binding = "DOCUMENTS"
+bucket_name = "mote-documents"

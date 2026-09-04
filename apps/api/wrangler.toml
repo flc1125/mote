@@ -1,0 +1,21 @@
+name = "mote-api"
+main = "src/index.ts"
+# See apps/viewer/wrangler.toml for why this date is pinned.
+compatibility_date = "2026-08-15"
+
+# Path-based routing: most specific route wins over the Viewer's
+# mote.flc.io/*, so /api/* requests execute only this Worker.
+routes = [{ pattern = "mote.flc.io/api/*", zone_name = "flc.io" }]
+
+# No [cache] here: the API must never be cached (baseline §8.2).
+
+# Public base URL used to build document URLs in publish responses.
+[vars]
+VIEWER_BASE_URL = "https://mote.flc.io"
+
+# MOTE_TOKEN is a secret, set via `wrangler secret put` (baseline §38),
+# never in this file.
+
+[[r2_buckets]]
+binding = "DOCUMENTS"
+bucket_name = "mote-documents"
