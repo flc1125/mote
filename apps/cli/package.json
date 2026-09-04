@@ -1,6 +1,6 @@
 {
-  "name": "mote-cli",
-  "version": "0.1.0",
+  "name": "@mote/cli",
+  "version": "0.1.1",
   "private": false,
   "type": "module",
   "description": "Mote = Markdown in, URL out. Publish Markdown as immutable, unguessable web pages.",
@@ -35,12 +35,23 @@
   ],
   "preferGlobal": true,
   "publishConfig": {
-    "access": "public"
+    "name": "mote-cli",
+    "access": "public",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./package.json": "./package.json"
+    }
   },
   "scripts": {
-    "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/cli.js",
+    "build": "node scripts/build.mjs && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
+    "test:package": "node scripts/test-package.mjs",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {

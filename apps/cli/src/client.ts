@@ -1,7 +1,12 @@
-import { PUBLISH_PATH, type ErrorResponse, type PublishResponse } from '@mote/protocol';
+import { PUBLISH_PATH, type ErrorResponse } from '@mote/protocol';
 
 import type { Bundle } from './bundle.js';
 import { CliError } from './errors.js';
+
+export interface PublishResponse {
+  id: string;
+  url: string;
+}
 
 export interface PublishClientOptions {
   apiUrl: string;

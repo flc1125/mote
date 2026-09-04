@@ -1,11 +1,13 @@
 import { parseArgs } from 'node:util';
 
+import packageJson from '../package.json' with { type: 'json' };
+
 import { buildBundle } from './bundle.js';
 import { publishBundle } from './client.js';
 import { resolveConfig } from './config.js';
 import { CliError } from './errors.js';
 
-export const CLI_VERSION = '0.1.0';
+export const CLI_VERSION = packageJson.version;
 
 export interface CliIO {
   stdout: (text: string) => void;
