@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 First open-source release.
 
+Published manually to npm without a matching Git tag or GitHub Release; v0.1.1 is the first automated GitHub Release.
+
 ### Added
 
 - **`mote` CLI** — publish Markdown in one command; AST-based local image scanning, content-hash dedupe, `--json` output for agents/CI
@@ -27,5 +29,5 @@ First open-source release.
 - **Docs** — architecture, publish protocol, security model, self-hosting guide, CLI and MCP references (English + 中文)
 - **Infrastructure** — Cloudflare Workers + R2 only; Workers Cache with per-version cache namespaces; runs on the free tier
 
-[0.1.1]: https://github.com/flc1125/mote/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/flc1125/mote/releases/tag/v0.1.0
+[0.1.1]: https://github.com/flc1125/mote/releases/tag/v0.1.1
+[0.1.0]: https://www.npmjs.com/package/mote-cli/v/0.1.0
