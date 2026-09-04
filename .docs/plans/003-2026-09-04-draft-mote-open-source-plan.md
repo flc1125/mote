@@ -34,7 +34,7 @@
 | Phase 3 — 仓库元数据 | 已完成 |
 | Phase 4 — 自托管指南 | 已完成 |
 | Phase 5 — npm 发布 | 进行中 |
-| Phase 6 — CHANGELOG 与 v0.1.0 Release | 待审核 |
+| Phase 6 — CHANGELOG 与 v0.1.0 Release | 进行中 |
 
 ---
 
@@ -191,7 +191,7 @@
 
 ## 7. Phase 6 — CHANGELOG 与 v0.1.0 Release
 
-**状态**：待审核
+**状态**：进行中（2026-09-04 用户审核通过）
 
 **前置条件**：Phase 0–5 全部完成。
 

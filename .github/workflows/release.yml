@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # GitHub Release
+  id-token: write # npm OIDC Trusted Publishing
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+
+      - run: pnpm typecheck
+
+      - run: pnpm test
+
+      # Tag version must match the CLI package version (tag v0.1.1 ↔ 0.1.1).
+      - name: Verify tag matches package version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./apps/cli/package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag $TAG_VERSION != apps/cli package.json $PKG_VERSION" >&2
+            exit 1
+          fi
+
+      - run: pnpm --filter @mote/cli build
+
+      # pnpm pack rewrites workspace:* protocols in the tarball manifest;
+      # publishing the tarball keeps npm free of workspace references.
+      - name: Pack the CLI
+        working-directory: apps/cli
+        run: pnpm pack
+
+      # npm >= 11.5.1 is required for OIDC Trusted Publishing.
+      - run: npm install -g npm@latest
+
+      - name: Publish to npm (OIDC Trusted Publishing)
+        working-directory: apps/cli
+        run: npm publish mote-cli-*.tgz --access public
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # Extract this version's section from CHANGELOG.md
+          awk "/^## \[$VERSION\]/{flag=1;next} /^## \[/{if(flag)exit} flag" CHANGELOG.md > /tmp/notes.md
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file /tmp/notes.md apps/cli/mote-cli-*.tgz

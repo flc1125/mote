@@ -11,6 +11,7 @@
 
 [![CI](https://github.com/flc1125/mote/actions/workflows/ci.yml/badge.svg)](https://github.com/flc1125/mote/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![npm](https://img.shields.io/npm/v/mote-cli)](https://www.npmjs.com/package/mote-cli)
 
 > **Mote = Markdown in, URL out.**
 >
