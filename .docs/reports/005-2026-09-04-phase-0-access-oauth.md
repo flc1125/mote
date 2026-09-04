@@ -7,7 +7,7 @@
 
 ## 1. 本轮结论与执行边界
 
-用户已授权执行 Phase 0。目前完成本地条件盘点、依赖安装、官方资料核验、迁移前的生产只读基线及登录后的控制台检查；经用户确认，已保存单邮箱测试策略并通过 API 创建独立测试 Access 应用。独立 GET 读回确认原定 7 天 / 30 天及其他批准配置，详见 §10。测试 DNS、Worker、R2 尚未创建，未改动生产配置、发布测试文档或执行客户端 OAuth 登录。
+用户已授权执行 Phase 0。目前完成本地条件盘点、依赖安装、官方资料核验、迁移前的生产只读基线及登录后的控制台检查；经用户确认，已保存单邮箱测试策略并通过 API 创建独立测试 Access 应用。独立 GET 读回确认原定 7 天 / 30 天及其他批准配置，详见 §10。续接检查已核实测试 DNS、Worker、R2 名称没有冲突，本地 Wrangler 未认证，部署授权待确认（§11）。这些测试资源尚未创建，未改动生产配置、发布测试文档或执行客户端 OAuth 登录。
 
 当前证据不足以判定 Managed OAuth 满足全部目标。计划中的 10 项 Checklist 均包含尚未完成的账号或端到端验证，因此全部保持未勾选。Phase 1–5 未启动，提交与推送仍需分别授权。
 
@@ -27,10 +27,10 @@
 | Cloudflare 账号、Zero Trust team domain | 已登录 FLC 账号；实测已有 `flc1125.cloudflareaccess.com` 团队，用户已同意复用；Access 配置写入成功 | 不改名为 `mote-test`；端到端 OAuth 可用性、后续资源权限与费用条件仍需核验 |
 | IdP 与允许用户 | 测试应用已关联精确单邮箱 Allow 策略；读回仅有 One-time PIN 的 IdP ID | 未修改现有 IdP 或放行全部用户；仍需真实登录验证 |
 | Managed OAuth Beta | API 创建应用返回 201，GET 读回 `enabled: true`、`168h / 720h` | 控制台菜单不代表 API 上限；保存成功不等于实际签发、刷新和撤权通过 |
-| 测试域名 | 用户已确认 `mote-oauth-test.flc.io`，未创建 | 登录后核验 DNS 及资源冲突 |
+| 测试域名 | 用户已确认 `mote-oauth-test.flc.io`；控制台搜索没有匹配 DNS 记录，未创建 | 创建前复核，使用测试路径路由，不修改生产 DNS |
 | 资源命名 | 已创建 `mote-oauth-test` 应用和 `mote-oauth-test-publisher` 策略；其他测试资源未创建 | 实际 ID 及清理边界见 §10；后续分别登记 API / Viewer Worker、R2 和 DNS |
 | 命令行管理入口 | 初始 PATH 中未找到全局 `wrangler`；依赖安装后从包清单核实项目内 Wrangler 为 4.128.0；本轮由临时程序调用 Access API | 尚未完成 Wrangler 登录或部署；Access API 编辑权限不等于 Workers / R2 / DNS 权限 |
-| Wrangler 本地凭据 | 检查的 3 个常见配置路径均不存在；未读取任何凭据内容 | 不能据此断言未登录浏览器或不存在其他配置路径；管理入口确认后再核验实际登录状态 |
+| Wrangler 本地凭据 | 初查的 3 个常见配置路径均不存在；续接执行项目内 Wrangler `whoami` 明确返回未认证 | 浏览器登录不等于 Wrangler 登录；新的部署凭据及权限待用户确认，未读取既有凭据内容 |
 | 临时 Access API 凭据 | 经用户确认创建，仅限 FLC 账号的 Access 应用/策略编辑权限；API verify 显示有效，截至 `2026-09-04T23:59:59Z` | 本轮验证后进程已退出且未持久化凭据；此权限不包含 DNS、Workers 或 R2，不擅自扩大 |
 | 项目依赖 | `pnpm install --frozen-lockfile` 重试成功，退出码 0，实际使用 11.23.0 | 未升级依赖或改锁文件；安装成功不等于构建、类型检查或测试通过 |
 | 本机运行环境 | macOS 27.0、arm64、Node v25.9.0 | 不能代替 Node 20 或 Linux / Windows 验证 |
@@ -216,3 +216,43 @@
 已新增的云端对象只有上表的测试 Access 应用、单邮箱策略和短期管理令牌。测试 DNS、API / Viewer Worker、R2 及发布文档均未创建；生产和其他已有资源没有改动。若终止测试，按上述精确 ID 核验引用后处理测试应用与策略；不按名称前缀批量清理，不操作其他令牌或生产 R2。
 
 本机临时验证程序只监听 `127.0.0.1`，校验 Host、Origin、CSRF 值及请求大小；固定 API 目标和请求体，不提供任意请求代理。仅保存脱敏结果，结束时退出进程并关闭临时页面，浏览器保留 Access 应用列表。该程序不属于正式 CLI / Worker 实现，也没有创建部署自动化。
+
+## 11. 部署前资源盘点（2026-09-04 续接）
+
+本次从 `7a9b373`（`Document Access OAuth Phase 0 progress`）续接，分支仍为 `feat/cloudflare-access-oauth`，起始工作区干净。该提交是续接时观察到的既有状态，不是本轮执行的提交。
+
+### 已核实
+
+| 检查 | 证据 / 结果 |
+|---|---|
+| Workers 清单 | FLC 控制台显示全部 2 个应用：`mote-api`、`mote-viewer`；没有测试 Worker |
+| R2 清单 | 控制台仅显示 `mote-documents`，分页不可继续；没有测试 bucket，未进入或读取生产对象 |
+| DNS | `flc.io` DNS 搜索 `mote-oauth-test`，返回“没有 DNS 记录”；没有新增或修改记录 |
+| Zone | `flc.io`，ID `817d37a603a2d3419a545b1a090c7595`；控制台现有路由仍为生产 API / Viewer 两条路径路由 |
+| 费用状态 | Workers 与 R2 控制台均显示当前周期可计费使用量 `$0.00`；这是当前摘要，不是后续测试免费承诺，未升级套餐或接受新订阅 |
+| Wrangler | 项目内命令实际输出 `4.128.0`；`whoami` 返回 `You are not authenticated`，未执行登录 |
+
+Wrangler 同时提示沙箱不允许创建用户目录下的日志目录（`EPERM`），但仍返回上述版本与认证结果；未修改全局设置，也未把日志目录错误误判为 Cloudflare 账号故障。后续命令可将日志位置显式设为任务临时目录。
+
+### 计划部署目标，尚未创建
+
+| 类型 | 精确目标 | 约束 |
+|---|---|---|
+| API Worker | `mote-oauth-test-api` | 路由 `mote-oauth-test.flc.io/api/*`，验证签名断言后才进入发布管线 |
+| Viewer Worker | `mote-oauth-test-viewer` | 路由 `mote-oauth-test.flc.io/*`，继续验证免登录阅读和发现端点的实际边界 |
+| R2 bucket | `mote-oauth-test-documents` | 仅供测试 API / Viewer 使用，不绑定生产 bucket |
+| DNS | `mote-oauth-test.flc.io` | 拟使用 proxied AAAA `100::` 占位，与生产相同的路径路由布局；不使用 Custom Domain 遮蔽 API 路由 |
+
+项目内 Wrangler schema 已核对 `account_id`、`routes`、`workers_dev`、`preview_urls` 和 `r2_buckets` 字段。测试配置应固定账号与 Zone、关闭 `workers.dev` 和 Preview URL，并加入允许主机校验。当前仅完成准备设计，尚未编写隔离 Worker 原型、生成配置或执行构建/测试。
+
+### 待确认的部署授权
+
+上一枚临时 Access API 凭据不含部署权限，且未保留凭据值，不能直接复用。拟单独申请一天有效的测试部署 API 凭据：
+
+- 仅 FLC 账号：Workers Scripts 编辑、Workers R2 Storage 编辑、Account Settings 读取。
+- 仅 `flc.io` Zone：Workers Routes 编辑、DNS 编辑、Zone 读取。
+- 不增加 KV、D1、Access、用户管理、创建其他 API token 或所有账号 / 所有 Zone 权限；若实际命令仍缺权限，记录具体失败后再确认，不自行扩大。
+
+权限类别依据 [Cloudflare API token permissions](https://developers.cloudflare.com/fundamentals/api/reference/permissions/) 与 [API token templates](https://developers.cloudflare.com/fundamentals/api/reference/template/) 核对。这组凭据按账号 / Zone 授权，**不是按 `mote-oauth-test` 名称隔离**：技术上可能操作同账号的其他 Worker / R2，以及该 Zone 的其他 DNS / 路由。只操作上表目标属于执行约束，不能冒充平台权限隔离；创建前需向用户说明并确认。凭据只供本机部署过程使用，不写入聊天、仓库、命令参数或日志。
+
+本轮在新的管理授权前暂停云端写入；没有创建新凭据、测试资源或原型，没有部署、提交、推送，也没有启动 Phase 1–5。后续继续时先确认部署授权，实际创建前重新核对目标，不能把本次无冲突观察当作永久保证。

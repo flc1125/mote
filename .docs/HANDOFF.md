@@ -66,7 +66,8 @@
 - 已创建 `mote-oauth-test` Access 应用，ID `4c2df629-1c20-4ebc-a740-eb37f057a4bc`，关联单邮箱 Allow 策略 `mote-oauth-test-publisher`（ID `722cc89f-5015-4b10-9773-a2e7105833fb`）。API 读回已核对三个保护路径、仅 One-time PIN、仅 localhost / loopback 回调及空公网回调清单。
 - 控制台 24 小时菜单限制已通过 API 验证澄清：创建 HTTP 201，独立 GET 仍返回 `access_token_lifetime: 168h`、`session_duration: 720h`。这是配置写入/读回通过，不是实际令牌签发、刷新、撤权或 Codex 登录通过；不要用控制台默认值覆盖这组 API 配置。应用 AUD 与公开 JWKS 结果见验证记录 §10。
 - 用户批准的临时 API 凭据仅有当前账号的 Access 应用/策略编辑权限；有效期截至 `2026-09-04T23:59:59Z`（北京时间 9 月 5 日 07:59:59），ID `c1ceb20a6f0a8f2d8772eed514cb5578`。验证进程已退出，未持久化凭据；未主动撤销云端令牌，也没有扩大为 DNS、Workers 或 R2 管理权限。
-- 冻结锁文件安装已成功（pnpm 11.23.0），依赖清单与锁文件不变。测试 DNS、Worker、R2 及 OAuth 验证原型仍待准备，先按 Phase 0 范围继续隔离环境与 Codex 实测。生产未改，未提交、推送或部署；Phase 1–5 未启动。
+- 冻结锁文件安装已成功（pnpm 11.23.0）。续接于 `7a9b373`，起始工作区干净；项目内 Wrangler 实际输出 4.128.0，`whoami` 明确返回未认证。测试 DNS 搜索无记录、Workers 全量清单仅有生产两个 Worker、R2 仅有生产 bucket；没有同名测试资源。验证记录 §11 已列出精确部署目标与拟申请的一天期部署权限，尚待用户确认；账号 / Zone 级凭据并不按测试名称隔离，不得宣称权限仅能操作测试资源。
+- 测试 DNS、Worker、R2 及 OAuth 验证原型仍未创建，下一步先确认部署授权，再按 Phase 0 范围准备隔离环境与 Codex 实测。生产、依赖及锁文件未改，本轮没有提交、推送或部署；Phase 1–5 未启动。
 
 ## 7. 已知遗留与坑
 
