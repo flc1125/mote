@@ -4,6 +4,8 @@
 
 ## 总览
 
+以下 Bearer 示例表示兼容的静态 token 部署。未发布的 Access 模式保持相同发布载荷与结果：OAuth 使用 opaque Bearer，机器使用 `CF-Access-Client-Id` / `CF-Access-Client-Secret`；Access 校验后由 Worker 验证签名断言。两种服务端模式不混用，详见[鉴权与迁移](authentication.md)。
+
 ```text
 POST https://mote.flc.io/api/v1/publish
 Authorization: Bearer <MOTE_TOKEN>
@@ -55,7 +57,7 @@ Content-Type: multipart/form-data
 ## 服务端处理
 
 ```text
-1. Bearer Token 校验                     → 401
+1. 部署模式鉴权（token / Access 断言）   → 401
 2. Content-Length 预检（> 21 MB 直接拒）  → 413
 3. Content-Type 必须 multipart/form-data → 415
 4. multipart 解析                        → 400
@@ -126,7 +128,7 @@ documents/{document-id}/
 | HTTP | code                     | 触发条件                                       |
 | ---- | ------------------------ | ---------------------------------------------- |
 | 400  | `MALFORMED_REQUEST`      | multipart 无法解析、缺少字段、manifest 非 JSON |
-| 401  | `UNAUTHORIZED`           | 缺失或错误的 Bearer Token                      |
+| 401  | `UNAUTHORIZED`           | 缺失、失效或与部署模式不符的发布凭据           |
 | 413  | `BUNDLE_TOO_LARGE`       | 超过任一大小/数量限额                          |
 | 415  | `UNSUPPORTED_MEDIA_TYPE` | 非 multipart 请求，或资产不是支持的图片类型    |
 | 422  | `INVALID_DOCUMENT`       | document 为空/非 UTF-8、manifest 校验失败      |

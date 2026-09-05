@@ -68,20 +68,26 @@ base-uri 'none'; form-action 'none'; frame-ancestors 'none'
 
 ## 4. 上传侧防护
 
-| 机制         | 说明                                                                                   |
-| ------------ | -------------------------------------------------------------------------------------- |
-| Bearer Token | `POST /api/v1/publish` 必须携带 `MOTE_TOKEN`；比较前先对两侧做 SHA-256，避免时序侧信道 |
-| 图片白名单   | 仅 png/jpeg/webp/gif/avif，**按 Magic Bytes 判定**，不信任扩展名                       |
-| 排除 SVG     | SVG 可携带脚本（Active Content），V1 直接拒绝（415）                                   |
-| 大小限额     | Markdown ≤ 2 MB、单图 ≤ 10 MB、包 ≤ 20 MB、≤ 50 个（413）                              |
-| 原子发布     | `manifest.json` 最后写入；写入中途失败不会产生半可见文档（Viewer 只认 manifest）       |
-| ID 冲突      | Document ID 撞库时服务端内部重试，不对客户端暴露 409                                   |
+| 机制       | 说明                                                                                        |
+| ---------- | ------------------------------------------------------------------------------------------- |
+| 发布鉴权   | token 模式使用原生 HMAC 验证避免直接字符串比较；Access 模式验证受信签名断言，均先于正文读取 |
+| 图片白名单 | 仅 png/jpeg/webp/gif/avif，**按 Magic Bytes 判定**，不信任扩展名                            |
+| 排除 SVG   | SVG 可携带脚本（Active Content），V1 直接拒绝（415）                                        |
+| 大小限额   | Markdown ≤ 2 MB、单图 ≤ 10 MB、包 ≤ 20 MB、≤ 50 个（413）                                   |
+| 原子发布   | `manifest.json` 最后写入；写入中途失败不会产生半可见文档（Viewer 只认 manifest）            |
+| ID 冲突    | Document ID 撞库时服务端内部重试，不对客户端暴露 409                                        |
 
 CLI 侧：只读取 Markdown **实际引用**的文件（AST 解析，非正则），绝不扫描整个目录；逐文件做 存在 → regular file → MIME → 大小 → SHA-256 检查；同内容图片按哈希去重。
 
-## 5. Token 管理
+## 5. 发布鉴权与凭据管理
 
-`MOTE_TOKEN` 是 V1 唯一的发布凭证：
+本检出的 Access 能力尚未发布，生产未切换。服务端 `MOTE_AUTH_MODE=token|cloudflare-access`，默认仍是 token，未知模式拒绝。客户端选择 `token|oauth|service`，不可与服务端枚举混用，详见[鉴权与迁移](authentication.md)。
+
+Access 模式由 Cloudflare 校验 OAuth 或 Service Token 双凭据、注入 `Cf-Access-Jwt-Assertion`；Worker 仅接受配置的 HTTPS API 主机并校验签名、issuer、AUD、时间、类型与明确身份。用户为非空 sub；机器为合法 common_name 且空 sub，无歧义混用。旧 `MOTE_TOKEN`、邮箱头、Cookie、客户端自报身份及管理 API token 均不能绕过校验。公开阅读仍是 capability URL，不因发布者鉴权升级而要求读者登录。
+
+### 兼容的静态 token 模式
+
+`MOTE_TOKEN` 仅用于该模式：
 
 - **生成**：≥ 256 bit 随机（如 `openssl rand -hex 32`）；
 - **服务端存储**：`wrangler secret put MOTE_TOKEN`，绝不写入 `wrangler.toml`、代码或 Git；
@@ -91,12 +97,20 @@ CLI 侧：只读取 Markdown **实际引用**的文件（AST 解析，非正则�
 
 ### 远程 MCP（`POST /api/mcp`）
 
-远程 MCP 端点与发布 API 共用同一个 Bearer Token 校验：
+远程 MCP、REST 发布和 `/api/auth/session` 共用部署模式的鉴权入口，先鉴权再读取正文/访问存储：
 
 - Token **只能出现在 Authorization 请求头**（HTTPS），绝不放进 URL query、工具参数或聊天上下文；
-- 配置 Claude 网页版 connector 或客户端 `.mcp.json` 时，header 值就是 token 本身——这些配置文件应视为凭证同等保护（不进 Git、不截图分享）；
+- 含静态 header 的客户端配置须按秘密保护；Access OAuth 交给客户端自己的凭据存储，不复制到聊天或另一客户端；
 - 该端点无状态、无 session：每次请求独立鉴权，不签发任何会话凭证；
-- 泄露时的处置与上文一致：`wrangler secret put MOTE_TOKEN` 轮换，所有客户端配置同步更新。
+- Access 泄露时撤销相应用户/应用授权或禁用 Service Token；静态 token 泄露时轮换 Worker secret 并更新其客户端。应用级撤权会影响其他会话，必须先确认范围。
+
+### 本地存储、会话与失效
+
+Mote CLI/stdio 共享自身的按 API 目标、issuer/resource 绑定的凭据与进程间刷新锁，不读取 Codex Keychain。默认系统凭据库已验证 macOS Keychain；失败不会自动降级。`--credential-store file` 显式选择私有明文，目录 0700、文件 0600、当前用户所有；元数据和锁也不得擅自删除。Linux/Windows 未实机验收。
+
+OAuth logout 删除本地秘密并保留无秘密选择标记，阻止旧 token 自动复活；不执行远端撤权、不删静态配置、不禁用 Service Token。机器模式须显式选择，三项环境配置缺一/目标不同即拒绝；每次发送双凭据，不复用 cookie。`status --offline` 不是在线有效性证明，授权会话到期时间未知时返回 null。
+
+测试配置为 168h / 720h，长生命周期增加泄露暴露窗口，应按实例风险选择。短期自然到期续用及撤权恢复已实测；未等待 7/30 天。并发刷新串行，未知交换或发布结果不自动重放。退出、撤权、禁用均不删除已发布内容；URL 泄露仍需按阅读能力凭证泄露处理。
 
 ## 6. 日志红线
 
@@ -114,7 +128,7 @@ CLI 侧：只读取 Markdown **实际引用**的文件（AST 解析，非正则�
 
 **绝对禁止**记录：
 
-- `MOTE_TOKEN` 及 Authorization 头；
+- `MOTE_TOKEN`、Authorization/Cookie、Access 断言、OAuth code/access/refresh token、Service Token Secret、管理 API token 和完整授权回调 URL；
 - Markdown 内容、资产内容；
 - 完整 Secret URL 到第三方日志系统（Document ID 仅可用于排错，接入第三方平台前需重新评估敏感等级）。
 
@@ -132,7 +146,7 @@ CLI 侧：只读取 Markdown **实际引用**的文件（AST 解析，非正则�
 
 ## 8. 滥用防护现状
 
-V1 依赖：高熵 ID（防枚举）+ Cloudflare Cache（吸收读流量）+ Token（写侧门槛）+ 限额。
+当前依赖：高熵 ID（防枚举）+ Cloudflare Cache（吸收读流量）+ 所选发布鉴权模式（写侧门槛）+ 限额。Access 用户身份不等于文档所有权、ACL 或独立配额。
 
 明确**未实现**（属 Future Work，出现实际需求再评估）：Rate Limiting、Turnstile、per-user quota、多用户 API Key。
 

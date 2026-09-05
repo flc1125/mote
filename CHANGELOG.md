@@ -4,6 +4,17 @@ All notable changes to Mote are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/): minor for new features, patch for fixes.
 
+## [Unreleased]
+
+### Added
+
+- Opt-in `cloudflare-access` server authentication with signed assertion validation for user OAuth and Service Token identities; legacy token mode remains the default.
+- `mote auth login/status/logout`, target-bound system/private-file credentials, PKCE login, serialized refresh and explicit machine mode.
+- Local stdio sharing the Mote CLI credential store and publishing pipeline, with authentication before local file reads.
+- Authentication/migration guidance and verified macOS CLI/stdio + Codex 0.153.4 app-server scope. Other clients/platforms and full 7-day/30-day natural expiry are not claimed as tested.
+
+No production authentication switch, package release or Cloudflare deployment automation is included in this entry.
+
 ## [0.1.1] - 2026-09-04
 
 ### Fixed
