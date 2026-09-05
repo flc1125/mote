@@ -237,7 +237,7 @@ describe('Phase 0 boundaries and reused pipeline', () => {
       JSON.stringify({
         version: 1,
         entry: 'probe.md',
-          assets: [{ field: 'asset_0', references: ['pixel.png'] }],
+        assets: [{ field: 'asset_0', references: ['pixel.png'] }],
       }),
     );
     const png = Uint8Array.from(
