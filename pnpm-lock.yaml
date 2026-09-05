@@ -120,6 +120,10 @@ importers:
       miniflare:
         specifier: ^4.0.0
         version: 4.20260730.0
+    optionalDependencies:
+      '@napi-rs/keyring':
+        specifier: 2.0.0
+        version: 2.0.0
 
   apps/viewer:
     dependencies:

@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { Bundle } from '@mote/cli';
 
 import { createMoteMcpServer } from '../src/server.js';
-import type { McpDeps } from '../src/tools.js';
+import { realDeps, type McpDeps } from '../src/tools.js';
 
 const TOKEN = 'server-test-token';
 const DOC_ID = '7Vk3mQ9x2NFaP4Ls';
@@ -38,11 +38,12 @@ afterEach(async () => {
 });
 
 const okDeps: McpDeps = {
+  ...realDeps,
   buildBundle: async () => {
     throw new Error('buildBundle must not be called by publish_markdown');
   },
   publishBundle: async () => ({ id: DOC_ID, url: DOC_URL }),
-  resolveConfig: async () => ({ apiUrl: 'https://api.test', token: TOKEN }),
+  resolveConfig: async () => ({ apiUrl: 'https://api.test', token: TOKEN, authMode: 'token' }),
 };
 
 describe('MCP server (protocol level)', () => {
@@ -81,11 +82,12 @@ describe('MCP server (protocol level)', () => {
       totalBytes: markdownBytes.length,
     };
     const deps: McpDeps = {
+      ...realDeps,
       buildBundle: async () => bundle,
       publishBundle: async () => {
         throw new Error('publishBundle must not be called without a token');
       },
-      resolveConfig: async () => ({ apiUrl: 'https://api.test' }),
+      resolveConfig: async () => ({ apiUrl: 'https://api.test', authMode: 'token' }),
     };
 
     const client = await connect(deps);
