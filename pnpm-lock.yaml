@@ -60,6 +60,9 @@ importers:
       '@mote/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
+      jose:
+        specifier: 6.2.10
+        version: 6.2.10
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.22.0
