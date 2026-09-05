@@ -9,6 +9,8 @@ export default defineProject({
       wrangler: { configPath: './wrangler.toml' },
       miniflare: {
         bindings: {
+          // Legacy API integration fixtures must not inherit production auth mode.
+          MOTE_AUTH_MODE: 'token',
           MOTE_TOKEN: TEST_PUBLISH_TOKEN,
         },
       },

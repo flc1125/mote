@@ -1,16 +1,16 @@
 # Authentication and migration
 
-This guide describes the **unreleased source implementation**. The v0.1.1 release and the production deployment have not been migrated by this work. Build the reviewed source revision before using `mote auth`; installing an older npm package does not add these commands. Examples use your own Access-enabled instance, not the default production host.
+This guide describes the **unreleased source implementation**. Production `mote.flc.io` now uses Cloudflare Access, but production client acceptance is still in progress and v0.1.1 does not include these client commands. Build the reviewed source revision before using `mote auth`; installing an older npm package does not add these commands. Examples use your own Access-enabled instance; only approved publishers can use the production host.
 
 ## Choose a mode
 
 Server and client settings have different values:
 
-| Server `MOTE_AUTH_MODE`  | Client `--auth-mode` / `MOTE_AUTH_MODE` | Credential                                           |
-| ------------------------ | --------------------------------------- | ---------------------------------------------------- |
-| `token` (server default) | `token`                                 | Existing Mote `MOTE_TOKEN`                           |
-| `cloudflare-access`      | `oauth`                                 | Interactive user login and refresh token             |
-| `cloudflare-access`      | `service`                               | Access Service Token Client ID **and** Client Secret |
+| Server `MOTE_AUTH_MODE` | Client `--auth-mode` / `MOTE_AUTH_MODE` | Credential                                           |
+| ----------------------- | --------------------------------------- | ---------------------------------------------------- |
+| `token` (legacy mode)   | `token`                                 | Existing Mote `MOTE_TOKEN`                           |
+| `cloudflare-access`     | `oauth`                                 | Interactive user login and refresh token             |
+| `cloudflare-access`     | `service`                               | Access Service Token Client ID **and** Client Secret |
 
 Do not export the server value `cloudflare-access` into a CLI or stdio process. A Cloudflare management API token or Wrangler login is **not** a Mote publishing credential. Access mode never falls back to the server's old Mote token.
 

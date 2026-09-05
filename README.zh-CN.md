@@ -37,7 +37,7 @@ https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
 
 ## 快速开始
 
-下列已发布 v0.1.1 用法使用静态 token。本检出中的 OAuth / Service Token 能力**尚未发布**，生产也尚未切换；Access 实例请先构建已审核源码，再按[鉴权与迁移指南](docs/authentication.md)操作。
+下列已发布 v0.1.1 用法使用静态 token，仅适用于 token 模式服务端。生产 `mote.flc.io` 已切换到 Cloudflare Access，生产客户端仍在验收。本检出中的 OAuth / Service Token 能力**尚未发布**；Access 实例请先构建已审核源码，再按[鉴权与迁移指南](docs/authentication.md)操作。
 
 ```bash
 npm install -g mote-cli

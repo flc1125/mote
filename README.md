@@ -37,7 +37,7 @@ https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
 
 ## Quick Start
 
-The published v0.1.1 flow below uses a static token. OAuth and Service Token support in this checkout is **unreleased**; production has not been switched. Build the reviewed source revision and follow [authentication and migration](docs/authentication.md) for an Access-enabled instance.
+The published v0.1.1 flow below uses a static token and requires a token-mode server. Production `mote.flc.io` now uses Cloudflare Access; production client acceptance is still in progress. OAuth and Service Token support in this checkout is **unreleased**. Build the reviewed source revision and follow [authentication and migration](docs/authentication.md) for an Access-enabled instance.
 
 ```bash
 npm install -g mote-cli

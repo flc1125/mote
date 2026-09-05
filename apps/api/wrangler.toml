@@ -14,12 +14,11 @@ routes = [{ pattern = "mote.flc.io/api/*", zone_name = "flc.io" }]
 # Public base URL used to build document URLs in publish responses.
 [vars]
 VIEWER_BASE_URL = "https://mote.flc.io"
-MOTE_AUTH_MODE = "token"
-# Access mode requires all three, using the protected API host (not Viewer host).
-# MOTE_AUTH_MODE = "cloudflare-access"
-# MOTE_ACCESS_ISSUER = "https://your-team.cloudflareaccess.com"
-# MOTE_ACCESS_AUD = "your-access-application-aud"
-# MOTE_ACCESS_HOSTNAME = "mote.example.com"
+MOTE_AUTH_MODE = "cloudflare-access"
+# Production Access application; these identifiers are not credentials.
+MOTE_ACCESS_ISSUER = "https://flc1125.cloudflareaccess.com"
+MOTE_ACCESS_AUD = "d3f4ebddb8b5bb4e6c25da00efcfc4c1f33e7055e9454c2a3e39707fef8e131c"
+MOTE_ACCESS_HOSTNAME = "mote.flc.io"
 
 # MOTE_TOKEN is a secret, set via `wrangler secret put` (baseline §38),
 # never in this file.
@@ -28,7 +27,7 @@ MOTE_AUTH_MODE = "token"
 binding = "DOCUMENTS"
 bucket_name = "mote-documents"
 
-# Phase 1 isolated verification; never changes the default production auth mode.
+# Isolated verification; uses a separate Access application, host and bucket.
 # Deploy only after environment approval: wrangler deploy --env access-test
 [env.access-test]
 name = "mote-oauth-test-api"
