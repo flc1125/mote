@@ -59,6 +59,10 @@
     "@mote/protocol": "workspace:*",
     "esbuild": "^0.25.0",
     "markdown-it": "^15.0.1",
-    "miniflare": "^4.0.0"
+    "miniflare": "^4.0.0",
+    "oauth4webapi": "3.8.7"
+  },
+  "optionalDependencies": {
+    "@napi-rs/keyring": "2.0.0"
   }
 }
