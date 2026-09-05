@@ -10,6 +10,8 @@ npm install -g mote-cli
 
 ## Usage
 
+The static-token example below also works with v0.1.1. This checkout adds unreleased `mote auth login`, `mote auth status` and `mote auth logout`, plus explicit Service Token mode. Build the reviewed source revision and use an Access-enabled instance; installing an older npm release or publishing this package does not switch a Worker deployment. Read `docs/authentication.md` in that source checkout for authentication and migration guidance.
+
 ```bash
 export MOTE_TOKEN="your-token"
 

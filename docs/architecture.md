@@ -39,6 +39,8 @@ Mote 完全运行在 Cloudflare 上，由两个职责分离的 Worker 与一个 
 
 V1 不引入：数据库、KV、D1、Durable Object、Queue、独立服务器。
 
+当前源码已加入可选 Access 发布鉴权（尚未发布、生产未切换）：CLI/远程 MCP → Cloudflare Access 校验 OAuth 或机器双凭据 → API Worker 校验签名断言 → 原发布管线。读取侧不变。默认 `token` 模式保留；模式选择、存储与迁移见[鉴权指南](authentication.md)。
+
 发布端点：`POST https://mote.flc.io/api/v1/publish`。两个 Worker 通过 Cloudflare Routes 共用同一域名，按路径前缀分流（最具体路由优先）；不使用 Custom Domain 绑定（它会覆盖同主机名的路由）。
 
 ## 核心原则
@@ -53,10 +55,10 @@ The CDN is the materialized view.  → 渲染结果由 CDN 长缓存
 
 ## Worker 划分
 
-| Worker        | 路由                | 职责                                                                                        | 访问                         |
-| ------------- | ------------------- | ------------------------------------------------------------------------------------------- | ---------------------------- |
-| `mote-viewer` | `mote.flc.io/*`     | `GET/HEAD /{document-id}`、`GET/HEAD /{document-id}/a/{asset-id}`、`/robots.txt`、`/health` | 匿名只读，启用 Workers Cache |
-| `mote-api`    | `mote.flc.io/api/*` | `POST /api/v1/publish`、`GET /health`                                                       | Bearer Token，可写 R2        |
+| Worker        | 路由                | 职责                                                                                        | 访问                                                      |
+| ------------- | ------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `mote-viewer` | `mote.flc.io/*`     | `GET/HEAD /{document-id}`、`GET/HEAD /{document-id}/a/{asset-id}`、`/robots.txt`、`/health` | 匿名只读，启用 Workers Cache                              |
+| `mote-api`    | `mote.flc.io/api/*` | REST 发布、远程 MCP、身份查询及健康检查                                                     | 部署选择 token / cloudflare-access；健康检查公开；可写 R2 |
 
 两者绑定同一个 R2 Bucket `mote-documents`。
 
@@ -87,6 +89,7 @@ documents/
 
 - Raw HTML 关闭、`script-src 'none'` 等严格 CSP、`Referrer-Policy: no-referrer`、noindex。
 - 图片 MIME 以 Magic Bytes 为准；V1 不支持 SVG（Active Content 风险）。
-- 发布接口：Bearer Token（≥ 256 bit）、Bundle ≤ 20MB、Asset ≤ 50 个。
+- 发布接口：静态 token 或经过 Access 的签名身份；Bundle ≤ 20MB、Asset ≤ 50 个。Access 模式绑定 issuer/AUD/API 主机，不支持从备用 Worker 域名旁路。
+- CLI 与本地 stdio 共享 Mote 凭据存储、刷新锁与发布管线；Codex 独立保存自己的 OAuth 凭据。远程 MCP 保持无状态，无文档所有权或用户配额新增。
 
 详见 [发布协议](protocol.md)与[安全模型](security.md)。

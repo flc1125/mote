@@ -2,6 +2,8 @@ name = "mote-api"
 main = "src/index.ts"
 # See apps/viewer/wrangler.toml for why this date is pinned.
 compatibility_date = "2026-08-15"
+workers_dev = false
+preview_urls = false
 
 # Path-based routing: most specific route wins over the Viewer's
 # mote.flc.io/*, so /api/* requests execute only this Worker.
@@ -12,6 +14,11 @@ routes = [{ pattern = "mote.flc.io/api/*", zone_name = "flc.io" }]
 # Public base URL used to build document URLs in publish responses.
 [vars]
 VIEWER_BASE_URL = "https://mote.flc.io"
+MOTE_AUTH_MODE = "cloudflare-access"
+# Production Access application; these identifiers are not credentials.
+MOTE_ACCESS_ISSUER = "https://flc1125.cloudflareaccess.com"
+MOTE_ACCESS_AUD = "d3f4ebddb8b5bb4e6c25da00efcfc4c1f33e7055e9454c2a3e39707fef8e131c"
+MOTE_ACCESS_HOSTNAME = "mote.flc.io"
 
 # MOTE_TOKEN is a secret, set via `wrangler secret put` (baseline §38),
 # never in this file.
@@ -19,3 +26,23 @@ VIEWER_BASE_URL = "https://mote.flc.io"
 [[r2_buckets]]
 binding = "DOCUMENTS"
 bucket_name = "mote-documents"
+
+# Isolated verification; uses a separate Access application, host and bucket.
+# Deploy only after environment approval: wrangler deploy --env access-test
+[env.access-test]
+name = "mote-oauth-test-api"
+account_id = "c585cb4fcca22909dbaae2e3072a7a8b"
+workers_dev = false
+preview_urls = false
+routes = [{ pattern = "mote-oauth-test.flc.io/api/*", zone_name = "flc.io" }]
+
+[env.access-test.vars]
+VIEWER_BASE_URL = "https://mote-oauth-test.flc.io"
+MOTE_AUTH_MODE = "cloudflare-access"
+MOTE_ACCESS_ISSUER = "https://flc1125.cloudflareaccess.com"
+MOTE_ACCESS_AUD = "67f852eaf06730f1a47b30b8fc2594df66d9e09a9d51b44b48ff932808831853"
+MOTE_ACCESS_HOSTNAME = "mote-oauth-test.flc.io"
+
+[[env.access-test.r2_buckets]]
+binding = "DOCUMENTS"
+bucket_name = "mote-oauth-test-documents"

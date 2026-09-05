@@ -4,3 +4,6 @@ export * from './config.js';
 export * from './errors.js';
 export * from './run.js';
 export * from './scanner.js';
+export * from './auth/manager.js';
+export * from './auth/store.js';
+export * from './auth/types.js';

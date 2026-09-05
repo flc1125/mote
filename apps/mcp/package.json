@@ -12,7 +12,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "esbuild src/mcp.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/mcp.js",
+    "build": "esbuild src/mcp.ts --bundle --platform=node --format=esm --target=node20 --external:@napi-rs/keyring --outfile=dist/mcp.js",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
@@ -22,6 +22,9 @@
     "@mote/protocol": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^4.5.4"
+  },
+  "optionalDependencies": {
+    "@napi-rs/keyring": "2.0.0"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",
