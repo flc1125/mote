@@ -10,7 +10,8 @@ const keys = createRemoteJWKSet(new URL(`${PROBE_ISSUER}/cdn-cgi/access/certs`),
   cacheMaxAge: 600_000,
 });
 
-export type Publisher = { subject: string; email?: string };
+export type Publisher =
+  { kind: 'user'; subject: string; email?: string } | { kind: 'service'; subject: string };
 
 export function hasProbeConfiguration(env: ProbeEnv): boolean {
   return (
@@ -38,7 +39,6 @@ export async function verifyAccessAssertion(
     });
     if (
       typeof payload.sub !== 'string' ||
-      !payload.sub ||
       typeof payload.iat !== 'number' ||
       typeof payload.exp !== 'number' ||
       payload.iat > Date.now() / 1000 ||
@@ -46,7 +46,21 @@ export async function verifyAccessAssertion(
     ) {
       return null;
     }
+    // Service Auth carries an empty sub and a signed client ID. Never infer
+    // machine identity from the incoming credential headers.
+    if (payload.sub === '') {
+      if (
+        payload.type !== 'app' ||
+        typeof payload.common_name !== 'string' ||
+        !/^[a-f0-9]+\.access$/i.test(payload.common_name) ||
+        payload.email !== undefined
+      )
+        return null;
+      return { kind: 'service', subject: payload.common_name };
+    }
+    if (payload.common_name !== undefined) return null;
     return {
+      kind: 'user',
       subject: payload.sub,
       ...(typeof payload.email === 'string' ? { email: payload.email } : {}),
     };

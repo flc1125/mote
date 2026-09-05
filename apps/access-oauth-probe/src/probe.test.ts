@@ -50,11 +50,59 @@ function noStorage(): ProbeEnv {
 }
 
 describe('Access assertion verification', () => {
+  it('verifies service identity from signed claims with an empty subject', async () => {
+    const token = await sign({
+      sub: '',
+      email: undefined,
+      type: 'app',
+      common_name: 'abc123.access',
+    });
+    const response = await api.fetch(
+      request('/api/auth/session', token, {
+        headers: {
+          'CF-Access-Client-Id': 'forged.access',
+          'CF-Access-Authenticated-User-Email': 'forged@example.invalid',
+        },
+      }),
+      noStorage(),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+    expect(await response.json()).toEqual({
+      authenticated: true,
+      publisher: { kind: 'service', subject: 'abc123.access' },
+    });
+  });
+
+  it.each([
+    { common_name: undefined },
+    { common_name: '' },
+    { common_name: 'certificate.example' },
+    { type: 'org' },
+    { type: undefined },
+    { email: 'publisher@example.invalid' },
+    { sub: 'user-subject' },
+    { aud: 'other-app' },
+    { exp: 1 },
+  ])('rejects invalid or ambiguous service claims: %j', async (overrides) => {
+    const token = await sign({
+      sub: '',
+      email: undefined,
+      type: 'app',
+      common_name: 'abc123.access',
+      ...overrides,
+    });
+    const req = request('/api/v1/publish', token, { method: 'POST', body: 'unread' });
+    expect((await api.fetch(req, noStorage())).status).toBe(401);
+    expect(req.bodyUsed).toBe(false);
+  });
+
   it('verifies the signature before exposing identity and ignores email headers', async () => {
     const req = request('/api/auth/session', await sign(), {
       headers: { 'Cf-Access-Authenticated-User-Email': 'forged@example.invalid' },
     });
     expect(await verifyAccessAssertion(req, env, localKeys)).toEqual({
+      kind: 'user',
       subject: 'phase0-test-subject',
       email: 'publisher@example.invalid',
     });
@@ -162,7 +210,11 @@ describe('Phase 0 boundaries and reused pipeline', () => {
     expect(body).not.toContain(token);
     expect(JSON.parse(body)).toEqual({
       authenticated: true,
-      publisher: { subject: 'phase0-test-subject', email: 'publisher@example.invalid' },
+      publisher: {
+        kind: 'user',
+        subject: 'phase0-test-subject',
+        email: 'publisher@example.invalid',
+      },
     });
   });
 
@@ -191,40 +243,47 @@ describe('Phase 0 boundaries and reused pipeline', () => {
     }
   });
 
-  it('publishes via MCP, stores no identity, and serves the URL without authentication', async () => {
-    const response = await api.fetch(
-      request('/api/mcp', await sign(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 2,
-          method: 'tools/call',
-          params: {
-            name: 'publish_markdown',
-            arguments: { markdown: '# Phase 0 local test', name: 'probe.md' },
-          },
+  it.each([
+    ['user', {}],
+    ['service', { sub: '', email: undefined, type: 'app', common_name: 'abc123.access' }],
+  ] satisfies [string, JWTPayload][])(
+    'publishes via MCP with %s identity, stores no identity, and serves publicly',
+    async (_kind, claims) => {
+      const response = await api.fetch(
+        request('/api/mcp', await sign(claims), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 2,
+            method: 'tools/call',
+            params: {
+              name: 'publish_markdown',
+              arguments: { markdown: '# Phase 0 local test', name: 'probe.md' },
+            },
+          }),
         }),
-      }),
-      env,
-    );
-    expect(response.status).toBe(200);
-    const body = await response.json<{
-      result: { structuredContent: { id: string; url: string } };
-    }>();
-    const { id, url } = body.result.structuredContent;
-    expect(url).toBe(`${PROBE_ORIGIN}/${id}`);
-    const manifest = await env.DOCUMENTS.get(`documents/${id}/manifest.json`);
-    expect(manifest).not.toBeNull();
-    const manifestText = await manifest!.text();
-    expect(manifestText).not.toContain('publisher');
-    expect(manifestText).not.toContain('phase0-test-subject');
-    for (const method of ['GET', 'HEAD']) {
-      const page = await viewer.fetch(new Request(url, { method }), env);
-      expect(page.status).toBe(200);
-      if (method === 'GET') expect(await page.text()).toContain('Phase 0 local test');
-    }
-  });
+        env,
+      );
+      expect(response.status).toBe(200);
+      const body = await response.json<{
+        result: { structuredContent: { id: string; url: string } };
+      }>();
+      const { id, url } = body.result.structuredContent;
+      expect(url).toBe(`${PROBE_ORIGIN}/${id}`);
+      const manifest = await env.DOCUMENTS.get(`documents/${id}/manifest.json`);
+      expect(manifest).not.toBeNull();
+      const manifestText = await manifest!.text();
+      expect(manifestText).not.toContain('publisher');
+      expect(manifestText).not.toContain('phase0-test-subject');
+      expect(manifestText).not.toContain('abc123.access');
+      for (const method of ['GET', 'HEAD']) {
+        const page = await viewer.fetch(new Request(url, { method }), env);
+        expect(page.status).toBe(200);
+        if (method === 'GET') expect(await page.text()).toContain('Phase 0 local test');
+      }
+    },
+  );
 
   it('publishes a multipart document with a local image via the existing API', async () => {
     const form = new FormData();

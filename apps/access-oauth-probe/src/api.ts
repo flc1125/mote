@@ -48,6 +48,8 @@ export function createApiProbe(verify = verifyAccessAssertion) {
         headers.delete('Cookie');
         headers.delete('Cf-Access-Jwt-Assertion');
         headers.delete('Cf-Access-Authenticated-User-Email');
+        headers.delete('CF-Access-Client-Id');
+        headers.delete('CF-Access-Client-Secret');
         headers.set('Authorization', `Bearer ${internalToken}`);
         const response = await legacyApi.fetch(new Request(request, { headers }), {
           DOCUMENTS: env.DOCUMENTS,
