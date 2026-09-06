@@ -16,7 +16,7 @@ import {
 } from './smoke.mjs';
 import { fixturePng, publishSmoke } from './write-smoke.mjs';
 
-const origin = 'https://mote-oauth-test.flc.io';
+const origin = 'https://mote-test.flc.io';
 const sample = { document: '123456789ABCDEFG', asset: '123456789ABC', digest: sha256(fixturePng) };
 const temporary = [];
 afterEach(async () => {

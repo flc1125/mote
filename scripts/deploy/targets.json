@@ -12,11 +12,11 @@
       "aud": "d3f4ebddb8b5bb4e6c25da00efcfc4c1f33e7055e9454c2a3e39707fef8e131c"
     },
     "access-test": {
-      "hostname": "mote-oauth-test.flc.io",
-      "api": "mote-oauth-test-api",
-      "viewer": "mote-oauth-test-viewer",
-      "bucket": "mote-oauth-test-documents",
-      "aud": "67f852eaf06730f1a47b30b8fc2594df66d9e09a9d51b44b48ff932808831853"
+      "hostname": "mote-test.flc.io",
+      "api": "mote-test-api",
+      "viewer": "mote-test-viewer",
+      "bucket": "mote-test-documents",
+      "aud": "d4a8fb385f160677a736f54466c781d99b4806ae6b85d7d752c27ceda51ab859"
     }
   }
 }
