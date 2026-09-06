@@ -7,7 +7,7 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "cf-typegen": "wrangler types --config wrangler.api.jsonc --env-interface ProbeEnv --strict-vars=false",
-    "build": "wrangler deploy --config wrangler.api.jsonc --dry-run --outdir dist/api && wrangler deploy --config wrangler.viewer.jsonc --dry-run --outdir dist/viewer"
+    "build:probe": "wrangler deploy --config wrangler.api.jsonc --dry-run --outdir dist/api && wrangler deploy --config wrangler.viewer.jsonc --dry-run --outdir dist/viewer"
   },
   "dependencies": {
     "@mote/api": "workspace:*",

@@ -1,8 +1,8 @@
-// Deliberately pinned to the approved Phase 0 host. This is not a deployable
-// replacement for the production API's future configurable auth mode.
-export const PROBE_ORIGIN = 'https://mote-oauth-test.flc.io';
-export const PROBE_ISSUER = 'https://flc1125.cloudflareaccess.com';
-export const PROBE_AUD = '67f852eaf06730f1a47b30b8fc2594df66d9e09a9d51b44b48ff932808831853';
+// Local-only Phase 0 regression fixture, not a deployable API replacement.
+// Fake origins and audience deliberately cannot authenticate against live Access.
+export const PROBE_ORIGIN = 'https://mote-probe.example.invalid';
+export const PROBE_ISSUER = 'https://access.example.invalid';
+export const PROBE_AUD = 'local-probe-audience';
 
 export function isProbeRequest(request: Request): boolean {
   // Do not trust Host/X-Forwarded-Host headers supplied by callers.

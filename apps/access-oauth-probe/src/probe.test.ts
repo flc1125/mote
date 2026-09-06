@@ -176,19 +176,22 @@ describe('Phase 0 boundaries and reused pipeline', () => {
     expect(response.status).toBe(200);
   });
 
-  it.each(['http://localhost', 'https://other.workers.dev', 'https://mote.flc.io'])(
-    'rejects alternate origin %s regardless of forwarded headers',
-    async (origin) => {
-      const req = new Request(origin + '/api/mcp', {
-        method: 'POST',
-        body: '{}',
-        headers: { Host: 'mote-oauth-test.flc.io', 'X-Forwarded-Host': 'mote-oauth-test.flc.io' },
-      });
-      expect((await api.fetch(req, noStorage())).status).toBe(404);
-      expect(req.bodyUsed).toBe(false);
-      expect((await viewer.fetch(req, noStorage())).status).toBe(404);
-    },
-  );
+  it.each([
+    'http://localhost',
+    'https://other.workers.dev',
+    'https://mote.flc.io',
+    'https://mote-test.flc.io',
+    'https://mote-oauth-test.flc.io',
+  ])('rejects alternate origin %s regardless of forwarded headers', async (origin) => {
+    const req = new Request(origin + '/api/mcp', {
+      method: 'POST',
+      body: '{}',
+      headers: { Host: new URL(PROBE_ORIGIN).host, 'X-Forwarded-Host': new URL(PROBE_ORIGIN).host },
+    });
+    expect((await api.fetch(req, noStorage())).status).toBe(404);
+    expect(req.bodyUsed).toBe(false);
+    expect((await viewer.fetch(req, noStorage())).status).toBe(404);
+  });
 
   it.each(['ACCESS_ISSUER', 'ACCESS_AUD', 'VIEWER_BASE_URL'] as const)(
     'rejects missing/mistargeted configuration: %s',

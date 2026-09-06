@@ -1,25 +1,23 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "mote-oauth-test-api",
-  "account_id": "c585cb4fcca22909dbaae2e3072a7a8b",
+  // Local regression fixture only. The fake account prevents cloud deployment.
+  "name": "mote-local-probe-api",
+  "account_id": "00000000000000000000000000000000",
   "main": "src/api.ts",
   // Match Mote's existing workerd test baseline; this is a Phase 0 adapter.
   "compatibility_date": "2026-08-15",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
   "preview_urls": false,
-  "routes": [
-    {
-      "pattern": "mote-oauth-test.flc.io/api/*",
-      "zone_id": "817d37a603a2d3419a545b1a090c7595",
-    },
-  ],
+  "routes": [],
   "vars": {
-    "VIEWER_BASE_URL": "https://mote-oauth-test.flc.io",
-    "ACCESS_ISSUER": "https://flc1125.cloudflareaccess.com",
-    "ACCESS_AUD": "67f852eaf06730f1a47b30b8fc2594df66d9e09a9d51b44b48ff932808831853",
+    "VIEWER_BASE_URL": "https://mote-probe.example.invalid",
+    "ACCESS_ISSUER": "https://access.example.invalid",
+    "ACCESS_AUD": "local-probe-audience",
   },
-  "r2_buckets": [{ "binding": "DOCUMENTS", "bucket_name": "mote-oauth-test-documents" }],
+  "r2_buckets": [
+    { "binding": "DOCUMENTS", "bucket_name": "mote-local-probe-documents", "remote": false },
+  ],
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1,

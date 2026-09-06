@@ -30,19 +30,19 @@ bucket_name = "mote-documents"
 # Isolated verification; uses a separate Access application, host and bucket.
 # Deploy only after environment approval: wrangler deploy --env access-test
 [env.access-test]
-name = "mote-oauth-test-api"
+name = "mote-test-api"
 account_id = "c585cb4fcca22909dbaae2e3072a7a8b"
 workers_dev = false
 preview_urls = false
-routes = [{ pattern = "mote-oauth-test.flc.io/api/*", zone_name = "flc.io" }]
+routes = [{ pattern = "mote-test.flc.io/api/*", zone_name = "flc.io" }]
 
 [env.access-test.vars]
-VIEWER_BASE_URL = "https://mote-oauth-test.flc.io"
+VIEWER_BASE_URL = "https://mote-test.flc.io"
 MOTE_AUTH_MODE = "cloudflare-access"
 MOTE_ACCESS_ISSUER = "https://flc1125.cloudflareaccess.com"
-MOTE_ACCESS_AUD = "67f852eaf06730f1a47b30b8fc2594df66d9e09a9d51b44b48ff932808831853"
-MOTE_ACCESS_HOSTNAME = "mote-oauth-test.flc.io"
+MOTE_ACCESS_AUD = "d4a8fb385f160677a736f54466c781d99b4806ae6b85d7d752c27ceda51ab859"
+MOTE_ACCESS_HOSTNAME = "mote-test.flc.io"
 
 [[env.access-test.r2_buckets]]
 binding = "DOCUMENTS"
-bucket_name = "mote-oauth-test-documents"
+bucket_name = "mote-test-documents"

@@ -22,3 +22,15 @@ enabled = true
 [[r2_buckets]]
 binding = "DOCUMENTS"
 bucket_name = "mote-documents"
+
+# Isolated formal Viewer; the historical probe target remains untouched.
+[env.access-test]
+name = "mote-test-viewer"
+account_id = "c585cb4fcca22909dbaae2e3072a7a8b"
+workers_dev = false
+preview_urls = false
+routes = [{ pattern = "mote-test.flc.io/*", zone_name = "flc.io" }]
+
+[[env.access-test.r2_buckets]]
+binding = "DOCUMENTS"
+bucket_name = "mote-test-documents"

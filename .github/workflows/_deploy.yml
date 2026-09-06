@@ -1,0 +1,221 @@
+name: Shared server deployment
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+      write_smoke:
+        type: boolean
+        default: false
+    outputs:
+      target_sha:
+        value: ${{ jobs.resolve.outputs.target_sha }}
+      manifest_digest:
+        value: ${{ jobs.resolve.outputs.manifest_digest || jobs.prepare.outputs.manifest_digest }}
+
+permissions:
+  contents: read
+
+env:
+  MOTE_REF: ${{ inputs.ref }}
+  MOTE_ENVIRONMENT: ${{ inputs.environment }}
+  MOTE_WRITE_SMOKE: ${{ inputs.write_smoke }}
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      deployments: read
+    outputs:
+      target_sha: ${{ steps.resolve.outputs.target_sha }}
+      resume: ${{ steps.resolve.outputs.resume }}
+      manifest_digest: ${{ steps.resolve.outputs.manifest_digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: resolve
+        run: node scripts/deploy/action.mjs resolve
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  prepare:
+    needs: resolve
+    if: needs.resolve.outputs.resume != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    outputs:
+      manifest_digest: ${{ steps.prepare.outputs.manifest_digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.target_sha }}
+          path: .target
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: prepare
+        run: node scripts/deploy/action.mjs prepare-target
+        env:
+          MOTE_SOURCE_DIR: ${{ github.workspace }}/.target
+          MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
+          MOTE_ARTIFACT_DIR: ${{ runner.temp }}/mote-prepared
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mote-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/mote-prepared/
+          if-no-files-found: error
+          retention-days: 90
+
+  release-preflight:
+    needs: [resolve, prepare]
+    if: always() && github.event_name == 'push' && needs.resolve.result == 'success' && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      # GitHub only lists draft Releases to callers with push access.
+      # This isolated job performs GETs only, with no deployment/OIDC secrets.
+      contents: write
+      actions: read
+    outputs:
+      identity: ${{ steps.preflight.outputs.release_preflight_identity }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Trusted tooling only: no target checkout/build/tests or install hooks.
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: mote-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/mote-prepared
+      - id: preflight
+        run: node scripts/deploy/release-action.mjs preflight
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
+          MOTE_MANIFEST_DIGEST: ${{ needs.resolve.outputs.manifest_digest || needs.prepare.outputs.manifest_digest }}
+
+  deploy:
+    needs: [resolve, prepare, release-preflight]
+    if: always() && needs.resolve.result == 'success' && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped') && ((github.event_name == 'push' && needs.release-preflight.result == 'success') || (github.event_name == 'workflow_dispatch' && needs.release-preflight.result == 'skipped'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      actions: read
+      deployments: write
+    env:
+      MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
+      MOTE_MANIFEST_DIGEST: ${{ needs.resolve.outputs.manifest_digest || needs.prepare.outputs.manifest_digest }}
+      MOTE_RELEASE_PREFLIGHT_IDENTITY: ${{ needs.release-preflight.outputs.identity }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      # Trusted tooling only; Cloudflare secrets exist only on the deploy step.
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: mote-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/mote-prepared
+      - run: node scripts/deploy/action.mjs deploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MOTE_DEPLOY_ENABLED: ${{ vars.MOTE_DEPLOY_ENABLED }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          MOTE_SMOKE_DOCUMENT_ID: ${{ vars.MOTE_SMOKE_DOCUMENT_ID }}
+          MOTE_SMOKE_ASSET_ID: ${{ vars.MOTE_SMOKE_ASSET_ID }}
+          MOTE_SMOKE_ASSET_SHA256: ${{ vars.MOTE_SMOKE_ASSET_SHA256 }}
+          MOTE_HAS_SERVICE_ID: ${{ secrets.MOTE_SERVICE_CLIENT_ID != '' }}
+          MOTE_HAS_SERVICE_SECRET: ${{ secrets.MOTE_SERVICE_CLIENT_SECRET != '' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mote-deploy-result-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/mote-deployment-result/
+          if-no-files-found: warn
+          retention-days: 90
+
+  write-smoke:
+    needs: [resolve, prepare, deploy]
+    if: always() && inputs.write_smoke && needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      actions: read
+      deployments: write
+    env:
+      MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
+      MOTE_MANIFEST_DIGEST: ${{ needs.resolve.outputs.manifest_digest || needs.prepare.outputs.manifest_digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: mote-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/mote-prepared
+      - run: node scripts/deploy/action.mjs install-cli
+      - run: node scripts/deploy/action.mjs write
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MOTE_DEPLOY_ENABLED: ${{ vars.MOTE_DEPLOY_ENABLED }}
+          MOTE_SERVICE_CLIENT_ID: ${{ secrets.MOTE_SERVICE_CLIENT_ID }}
+          MOTE_SERVICE_CLIENT_SECRET: ${{ secrets.MOTE_SERVICE_CLIENT_SECRET }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mote-write-result-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/mote-deployment-result/
+          if-no-files-found: warn
+          retention-days: 90
