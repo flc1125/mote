@@ -6,6 +6,22 @@ import { root } from './lib.mjs';
 
 const caller = await readFile(join(root, '.github/workflows/diagnose-secrets.yml'), 'utf8');
 const shared = await readFile(join(root, '.github/workflows/_diagnose-secrets.yml'), 'utf8');
+const deploy = await readFile(join(root, '.github/workflows/_deploy.yml'), 'utf8');
+const declaration = [
+  '    secrets:',
+  '      CLOUDFLARE_API_TOKEN:',
+  "        description: 'Resolved from the job Environment; callers must not forward it'",
+  '        required: false',
+].join('\n');
+const deploymentDeclaration = [
+  declaration,
+  '      MOTE_SERVICE_CLIENT_ID:',
+  "        description: 'Existing optional write-smoke credential from the job Environment'",
+  '        required: false',
+  '      MOTE_SERVICE_CLIENT_SECRET:',
+  "        description: 'Existing optional write-smoke credential from the job Environment'",
+  '        required: false',
+].join('\n');
 const uncommented = (source) => source.replace(/^\s*#.*$/gm, '');
 const scriptFrom = (source) =>
   source
@@ -32,7 +48,34 @@ describe('secret availability diagnostic boundaries', () => {
     expect(shared).toContain(
       "github.workflow_ref == 'flc1125/mote/.github/workflows/diagnose-secrets.yml@refs/heads/main'",
     );
-    expect(uncommented(caller + shared)).not.toMatch(/\b(secrets|with|inputs):/);
+    expect(uncommented(caller)).not.toMatch(/\b(secrets|with|inputs):/);
+    expect(uncommented(shared.split('jobs:')[1])).not.toMatch(/\b(secrets|with|inputs):/);
+  });
+
+  it('probes the same optional, narrowly declared secret as the deployment workflow', () => {
+    for (const [source, expected] of [
+      [deploy, deploymentDeclaration],
+      [shared, declaration],
+    ]) {
+      const header = uncommented(source.split('\npermissions:')[0]);
+      expect(header).toContain(declaration);
+      expect(header.match(/ {4}secrets:/g)).toHaveLength(1);
+      const secretSection = header
+        .split('    secrets:\n')[1]
+        .split(/\n {4}\w/)[0]
+        .trimEnd();
+      expect(secretSection).toBe(expected.split('    secrets:\n')[1]);
+    }
+    expect(deploy).toContain('environment: ${{ inputs.environment }}');
+    expect(deploy.match(/\$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/g)).toHaveLength(1);
+  });
+
+  it('does not add secret forwarding to either deployment entry point', async () => {
+    for (const file of ['deploy.yml', 'release.yml']) {
+      const source = uncommented(await readFile(join(root, '.github/workflows', file), 'utf8'));
+      expect(source).not.toMatch(/^\s*secrets:/m);
+      expect(source).not.toContain('secrets.CLOUDFLARE_API_TOKEN');
+    }
   });
 
   for (const [name, source] of [

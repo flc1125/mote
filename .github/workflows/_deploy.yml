@@ -12,6 +12,19 @@ on:
       write_smoke:
         type: boolean
         default: false
+    # Declare the name without requiring callers to forward a credential.
+    # The deploy job resolves its selected Environment secret; preflight still
+    # rejects an empty value. Validate availability with the Boolean probe first.
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        description: 'Resolved from the job Environment; callers must not forward it'
+        required: false
+      MOTE_SERVICE_CLIENT_ID:
+        description: 'Existing optional write-smoke credential from the job Environment'
+        required: false
+      MOTE_SERVICE_CLIENT_SECRET:
+        description: 'Existing optional write-smoke credential from the job Environment'
+        required: false
     outputs:
       target_sha:
         value: ${{ jobs.resolve.outputs.target_sha }}
