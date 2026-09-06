@@ -1,0 +1,40 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Source: main, stable vX.Y.Z tag, or full main-history SHA'
+        type: string
+        default: main
+        required: true
+      environment:
+        description: Target environment
+        type: choice
+        options: [production, access-test]
+        default: production
+        required: true
+      write_smoke:
+        description: 'Publish one permanent public smoke document (no automatic retry)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+  deployments: write
+
+# The future release caller must use this SAME production group through its
+# npm/Release tail. The reusable workflow must not acquire the caller's lock.
+concurrency:
+  group: mote-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      ref: ${{ inputs.ref }}
+      environment: ${{ inputs.environment }}
+      write_smoke: ${{ inputs.write_smoke }}

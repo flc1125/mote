@@ -92,11 +92,11 @@ export function validateSourceConfig(raw, component) {
     assert(Object.hasOwn(environments['access-test'], 'vars'), 'Explicit test vars required');
 }
 
-export function sourceConfig(component) {
+export function sourceConfig(component, projectRoot = root) {
   assert(['api', 'viewer'].includes(component), 'Invalid component');
   // Isolate Wrangler's experimental parser behind this adapter and regression tests.
   const { experimental_readRawConfig: readRaw } = require('wrangler');
-  const parsed = readRaw({ config: join(root, `apps/${component}/wrangler.toml`) });
+  const parsed = readRaw({ config: join(projectRoot, `apps/${component}/wrangler.toml`) });
   assert(!parsed.redirected, 'Redirected Wrangler configuration is not allowed');
   validateSourceConfig(parsed.rawConfig, component);
   return parsed.rawConfig;
