@@ -105,6 +105,7 @@ SVG is not supported (active-content risk). Documents are immutable — republis
 - [MCP guide](docs/mcp.md)
 - [Skill](docs/skill.md)
 - [Self-hosting](docs/self-hosting.md)
+- [Deployment operations](docs/deployment.md)
 - [Architecture](docs/architecture.md)
 - [Publish protocol](docs/protocol.md)
 - [Security model](docs/security.md)
