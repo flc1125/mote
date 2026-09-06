@@ -10,6 +10,7 @@ import {
   ensureNpm,
   ensureRelease,
   preflightRelease,
+  releasePreflightIdentity,
   releaseReady,
   releaseState,
 } from './release.mjs';
@@ -55,6 +56,10 @@ async function main() {
   });
   if (process.argv[2] === 'preflight') {
     await lookup(); // Reject version conflicts before any production mutation.
+    await appendFile(
+      env.GITHUB_OUTPUT,
+      `release_preflight_identity=${releasePreflightIdentity(context, manifest.source.sha, env.MOTE_MANIFEST_DIGEST)}\n`,
+    );
     log('Release registry and tag preflight passed; nothing was published.');
     return;
   }

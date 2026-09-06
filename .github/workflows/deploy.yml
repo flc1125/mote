@@ -20,7 +20,9 @@ on:
         default: false
 
 permissions:
-  contents: read
+  # Reusable-workflow permission ceiling. Its write-capable Release preflight
+  # is tag-only and skipped here; every manual execution job uses contents: read.
+  contents: write
   actions: read
   deployments: write
 

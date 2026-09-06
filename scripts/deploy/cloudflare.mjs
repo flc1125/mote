@@ -34,7 +34,9 @@ export async function cloudflareClient({
           CLOUDFLARE_API_TOKEN: token,
           CLOUDFLARE_ACCOUNT_ID: targets.accountId,
           WRANGLER_SEND_METRICS: 'false',
-          WRANGLER_LOG: 'error',
+          // Wrangler gates even --json output at log level. Both output streams
+          // remain captured by execFile; never forward raw diagnostics to CI.
+          WRANGLER_LOG: 'log',
           WRANGLER_LOG_PATH: join(scratch, 'wrangler.log'),
         },
       });

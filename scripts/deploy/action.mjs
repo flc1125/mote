@@ -23,7 +23,7 @@ import { pnpm, root, run, sha256, sourceConfig, writeJson } from './lib.mjs';
 import { readSmoke, sampleFrom } from './smoke.mjs';
 import { publishSmoke } from './write-smoke.mjs';
 import { registryClient, releaseClient } from './release-clients.mjs';
-import { preflightRelease } from './release.mjs';
+import { preflightRelease, requireReleasePreflight } from './release.mjs';
 
 async function output(name, value) {
   await appendFile(env.GITHUB_OUTPUT, `${name}=${value}\n`);
@@ -134,8 +134,16 @@ async function main() {
       const sample = sampleFrom(env);
       if (context.trigger === 'tag') {
         requireThat(targetSha === context.workflowSha, 'TAG_WORKFLOW_SHA_MISMATCH');
+        requireReleasePreflight(
+          context,
+          targetSha,
+          env.MOTE_MANIFEST_DIGEST,
+          env.MOTE_RELEASE_PREFLIGHT_IDENTITY,
+        );
         const bytes = await readFile(join(directory, manifest.cli.tarball));
         await registryClient(manifest, bytes)();
+        // Published-release recheck only with this job's read token. Drafts
+        // were checked by the mandatory isolated release-preflight job above.
         await preflightRelease({
           context,
           manifest,

@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { runInNewContext } from 'node:vm';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { initialState } from './engine.mjs';
 import { contextFrom, DeployError, resolveTarget } from './policy.mjs';
@@ -9,6 +10,8 @@ import {
   ensureNpm,
   ensureRelease,
   preflightRelease,
+  releasePreflightIdentity,
+  requireReleasePreflight,
   receipt,
   releaseBody,
   releaseReady,
@@ -279,6 +282,56 @@ function releaseScenario() {
 }
 
 describe('GitHub Release reconciliation', () => {
+  it('rejects a draft hidden from the read token when preflight uses the write token', async () => {
+    const draft = {
+      id: 10,
+      tag_name: manifest.tag,
+      name: manifest.tag,
+      prerelease: false,
+      draft: true,
+      body: 'conflicting draft',
+    };
+    const fetch = vi.fn(async (url, options) => {
+      expect(options.method).toBe('GET');
+      const body = url.includes('git/ref/')
+        ? { object: { type: 'commit', sha } }
+        : options.headers.Authorization === 'Bearer fake-write'
+          ? [draft]
+          : [];
+      return new globalThis.Response(JSON.stringify(body));
+    });
+    const readApi = releaseClient(context.repository, 'fake-read', fetch);
+    expect(await readApi.find(manifest.tag)).toBeNull();
+    const writeApi = releaseClient(context.repository, 'fake-write', fetch);
+    expect(await writeApi.find(manifest.tag)).toEqual(draft);
+    await expect(
+      preflightRelease({
+        context,
+        manifest,
+        manifestDigest: digest,
+        notes: 'Release notes',
+        files: [],
+        api: writeApi,
+      }),
+    ).rejects.toThrow('RELEASE_IDENTITY_CONFLICT');
+  });
+  it('binds the mandatory draft preflight to the exact run, attempt, SHA and artifacts', () => {
+    const identity = releasePreflightIdentity(context, sha, digest);
+    expect(() => requireReleasePreflight(context, sha, digest, identity)).not.toThrow();
+    for (const invalid of [undefined, '', 'true', identity.replace('123:', '124:')])
+      expect(() => requireReleasePreflight(context, sha, digest, invalid)).toThrow(
+        'RELEASE_PREFLIGHT_REQUIRED',
+      );
+    expect(() =>
+      requireReleasePreflight({ ...context, runAttempt: 2 }, sha, digest, identity),
+    ).toThrow('RELEASE_PREFLIGHT_REQUIRED');
+    expect(() => requireReleasePreflight(context, 'c'.repeat(40), digest, identity)).toThrow(
+      'RELEASE_PREFLIGHT_REQUIRED',
+    );
+    expect(() => requireReleasePreflight(context, sha, 'd'.repeat(64), identity)).toThrow(
+      'RELEASE_PREFLIGHT_REQUIRED',
+    );
+  });
   it('checks known Release conflicts before deployment or npm writes', async () => {
     const s = releaseScenario();
     s.remote.release = {
@@ -623,6 +676,30 @@ describe('publishing adapters without live writes', () => {
 });
 
 describe('release workflow contract', () => {
+  it('fails closed on missing/failed/cancelled tag preflight, including resumed builds', async () => {
+    const shared = await readFile(join(root, '.github/workflows/_deploy.yml'), 'utf8');
+    const condition = shared.split('  deploy:')[1].match(/^ {4}if: (.+)$/m)[1];
+    for (const event of ['push', 'workflow_dispatch']) {
+      for (const resolve of ['success', 'failure', 'cancelled', 'skipped']) {
+        for (const prepare of ['success', 'failure', 'cancelled', 'skipped']) {
+          for (const preflight of ['success', 'failure', 'cancelled', 'skipped']) {
+            const results = { resolve, prepare, 'release-preflight': preflight };
+            // Evaluate the actual simple workflow expression, not a copied gate.
+            const expression = condition
+              .replaceAll('always()', 'true')
+              .replaceAll('github.event_name', JSON.stringify(event))
+              .replace(/needs\.([\w-]+)\.result/g, (_, job) => JSON.stringify(results[job]));
+            const allowed = runInNewContext(expression, {}, { timeout: 100 });
+            expect(allowed).toBe(
+              resolve === 'success' &&
+                ['success', 'skipped'].includes(prepare) &&
+                preflight === (event === 'push' ? 'success' : 'skipped'),
+            );
+          }
+        }
+      }
+    }
+  });
   it('orders deploy → npm → release with a shared caller lock and separated privileges', async () => {
     const workflow = await readFile(join(root, '.github/workflows/release.yml'), 'utf8');
     const shared = await readFile(join(root, '.github/workflows/_deploy.yml'), 'utf8');
@@ -639,8 +716,35 @@ describe('release workflow contract', () => {
     expect(npm).not.toMatch(/environment:|secrets\./);
     expect(release).not.toContain('id-token: write');
     expect(workflow).not.toMatch(/npm@latest|pnpm pack|--clobber|npm view|gh release edit/);
-    expect(shared).toContain("if: github.event_name == 'push'");
     const manual = await readFile(join(root, '.github/workflows/deploy.yml'), 'utf8');
-    expect(manual).not.toMatch(/release-action|id-token: write|contents: write/);
+    expect(manual).not.toMatch(/release-action|id-token: write/);
+    // Callers grant a ceiling; only the isolated tag preflight actually uses it.
+    expect(manual).toContain('contents: write');
+    expect(workflow.split('  deploy:')[1].split('  npm:')[0]).toContain('contents: write');
+    const preflight = shared.split('  release-preflight:')[1].split('  deploy:')[0];
+    expect(preflight).toContain('contents: write');
+    expect(preflight).toContain("always() && github.event_name == 'push'");
+    expect(preflight).toContain("needs.prepare.result == 'skipped'");
+    expect(preflight).toContain('pnpm install --frozen-lockfile --ignore-scripts');
+    expect(preflight).not.toMatch(
+      /\$\{\{ secrets\.|id-token:|path: \.target|prepare-target|pnpm (test|build)/,
+    );
+    expect(preflight).toContain('ref: ${{ github.workflow_sha }}');
+    expect(preflight).toContain('node scripts/deploy/release-action.mjs preflight');
+    expect(preflight).toContain('mote-build-${{ github.run_id }}');
+    expect(preflight).toContain(
+      'needs.resolve.outputs.manifest_digest || needs.prepare.outputs.manifest_digest',
+    );
+    const deploy = shared.split('  deploy:')[1].split('  write-smoke:')[0];
+    expect(deploy).toContain('needs: [resolve, prepare, release-preflight]');
+    expect(deploy).toContain(
+      "github.event_name == 'push' && needs.release-preflight.result == 'success'",
+    );
+    expect(deploy).toContain(
+      "github.event_name == 'workflow_dispatch' && needs.release-preflight.result == 'skipped'",
+    );
+    expect(deploy).toContain(
+      'MOTE_RELEASE_PREFLIGHT_IDENTITY: ${{ needs.release-preflight.outputs.identity }}',
+    );
   });
 });

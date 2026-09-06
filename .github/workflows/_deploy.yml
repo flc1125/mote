@@ -87,14 +87,6 @@ jobs:
           MOTE_SOURCE_DIR: ${{ github.workspace }}/.target
           MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
           MOTE_ARTIFACT_DIR: ${{ runner.temp }}/mote-prepared
-      - name: Check release registry identity before production changes
-        if: github.event_name == 'push'
-        run: node scripts/deploy/release-action.mjs preflight
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
-          MOTE_MANIFEST_DIGEST: ${{ steps.prepare.outputs.manifest_digest }}
-          MOTE_ARTIFACT_DIR: ${{ runner.temp }}/mote-prepared
       - uses: actions/upload-artifact@v4
         with:
           name: mote-build-${{ github.run_id }}
@@ -102,9 +94,43 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-  deploy:
+  release-preflight:
     needs: [resolve, prepare]
-    if: always() && needs.resolve.result == 'success' && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped')
+    if: always() && github.event_name == 'push' && needs.resolve.result == 'success' && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      # GitHub only lists draft Releases to callers with push access.
+      # This isolated job performs GETs only, with no deployment/OIDC secrets.
+      contents: write
+      actions: read
+    outputs:
+      identity: ${{ steps.preflight.outputs.release_preflight_identity }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Trusted tooling only: no target checkout/build/tests or install hooks.
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: mote-build-${{ github.run_id }}
+          path: ${{ runner.temp }}/mote-prepared
+      - id: preflight
+        run: node scripts/deploy/release-action.mjs preflight
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
+          MOTE_MANIFEST_DIGEST: ${{ needs.resolve.outputs.manifest_digest || needs.prepare.outputs.manifest_digest }}
+
+  deploy:
+    needs: [resolve, prepare, release-preflight]
+    if: always() && needs.resolve.result == 'success' && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped') && ((github.event_name == 'push' && needs.release-preflight.result == 'success') || (github.event_name == 'workflow_dispatch' && needs.release-preflight.result == 'skipped'))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: ${{ inputs.environment }}
@@ -115,6 +141,7 @@ jobs:
     env:
       MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
       MOTE_MANIFEST_DIGEST: ${{ needs.resolve.outputs.manifest_digest || needs.prepare.outputs.manifest_digest }}
+      MOTE_RELEASE_PREFLIGHT_IDENTITY: ${{ needs.release-preflight.outputs.identity }}
     steps:
       - uses: actions/checkout@v4
         with:

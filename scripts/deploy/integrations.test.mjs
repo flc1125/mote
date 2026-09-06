@@ -326,9 +326,16 @@ describe('workflow trust boundaries', () => {
     expect(caller).toContain('group: mote-${{ inputs.environment }}');
     expect(caller).toContain('cancel-in-progress: false');
     expect(shared).not.toContain('concurrency:');
-    expect(caller + shared).not.toMatch(/npm publish|gh release|id-token: write|contents: write/);
-    const prepare = shared.split('  prepare:')[1].split('  deploy:')[0];
+    expect(caller + shared).not.toMatch(/npm publish|gh release|id-token: write/);
+    const prepare = shared.split('  prepare:')[1].split('  release-preflight:')[0];
     expect(prepare).not.toContain('secrets.');
+    expect(prepare).not.toContain('contents: write');
+    expect(prepare).not.toContain('release-action');
+    const preflight = shared.split('  release-preflight:')[1].split('  deploy:')[0];
+    expect(preflight).toContain("github.event_name == 'push'");
+    const deploy = shared.split('  deploy:')[1].split('  write-smoke:')[0];
+    expect(deploy).toContain('contents: read');
+    expect(deploy).not.toContain('contents: write');
     const write = shared.split('  write-smoke:')[1];
     expect(write).not.toContain('CLOUDFLARE_API_TOKEN');
     expect(shared.match(/secrets\.CLOUDFLARE_API_TOKEN/g)).toHaveLength(1);

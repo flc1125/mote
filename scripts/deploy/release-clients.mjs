@@ -188,7 +188,9 @@ export function releaseClient(repository, token, fetchImpl = globalThis.fetch) {
     async find(tag) {
       const releases = (await list('releases')).filter((item) => item.tag_name === tag);
       requireThat(releases.length <= 1, 'RELEASE_DUPLICATE_TAG');
-      return releases[0] ?? null; // Includes drafts; never infer absence from a 404.
+      // Drafts are visible only with push access. The workflow must run its
+      // authoritative preflight in the isolated contents: write job.
+      return releases[0] ?? null; // Never infer absence from a 404.
     },
     create: (body) => request('releases', 'POST', body),
     assets: (id) => {

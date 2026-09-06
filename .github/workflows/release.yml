@@ -15,7 +15,9 @@ concurrency:
 jobs:
   deploy:
     permissions:
-      contents: read
+      # Permission ceiling for the isolated draft-Release preflight job only.
+      # The shared build and actual deployment jobs explicitly keep contents: read.
+      contents: write
       actions: read
       deployments: write
     uses: ./.github/workflows/_deploy.yml

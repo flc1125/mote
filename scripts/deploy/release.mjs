@@ -151,6 +151,19 @@ export async function preflightRelease({ context, manifest, manifestDigest, note
   }
 }
 
+// Bound to one attempt and exact artifacts, not a reusable boolean approval.
+// The workflow obtains this output only from its isolated, draft-visible job.
+export function releasePreflightIdentity(context, targetSha, manifestDigest) {
+  return `${context.runId}:${context.runAttempt}:${targetSha}:${manifestDigest}`;
+}
+
+export function requireReleasePreflight(context, targetSha, manifestDigest, identity) {
+  requireThat(
+    identity === releasePreflightIdentity(context, targetSha, manifestDigest),
+    'RELEASE_PREFLIGHT_REQUIRED',
+  );
+}
+
 export async function ensureRelease({ state, notes, files, api, persist, guard }) {
   requireThat(state.npm.state === 'success', 'NPM_NOT_VERIFIED');
   await guard();
