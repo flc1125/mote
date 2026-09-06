@@ -39,5 +39,7 @@ It also encodes the guardrails: never publish credentials/secrets (Mote URLs are
 
 The skill itself is just instructions — publishing still needs:
 
-- The CLI installed and a token configured (see [CLI reference](cli.md)), or
+- The matching CLI build and explicit authentication configuration or a valid Mote OAuth login (see [CLI reference](cli.md) and [authentication](authentication.md)); OAuth/service support is unreleased, or
 - A Mote MCP server connected (see [MCP guide](mcp.md))
+
+Only the local server exposes `publish_markdown_file`. Authentication failures must be surfaced to the user; the skill does not create credentials, initiate unattended browser login, read another client's keychain, or switch to an old token. Do not repeat a publish after a timeout or unknown outcome without resolving whether it succeeded.

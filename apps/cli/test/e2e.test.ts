@@ -224,6 +224,7 @@ describe('M4 gate: built binary publishes end to end', () => {
     await build({
       entryPoints: ['src/cli.ts'],
       bundle: true,
+      external: ['@napi-rs/keyring'],
       platform: 'node',
       format: 'esm',
       target: 'node20',

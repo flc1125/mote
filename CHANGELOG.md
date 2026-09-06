@@ -4,6 +4,22 @@ All notable changes to Mote are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/): minor for new features, patch for fixes.
 
+## [Unreleased]
+
+### Added
+
+- `cloudflare-access` server authentication with signed assertion validation for user OAuth and Service Token identities; omitted mode settings retain the legacy token fallback, while checked-in production configuration explicitly selects Access.
+- `mote auth login/status/logout`, target-bound system/private-file credentials, PKCE login, serialized refresh and explicit machine mode.
+- Local stdio sharing the Mote CLI credential store and publishing pipeline, with authentication before local file reads.
+- Authentication/migration guidance and verified macOS CLI/stdio + Codex 0.153.4 app-server scope. Other clients/platforms and full 7-day/30-day natural expiry are not claimed as tested.
+
+### Fixed
+
+- Regenerate PKCE verifier/challenge pairs locally when the challenge starts with `-` or `_`, as required by Cloudflare Access.
+- Make token-mode self-hosting and quick-start targets explicit, synchronize production acceptance status, and replace the private architecture baseline dependency with public documentation references.
+
+Production `mote.flc.io` has migrated to Access, with CLI and Codex publishing flows accepted. These client features remain unreleased on npm. Production revocation/recovery, rollback and full 7/30-day natural expiry are not claimed as tested. Cloudflare deployment automation is not included.
+
 ## [0.1.1] - 2026-09-04
 
 ### Fixed

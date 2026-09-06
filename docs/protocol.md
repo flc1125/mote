@@ -1,18 +1,20 @@
 # Mote 发布协议
 
-> 本文定义 Upload API 协议。`@mote/protocol` 包是该协议的代码实现，CLI 与未来 MCP/Skill 共用同一协议（基线 §45）。
+> 本文定义 Upload API 协议。`@mote/protocol` 包是该协议的代码实现，CLI、MCP 与 Skill 共用同一协议；整体设计见[架构](architecture.md)。
 
 ## 总览
 
+以下 Bearer 示例表示你自己的静态 token 部署，请替换示例域名。生产已启用的 Access 模式保持相同发布载荷与结果（客户端能力尚未发布到 npm）：OAuth 使用 opaque Bearer，机器使用 `CF-Access-Client-Id` / `CF-Access-Client-Secret`；Access 校验后由 Worker 验证签名断言。两种服务端模式不混用，详见[鉴权与迁移](authentication.md)。
+
 ```text
-POST https://mote.flc.io/api/v1/publish
+POST https://mote.example.com/api/v1/publish
 Authorization: Bearer <MOTE_TOKEN>
 Content-Type: multipart/form-data
 ```
 
 - 文档一经发布**不可变**：每次发布生成全新 Document ID 与 URL，无更新/删除接口。
 - Document ID 与 Asset ID 均由**服务端**生成，客户端不得指定。
-- 只有 `manifest.json` 最后写入 R2 成功后，文档才对外可见（原子发布，基线 §54）。
+- 只有 `manifest.json` 最后写入 R2 成功后，文档才对外可见（见[原子发布](architecture.md#r2-数据模型)）。
 
 ## 请求
 
@@ -55,7 +57,7 @@ Content-Type: multipart/form-data
 ## 服务端处理
 
 ```text
-1. Bearer Token 校验                     → 401
+1. 部署模式鉴权（token / Access 断言）   → 401
 2. Content-Length 预检（> 21 MB 直接拒）  → 413
 3. Content-Type 必须 multipart/form-data → 415
 4. multipart 解析                        → 400
@@ -126,7 +128,7 @@ documents/{document-id}/
 | HTTP | code                     | 触发条件                                       |
 | ---- | ------------------------ | ---------------------------------------------- |
 | 400  | `MALFORMED_REQUEST`      | multipart 无法解析、缺少字段、manifest 非 JSON |
-| 401  | `UNAUTHORIZED`           | 缺失或错误的 Bearer Token                      |
+| 401  | `UNAUTHORIZED`           | 缺失、失效或与部署模式不符的发布凭据           |
 | 413  | `BUNDLE_TOO_LARGE`       | 超过任一大小/数量限额                          |
 | 415  | `UNSUPPORTED_MEDIA_TYPE` | 非 multipart 请求，或资产不是支持的图片类型    |
 | 422  | `INVALID_DOCUMENT`       | document 为空/非 UTF-8、manifest 校验失败      |

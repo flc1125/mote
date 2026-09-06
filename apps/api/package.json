@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@mote/core": "workspace:*",
-    "@mote/protocol": "workspace:*"
+    "@mote/protocol": "workspace:*",
+    "jose": "6.2.10"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",

@@ -27,9 +27,9 @@ Mote 把 Markdown 发布为**不可变、不可枚举、浏览器可读**的在�
 ### 路径 A：MCP 工具（如果 `mote` MCP server 已连接）
 
 - 内容在对话中（无本地文件）→ 调用 `publish_markdown`，传 `markdown`（可选 `name`，如 `report.md`）
-- 本地 Markdown 文件 → 调用 `publish_markdown_file`，传 `path`（本地图片自动上传、按内容去重）
+- 本地 Markdown 文件 → 仅本地 stdio 提供 `publish_markdown_file`，传 `path`（本地图片自动上传、按内容去重）；远程只有 `publish_markdown`，需要本地文件/图片时使用已配置的 CLI，不把路径传给远程工具。
 
-### 路径 B：CLI（兜底，始终可用）
+### 路径 B：CLI（已安装且已配置鉴权时可用）
 
 1. 如果内容在对话中：先写入临时文件（如 `/tmp/mote-<timestamp>.md`）
 2. 执行：
@@ -57,6 +57,9 @@ CLI 会自动处理：Markdown AST 解析、本地图片收集上传（`![](./im
 
 ## 常见错误
 
-- `no publish token configured`：告诉用户需要配置 token（`export MOTE_TOKEN=...` 或 `~/.config/mote/config.json`），不要尝试自己生成 token；
+- 登录失效 / `mote auth login` 提示：请用户在交互终端针对同一 `--api` 登录。仅当前支持 auth 的构建有此能力；不自动弹浏览器、不读取 Codex 等其他客户端的凭据、不切换回旧 token；
+- `no publish token configured`：确认实例的鉴权模式。静态模式需要实例管理员提供 token；Access 实例需要 OAuth 登录或显式机器模式，不能把 Cloudflare 管理 API token 当发布密钥；不自行生成凭据；
+- 机器模式：需要显式 `MOTE_AUTH_MODE=service` 及目标匹配的 `MOTE_SERVICE_API_URL`、`MOTE_SERVICE_CLIENT_ID`、`MOTE_SERVICE_CLIENT_SECRET`。缺失或无效时停止，不用用户登录态替代；
+- 超时、5xx 或结果未知：不自动重试发布，可能已经生成不可变文档；先核对结果，再由用户决定是否重新发布；
 - `asset not found: <path>`：Markdown 引用的本地图片不存在，提醒用户检查相对路径；
 - `unsupported image type`：引用了 SVG 等不支持格式，建议用户转换为 png/webp 后重试。

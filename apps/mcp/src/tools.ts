@@ -1,6 +1,13 @@
-import { buildBundle, CliError, publishBundle, resolveConfig } from '@mote/cli';
+import {
+  buildBundle,
+  CliError,
+  publishBundle,
+  resolveConfig,
+  prepareAuth,
+  defaultCredentialStore,
+} from '@mote/cli';
 import { MAX_MARKDOWN_BYTES } from '@mote/core';
-import type { Bundle } from '@mote/cli';
+import type { Bundle, CliConfig, AuthHeaders, PublishClientOptions } from '@mote/cli';
 
 /**
  * Thin adapter over the CLI's publish pipeline (baseline §43): the MCP
@@ -11,9 +18,15 @@ export interface McpDeps {
   buildBundle: typeof buildBundle;
   publishBundle: typeof publishBundle;
   resolveConfig: typeof resolveConfig;
+  prepareAuth: (config: CliConfig) => Promise<AuthHeaders>;
 }
 
-export const realDeps: McpDeps = { buildBundle, publishBundle, resolveConfig };
+export const realDeps: McpDeps = {
+  buildBundle,
+  publishBundle,
+  resolveConfig,
+  prepareAuth: (config) => prepareAuth(config, defaultCredentialStore()),
+};
 
 // Type aliases (not interfaces) so results get implicit index signatures and
 // stay assignable to the MCP SDK's structuredContent: { [x: string]: unknown }.
@@ -28,14 +41,11 @@ export type PublishFileResult = PublishMarkdownResult & {
   totalBytes: number;
 };
 
-async function requireConfig(deps: McpDeps): Promise<{ apiUrl: string; token: string }> {
+async function publishOptions(deps: McpDeps): Promise<PublishClientOptions> {
   const config = await deps.resolveConfig();
-  if (!config.token) {
-    throw new CliError(
-      'no publish token configured. Set MOTE_TOKEN in the MCP server environment or add "token" to the config file.',
-    );
-  }
-  return { apiUrl: config.apiUrl, token: config.token };
+  // This is the same noninteractive path as CLI publish: never opens a browser.
+  const auth = await deps.prepareAuth(config);
+  return { apiUrl: config.apiUrl, authMode: auth.mode, headers: auth.headers };
 }
 
 /**
@@ -54,7 +64,7 @@ export async function publishMarkdown(
     );
   }
 
-  const config = await requireConfig(deps);
+  const options = await publishOptions(deps);
   const bundle: Bundle = {
     entryName: name,
     markdownBytes,
@@ -62,7 +72,7 @@ export async function publishMarkdown(
     assets: [],
     totalBytes: markdownBytes.length,
   };
-  return deps.publishBundle({ apiUrl: config.apiUrl, token: config.token }, bundle);
+  return deps.publishBundle(options, bundle);
 }
 
 /**
@@ -74,9 +84,9 @@ export async function publishMarkdownFile(
   noAssets: boolean,
   deps: McpDeps,
 ): Promise<PublishFileResult> {
+  const options = await publishOptions(deps);
   const bundle = await deps.buildBundle(path, { noAssets });
-  const config = await requireConfig(deps);
-  const result = await deps.publishBundle({ apiUrl: config.apiUrl, token: config.token }, bundle);
+  const result = await deps.publishBundle(options, bundle);
   return {
     ...result,
     markdownBytes: bundle.markdownBytes.length,

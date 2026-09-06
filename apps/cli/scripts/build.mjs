@@ -11,6 +11,7 @@ await build({
   absWorkingDir: packageDir,
   entryPoints: ['src/cli.ts', 'src/index.ts'],
   bundle: true,
+  external: ['@napi-rs/keyring'],
   platform: 'node',
   format: 'esm',
   target: 'node20',

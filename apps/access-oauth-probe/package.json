@@ -1,0 +1,21 @@
+{
+  "name": "@mote/access-oauth-probe",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "cf-typegen": "wrangler types --config wrangler.api.jsonc --env-interface ProbeEnv --strict-vars=false",
+    "build": "wrangler deploy --config wrangler.api.jsonc --dry-run --outdir dist/api && wrangler deploy --config wrangler.viewer.jsonc --dry-run --outdir dist/viewer"
+  },
+  "dependencies": {
+    "@mote/api": "workspace:*",
+    "@mote/viewer": "workspace:*",
+    "jose": "6.2.10"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
+    "wrangler": "^4.128.0"
+  }
+}

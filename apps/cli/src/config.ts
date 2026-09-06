@@ -9,11 +9,15 @@ export const DEFAULT_API_URL = 'https://mote.flc.io';
 export interface CliConfig {
   apiUrl: string;
   token?: string;
+  authMode?: 'token' | 'oauth' | 'service';
+  serviceToken?: { apiUrl: string; clientId: string; clientSecret: string };
 }
 
 interface ConfigFile {
   apiUrl?: string;
   token?: string;
+  authMode?: CliConfig['authMode'];
+  serviceToken?: CliConfig['serviceToken'];
 }
 
 export interface ResolveConfigOptions {
@@ -21,6 +25,7 @@ export interface ResolveConfigOptions {
   api?: string | undefined;
   /** `--token` flag. */
   token?: string | undefined;
+  authMode?: string;
   /** Environment override (defaults to process.env), for tests. */
   env?: Record<string, string | undefined>;
   /** Config file path override, for tests. */
@@ -36,8 +41,9 @@ async function readConfigFile(path: string): Promise<ConfigFile> {
   let text: string;
   try {
     text = await readFile(path, 'utf-8');
-  } catch {
-    return {}; // No config file is fine; everything has defaults or env vars.
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return {};
+    throw new CliError('cannot read config file');
   }
   try {
     const value: unknown = JSON.parse(text);
@@ -57,9 +63,26 @@ async function readConfigFile(path: string): Promise<ConfigFile> {
 export async function resolveConfig(options: ResolveConfigOptions = {}): Promise<CliConfig> {
   const env = options.env ?? process.env;
   const file = await readConfigFile(options.configPath ?? defaultConfigPath(env));
-
+  const authMode = options.authMode ?? env.MOTE_AUTH_MODE ?? file.authMode;
+  if (authMode !== undefined && !['token', 'oauth', 'service'].includes(authMode)) {
+    throw new CliError('auth mode must be token, oauth or service');
+  }
+  const serviceEnv = [
+    'MOTE_SERVICE_API_URL',
+    'MOTE_SERVICE_CLIENT_ID',
+    'MOTE_SERVICE_CLIENT_SECRET',
+  ];
+  const serviceToken = serviceEnv.some((key) => env[key] !== undefined)
+    ? {
+        apiUrl: env.MOTE_SERVICE_API_URL ?? '',
+        clientId: env.MOTE_SERVICE_CLIENT_ID ?? '',
+        clientSecret: env.MOTE_SERVICE_CLIENT_SECRET ?? '',
+      }
+    : file.serviceToken;
   return {
     apiUrl: options.api ?? env.MOTE_API_URL ?? file.apiUrl ?? DEFAULT_API_URL,
     token: options.token ?? env.MOTE_TOKEN ?? file.token,
+    authMode: authMode as CliConfig['authMode'],
+    serviceToken,
   };
 }

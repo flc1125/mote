@@ -79,7 +79,7 @@ beforeAll(async () => {
   // MCP server wired to the local API through the real build/publish chain.
   const deps: McpDeps = {
     ...realDeps,
-    resolveConfig: async () => ({ apiUrl, token: TOKEN }),
+    resolveConfig: async () => ({ apiUrl, token: TOKEN, authMode: 'token' }),
   };
   mcpServer = createMoteMcpServer(deps);
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();

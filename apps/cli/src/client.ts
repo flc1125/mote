@@ -1,7 +1,8 @@
-import { PUBLISH_PATH, type ErrorResponse } from '@mote/protocol';
+import { PUBLISH_PATH } from '@mote/protocol';
 
 import type { Bundle } from './bundle.js';
 import { CliError } from './errors.js';
+import { apiOrigin } from './auth/urls.js';
 
 export interface PublishResponse {
   id: string;
@@ -10,7 +11,9 @@ export interface PublishResponse {
 
 export interface PublishClientOptions {
   apiUrl: string;
-  token: string;
+  token?: string;
+  headers?: Record<string, string>;
+  authMode?: 'token' | 'oauth' | 'service';
   /** fetch override, for tests. */
   fetchImpl?: typeof fetch;
 }
@@ -42,33 +45,50 @@ export async function publishBundle(
   }
 
   const fetchImpl = options.fetchImpl ?? fetch;
-  const url = `${options.apiUrl}${PUBLISH_PATH}`;
+  const api = apiOrigin(
+    options.apiUrl,
+    options.authMode === 'oauth' || options.authMode === 'service',
+  );
+  const url = `${api}${PUBLISH_PATH}`;
 
   let response: Response;
   try {
     response = await fetchImpl(url, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${options.token}` },
+      headers: options.headers ?? { Authorization: `Bearer ${options.token ?? ''}` },
       body: form,
+      redirect: 'error',
+      signal: AbortSignal.timeout(60000),
     });
-  } catch (error) {
-    throw new CliError(
-      `network error while publishing to ${options.apiUrl}: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    );
+  } catch {
+    throw new CliError('network error while publishing; outcome unknown, upload was not retried');
   }
 
   if (response.status !== 201) {
-    let detail = `HTTP ${response.status}`;
-    try {
-      const body = (await response.json()) as ErrorResponse;
-      detail = `${body.error.code}: ${body.error.message}`;
-    } catch {
-      // Non-JSON error body; keep the HTTP status.
-    }
-    throw new CliError(`publish failed: ${detail}`);
+    // Never echo untrusted server errors that may reflect authentication headers.
+    if (response.status === 401)
+      throw new CliError(
+        options.authMode === 'oauth'
+          ? 'UNAUTHORIZED: run mote auth login; upload was not retried'
+          : 'UNAUTHORIZED: check the configured publishing credentials',
+      );
+    throw new CliError(`publish failed: HTTP ${response.status}; upload was not retried`);
   }
 
-  return (await response.json()) as PublishResponse;
+  try {
+    const result = (await response.json()) as PublishResponse;
+    const url = new URL(result.url);
+    if (
+      !/^[A-Za-z0-9_-]{16}$/.test(result.id) ||
+      !['https:', 'http:'].includes(url.protocol) ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash
+    )
+      throw new Error();
+    return { id: result.id, url: result.url };
+  } catch {
+    throw new CliError('invalid publish response; outcome unknown, upload was not retried');
+  }
 }

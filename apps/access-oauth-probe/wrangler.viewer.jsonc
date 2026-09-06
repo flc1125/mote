@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "mote-oauth-test-viewer",
+  "account_id": "c585cb4fcca22909dbaae2e3072a7a8b",
+  "main": "src/viewer.ts",
+  "compatibility_date": "2026-08-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "mote-oauth-test.flc.io/*",
+      "zone_id": "817d37a603a2d3419a545b1a090c7595",
+    },
+  ],
+  "r2_buckets": [{ "binding": "DOCUMENTS", "bucket_name": "mote-oauth-test-documents" }],
+  "cache": { "enabled": true },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "redact_query_string": true,
+    "logs": { "invocation_logs": false },
+  },
+}

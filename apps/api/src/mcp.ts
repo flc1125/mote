@@ -6,12 +6,10 @@ import {
   publishMarkdownInputSchema,
 } from '@mote/protocol';
 
-import { authorize } from './auth.js';
 import { commitBundle, prepareBundle, PublishError } from './publish.js';
 
 interface McpEnv {
   DOCUMENTS: R2Bucket;
-  MOTE_TOKEN: string;
   VIEWER_BASE_URL: string;
 }
 
@@ -25,7 +23,10 @@ interface McpEnv {
  * smaller and safer than a fetch adapter.
  */
 
-const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
+const JSON_HEADERS = {
+  'Content-Type': 'application/json; charset=utf-8',
+  'Cache-Control': 'no-store',
+};
 
 const PARSE_ERROR = -32700;
 const INVALID_REQUEST = -32600;
@@ -113,6 +114,7 @@ async function handleToolCall(id: unknown, params: unknown, env: McpEnv): Promis
   }
 }
 
+/** Internal dispatch only: index.ts authenticates every request before calling. */
 export async function handleMcp(request: Request, env: McpEnv): Promise<Response> {
   if (request.method !== 'POST') {
     // Stateless mode: no SSE stream (baseline plan 002 §Phase 1).
@@ -120,15 +122,6 @@ export async function handleMcp(request: Request, env: McpEnv): Promise<Response
       status: 405,
       headers: { Allow: 'POST', ...JSON_HEADERS },
     });
-  }
-
-  if (!(await authorize(request, env.MOTE_TOKEN))) {
-    return new Response(
-      JSON.stringify({
-        error: { code: 'UNAUTHORIZED', message: 'missing or invalid bearer token' },
-      }),
-      { status: 401, headers: JSON_HEADERS },
-    );
   }
 
   const contentType = request.headers.get('Content-Type') ?? '';
@@ -152,7 +145,7 @@ export async function handleMcp(request: Request, env: McpEnv): Promise<Response
 
   // Notifications never receive a response body (JSON-RPC semantics).
   if (isNotification) {
-    return new Response(null, { status: 202 });
+    return new Response(null, { status: 202, headers: { 'Cache-Control': 'no-store' } });
   }
 
   switch (method) {
