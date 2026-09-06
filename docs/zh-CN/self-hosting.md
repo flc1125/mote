@@ -173,6 +173,7 @@ MOTE_ACCESS_HOSTNAME = "mote.example.com"
 
 ## 下一步
 
+- [部署操作手册](deployment.md)——失败处理、重跑与人工恢复
 - [CLI 参考](../cli.md)——参数、配置、脚本化
 - [MCP 指南](../mcp.md)——远程与 stdio 集成
 - [架构](../architecture.md)——整体设计

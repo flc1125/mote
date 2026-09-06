@@ -105,6 +105,7 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 - [MCP 指南](docs/mcp.md)
 - [Skill](docs/skill.md)
 - [自托管指南](docs/self-hosting.md)
+- [部署操作手册](docs/zh-CN/deployment.md)
 - [架构](docs/architecture.md)
 - [发布协议](docs/protocol.md)
 - [安全模型](docs/security.md)

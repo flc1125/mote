@@ -173,6 +173,7 @@ Manual `write_smoke` defaults to false. Enabling it requires dedicated `MOTE_SER
 
 ## Next steps
 
+- [Deployment operations](deployment.md) — failed runs, reruns and manual recovery
 - [CLI reference](cli.md) — options, config, scripting
 - [MCP guide](mcp.md) — remote and stdio integrations
 - [Architecture](architecture.md) — how the pieces fit
