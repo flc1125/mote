@@ -6,22 +6,13 @@ import { root } from './lib.mjs';
 
 const caller = await readFile(join(root, '.github/workflows/diagnose-secrets.yml'), 'utf8');
 const shared = await readFile(join(root, '.github/workflows/_diagnose-secrets.yml'), 'utf8');
-const deploy = await readFile(join(root, '.github/workflows/_deploy.yml'), 'utf8');
 const declaration = [
   '    secrets:',
   '      CLOUDFLARE_API_TOKEN:',
   "        description: 'Resolved from the job Environment; callers must not forward it'",
   '        required: false',
 ].join('\n');
-const deploymentDeclaration = [
-  declaration,
-  '      MOTE_SERVICE_CLIENT_ID:',
-  "        description: 'Existing optional write-smoke credential from the job Environment'",
-  '        required: false',
-  '      MOTE_SERVICE_CLIENT_SECRET:',
-  "        description: 'Existing optional write-smoke credential from the job Environment'",
-  '        required: false',
-].join('\n');
+const job = (source, name) => source.split(`\n  ${name}:\n`)[1].split(/\n {2}[\w-]+:\n/)[0];
 const uncommented = (source) => source.replace(/^\s*#.*$/gm, '');
 const scriptFrom = (source) =>
   source
@@ -33,8 +24,8 @@ describe('secret availability diagnostic boundaries', () => {
   it('has a main-only manual entry with a fixed test environment', () => {
     expect(caller).toContain('on:\n  workflow_dispatch:\n');
     expect(caller).not.toMatch(/\b(inputs|push|pull_request|schedule):/);
-    expect(caller.match(/github\.ref == 'refs\/heads\/main'/g)).toHaveLength(2);
-    expect(caller.match(/github\.repository == 'flc1125\/mote'/g)).toHaveLength(2);
+    expect(caller.match(/github\.ref == 'refs\/heads\/main'/g)).toHaveLength(3);
+    expect(caller.match(/github\.repository == 'flc1125\/mote'/g)).toHaveLength(3);
     expect(caller).toContain('group: mote-access-test');
     expect(caller).toContain('cancel-in-progress: false');
   });
@@ -52,48 +43,45 @@ describe('secret availability diagnostic boundaries', () => {
     expect(uncommented(shared.split('jobs:')[1])).not.toMatch(/\b(secrets|with|inputs):/);
   });
 
-  it('probes the same optional, narrowly declared secret as the deployment workflow', () => {
-    for (const [source, expected] of [
-      [deploy, deploymentDeclaration],
-      [shared, declaration],
-    ]) {
-      const header = uncommented(source.split('\npermissions:')[0]);
-      expect(header).toContain(declaration);
-      expect(header.match(/ {4}secrets:/g)).toHaveLength(1);
-      const secretSection = header
-        .split('    secrets:\n')[1]
-        .split(/\n {4}\w/)[0]
-        .trimEnd();
-      expect(secretSection).toBe(expected.split('    secrets:\n')[1]);
-    }
-    expect(deploy).toContain('environment: ${{ inputs.environment }}');
-    expect(deploy.match(/\$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/g)).toHaveLength(1);
+  it('retains the declared-secret reusable control', () => {
+    const header = uncommented(shared.split('\npermissions:')[0]);
+    expect(header).toContain(declaration);
+    expect(header.split('    secrets:\n')[1].trimEnd()).toBe(
+      declaration.split('    secrets:\n')[1],
+    );
+  });
+
+  it('checks a direct Environment job downstream of the reusable workflow', () => {
+    const after = job(caller, 'after-reusable');
+    expect(after).toContain('needs: reusable');
+    expect(after).not.toContain('always()');
+    expect(after).toContain('environment: access-test');
+    expect(after).not.toContain('uses:');
   });
 
   it('does not add secret forwarding to either deployment entry point', async () => {
     for (const file of ['deploy.yml', 'release.yml']) {
       const source = uncommented(await readFile(join(root, '.github/workflows', file), 'utf8'));
       expect(source).not.toMatch(/^\s*secrets:/m);
-      expect(source).not.toContain('secrets.CLOUDFLARE_API_TOKEN');
+      expect(source.match(/secrets\.CLOUDFLARE_API_TOKEN/g)).toHaveLength(1);
     }
   });
 
-  for (const [name, source] of [
-    ['direct', caller],
-    ['reusable', shared],
+  for (const [name, source, owner] of [
+    ['direct', job(caller, 'direct'), caller],
+    ['reusable', job(shared, 'probe'), shared],
+    ['after-reusable', job(caller, 'after-reusable'), caller],
   ]) {
     it(`${name} exposes only a Boolean and has no checkout, install, or deployment commands`, () => {
       const body = uncommented(source);
-      expect(body).toContain('permissions: {}');
+      expect(owner).toContain('permissions: {}');
       expect(body).toContain('environment: access-test');
       expect(body.match(/environment:/g)).toHaveLength(1);
       expect(body).toContain('timeout-minutes: 5');
       expect(body.match(/\$\{\{\s*secrets\./g)).toHaveLength(1);
       expect(body).toContain("TOKEN_PRESENT: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}");
       expect(body.match(/\brun:/g)).toHaveLength(1);
-      expect(body.match(/\buses:.*$/gm) ?? []).toEqual(
-        name === 'direct' ? ['uses: ./.github/workflows/_diagnose-secrets.yml'] : [],
-      );
+      expect(body).not.toContain('uses:');
       expect(body).not.toMatch(/production|: write|checkout|pnpm|npm|curl|wrangler|GITHUB_TOKEN/);
       expect(scriptFrom(source).trim()).toBe(
         'case "$TOKEN_PRESENT" in\n' +

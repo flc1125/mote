@@ -1,4 +1,4 @@
-name: Shared server deployment
+name: Shared deployment preparation
 
 on:
   workflow_call:
@@ -12,24 +12,15 @@ on:
       write_smoke:
         type: boolean
         default: false
-    # Declare the name without requiring callers to forward a credential.
-    # The deploy job resolves its selected Environment secret; preflight still
-    # rejects an empty value. Validate availability with the Boolean probe first.
-    secrets:
-      CLOUDFLARE_API_TOKEN:
-        description: 'Resolved from the job Environment; callers must not forward it'
-        required: false
-      MOTE_SERVICE_CLIENT_ID:
-        description: 'Existing optional write-smoke credential from the job Environment'
-        required: false
-      MOTE_SERVICE_CLIENT_SECRET:
-        description: 'Existing optional write-smoke credential from the job Environment'
-        required: false
     outputs:
       target_sha:
         value: ${{ jobs.resolve.outputs.target_sha }}
       manifest_digest:
         value: ${{ jobs.resolve.outputs.manifest_digest || jobs.prepare.outputs.manifest_digest }}
+      ready:
+        value: ${{ jobs.ready.outputs.ready }}
+      release_preflight_identity:
+        value: ${{ jobs.release-preflight.outputs.identity }}
 
 permissions:
   contents: read
@@ -141,94 +132,17 @@ jobs:
           MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
           MOTE_MANIFEST_DIGEST: ${{ needs.resolve.outputs.manifest_digest || needs.prepare.outputs.manifest_digest }}
 
-  deploy:
+  # No Environment or deployment credentials in this reusable workflow.
+  # Preserve the resume/preflight gate and publish readiness only if it passes.
+  ready:
     needs: [resolve, prepare, release-preflight]
     if: always() && needs.resolve.result == 'success' && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped') && ((github.event_name == 'push' && needs.release-preflight.result == 'success') || (github.event_name == 'workflow_dispatch' && needs.release-preflight.result == 'skipped'))
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    environment: ${{ inputs.environment }}
-    permissions:
-      contents: read
-      actions: read
-      deployments: write
-    env:
-      MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
-      MOTE_MANIFEST_DIGEST: ${{ needs.resolve.outputs.manifest_digest || needs.prepare.outputs.manifest_digest }}
-      MOTE_RELEASE_PREFLIGHT_IDENTITY: ${{ needs.release-preflight.outputs.identity }}
+    timeout-minutes: 1
+    permissions: {}
+    outputs:
+      ready: ${{ steps.ready.outputs.ready }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.workflow_sha }}
-          persist-credentials: false
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      # Trusted tooling only; Cloudflare secrets exist only on the deploy step.
-      - run: pnpm install --frozen-lockfile
-      - uses: actions/download-artifact@v4
-        with:
-          name: mote-build-${{ github.run_id }}
-          path: ${{ runner.temp }}/mote-prepared
-      - run: node scripts/deploy/action.mjs deploy
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          MOTE_DEPLOY_ENABLED: ${{ vars.MOTE_DEPLOY_ENABLED }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          MOTE_SMOKE_DOCUMENT_ID: ${{ vars.MOTE_SMOKE_DOCUMENT_ID }}
-          MOTE_SMOKE_ASSET_ID: ${{ vars.MOTE_SMOKE_ASSET_ID }}
-          MOTE_SMOKE_ASSET_SHA256: ${{ vars.MOTE_SMOKE_ASSET_SHA256 }}
-          MOTE_HAS_SERVICE_ID: ${{ secrets.MOTE_SERVICE_CLIENT_ID != '' }}
-          MOTE_HAS_SERVICE_SECRET: ${{ secrets.MOTE_SERVICE_CLIENT_SECRET != '' }}
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: mote-deploy-result-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/mote-deployment-result/
-          if-no-files-found: warn
-          retention-days: 90
-
-  write-smoke:
-    needs: [resolve, prepare, deploy]
-    if: always() && inputs.write_smoke && needs.deploy.result == 'success'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    environment: ${{ inputs.environment }}
-    permissions:
-      contents: read
-      actions: read
-      deployments: write
-    env:
-      MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
-      MOTE_MANIFEST_DIGEST: ${{ needs.resolve.outputs.manifest_digest || needs.prepare.outputs.manifest_digest }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.workflow_sha }}
-          persist-credentials: false
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - uses: actions/download-artifact@v4
-        with:
-          name: mote-build-${{ github.run_id }}
-          path: ${{ runner.temp }}/mote-prepared
-      - run: node scripts/deploy/action.mjs install-cli
-      - run: node scripts/deploy/action.mjs write
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          MOTE_DEPLOY_ENABLED: ${{ vars.MOTE_DEPLOY_ENABLED }}
-          MOTE_SERVICE_CLIENT_ID: ${{ secrets.MOTE_SERVICE_CLIENT_ID }}
-          MOTE_SERVICE_CLIENT_SECRET: ${{ secrets.MOTE_SERVICE_CLIENT_SECRET }}
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: mote-write-result-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/mote-deployment-result/
-          if-no-files-found: warn
-          retention-days: 90
+      - id: ready
+        shell: bash
+        run: echo 'ready=true' >> "$GITHUB_OUTPUT"
