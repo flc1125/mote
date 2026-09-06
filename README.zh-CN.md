@@ -37,7 +37,7 @@ https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
 
 ## 快速开始
 
-下列已发布 v0.1.1 用法使用静态 token，仅适用于 token 模式服务端。生产 `mote.flc.io` 已切换到 Cloudflare Access，CLI 与 Codex 生产发布主流程已验收。本检出中的 OAuth / Service Token 能力**尚未发布**；Access 实例请先构建已审核源码，再按[鉴权与迁移指南](docs/authentication.md)操作。
+以下示例适用于静态 token 模式实例。Access 实例请按[鉴权指南](docs/authentication.md)配置。
 
 ```bash
 npm install -g mote-cli
@@ -82,7 +82,7 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ## 使用
 
 - **CLI**：参数（`--json`、`--no-assets`、`--api`、`--token` 等）、配置文件、脚本用法见 [docs/cli.md](docs/cli.md)
-- **MCP**：已验证 Codex 远程 OAuth 与本地 stdio，见 [docs/mcp.md](docs/mcp.md)；本轮不承诺其他客户端兼容。
+- **MCP**：远程 OAuth 与本地 stdio 工具，配置及兼容性见 [docs/mcp.md](docs/mcp.md)。
 - **Skill**：教 Agent 何时/如何用 Mote（`npx skills add flc1125/mote`）见 [docs/skill.md](docs/skill.md)
 - **自托管**：在 Cloudflare 免费额度内部署自己的实例，见 [docs/self-hosting.md](docs/self-hosting.md)
 

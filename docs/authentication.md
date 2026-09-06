@@ -1,6 +1,6 @@
 # Authentication and migration
 
-This guide describes the **unreleased source implementation**. Production `mote.flc.io` uses Cloudflare Access, and the CLI and Codex production publishing flows have passed acceptance; v0.1.1 does not include these client commands. Production revocation/recovery and rollback were not tested, and full 7/30-day natural expiry was not observed. Build the reviewed source revision before using `mote auth`; installing an older npm package does not add these commands. Examples use your own Access-enabled instance; only approved publishers can use the production host.
+This guide describes the **unreleased source implementation**; v0.1.1 does not include these client commands. Build the reviewed source revision before using `mote auth`. Examples use your own Access-enabled instance. Production `mote.flc.io` uses Cloudflare Access and permits only approved publishers.
 
 ## Choose a mode
 
@@ -42,7 +42,7 @@ Login registers a public client unless `--client-id` is supplied. The Mote CLI c
 - CLI and stdio serialize refreshes using a target-specific inter-process lock. Near-expiry credentials are refreshed before use. An interrupted/uncertain refresh is not replayed; log in again when instructed.
 - `auth status --offline --json` reports cached state, **not** online authentication. Online status can refresh and verifies `/api/auth/session`. `authorizationSessionExpiresAt: null` means unknown, not unlimited. The Mote CLI cannot report Codex's login status.
 
-Only macOS CLI/stdio and Codex CLI 0.153.4's app-server were verified in the current rollout. Other MCP clients and Linux/Windows were excluded; retained code is not a compatibility guarantee.
+Verified compatibility is limited to macOS CLI/stdio and Codex CLI 0.153.4's app-server. Other MCP clients and Linux/Windows remain unverified.
 
 ## Configuration selection
 
@@ -76,9 +76,9 @@ For rotation, create a replacement, authorize only the same application, update 
 
 ## Session duration, logout and revocation
 
-The isolated rollout used **168h access tokens / 720h authorization sessions** (7 days / 30 days), accepted and read back through the Access API. This is a chosen long-lived local-use policy, not a universal default or a recommendation for all deployments. A stolen token remains useful until expiry or effective revocation; shorten durations for higher-risk use.
+Choose access-token and authorization-session durations for your deployment's risk level. Long-lived tokens increase the exposure window: a stolen token remains useful until expiry or effective revocation. Do not treat 7-day tokens or 30-day sessions as universal defaults.
 
-The regression temporarily used 10-minute access tokens and verified natural-window, no-browser reuse, application revocation refusal and reauthorization recovery. It did **not** wait 7 or 30 days. Do not label those full natural lifetimes as tested.
+Validation limits: production revocation/recovery and rollback, and full 7/30-day natural expiry remain unverified. Validate your chosen policy and recovery procedure before relying on them.
 
 `mote auth logout` removes local Mote OAuth secrets for the selected origin only. It does not revoke Cloudflare grants, disable Service Tokens, remove static-token configuration, log out Codex, or delete published documents. `codex mcp logout <server>` similarly targets that Codex MCP login, not the Codex account. An administrator must separately revoke the appropriate Access user/application sessions or disable the machine token. Application-wide revocation affects other users of that application; verify its scope before acting. Already published capability URLs remain readable.
 

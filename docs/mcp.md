@@ -9,7 +9,7 @@ Mote offers two MCP integrations with the same goal: publish Markdown → get a 
 | Auth     | OAuth for Access; static Bearer for token deployments | Mote CLI OAuth store, explicit service mode, or static token |
 | Verified | Codex 0.153.4 app-server on macOS                     | Actual stdio process on macOS                                |
 
-OAuth/service support describes the unreleased source revision, not v0.1.1. Production `mote.flc.io` uses Access; the CLI and Codex production publishing flows have passed acceptance. Other clients/platforms are not covered by these tests. See [authentication and migration](authentication.md) for the remaining unverified production scenarios.
+OAuth/service support describes the unreleased source revision, not v0.1.1. Production `mote.flc.io` uses Access. Compatibility is limited to the verified clients/platforms above; see [authentication and migration](authentication.md) for setup and validation limits.
 
 ## Remote MCP
 
@@ -67,9 +67,9 @@ codex mcp login mote
 codex mcp logout mote
 ```
 
-Get the actual callback from your Codex setup; do not invent or copy another server's callback ID. Match both the registered URI and listening port. Use the MCP endpoint (including `/api/mcp`) as the OAuth resource. The tested integration uses a pre-registered public client because automatic registration in the earlier baseline omitted the resource required by Access. Do not add a duplicate `oauth_resource` override. Follow the [official Codex callback guidance](https://learn.chatgpt.com/zh-Hans/docs/extend/mcp).
+Get the actual callback from your Codex setup; do not invent or copy another server's callback ID. Match both the registered URI and listening port. Use the MCP endpoint (including `/api/mcp`) as the OAuth resource. This configuration uses a pre-registered public client; do not add a duplicate `oauth_resource` override. Follow the [official Codex callback guidance](https://learn.chatgpt.com/zh-Hans/docs/extend/mcp).
 
-The isolated test environment's verified sequence is login → initialize → list tools → publish → anonymous URL read → no-browser reuse across a temporary 10-minute lifetime → application revocation refusal → logout/relogin → publish recovery. Final test settings were restored to 168h / 720h; this is not a production revocation/recovery test or a full 7/30-day natural-expiry test. Codex stores its own tokens; Mote CLI/stdio must not read or copy them. MCP logout does not log out the Codex account or revoke Access grants.
+Codex stores its own tokens; Mote CLI/stdio must not read or copy them. MCP logout does not log out the Codex account or revoke Access grants. Verify login, tool discovery, publishing and anonymous reading against your own instance; use a non-sensitive document because publication is permanent.
 
 ## Local MCP (stdio)
 

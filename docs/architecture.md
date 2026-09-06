@@ -39,7 +39,7 @@ Mote 完全运行在 Cloudflare 上，由两个职责分离的 Worker 与一个 
 
 V1 不引入：数据库、KV、D1、Durable Object、Queue、独立服务器。
 
-生产已启用 Access 发布鉴权，CLI 与 Codex 生产发布主流程已验收，客户端能力尚未发布到 npm：CLI/远程 MCP → Cloudflare Access 校验 OAuth 或机器双凭据 → API Worker 校验签名断言 → 原发布管线。读取侧不变。未指定模式时保留 `token` 回退，仓库生产部署配置显式选择 Access；模式选择、存储与验收边界见[鉴权指南](authentication.md)。
+Access 发布鉴权链路：CLI/远程 MCP → Cloudflare Access 校验 OAuth 或机器双凭据 → API Worker 校验签名断言 → 发布管线。读取侧不变。未指定模式时保留 `token` 回退，仓库生产部署配置显式选择 Access；客户端版本要求、模式选择与凭据存储见[鉴权指南](authentication.md)。
 
 发布端点：`POST https://mote.flc.io/api/v1/publish`。两个 Worker 通过 Cloudflare Routes 共用同一域名，按路径前缀分流（最具体路由优先）；不使用 Custom Domain 绑定（它会覆盖同主机名的路由）。
 
