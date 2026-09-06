@@ -1,6 +1,6 @@
 # Authentication and migration
 
-This guide describes the **unreleased source implementation**. Production `mote.flc.io` now uses Cloudflare Access, but production client acceptance is still in progress and v0.1.1 does not include these client commands. Build the reviewed source revision before using `mote auth`; installing an older npm package does not add these commands. Examples use your own Access-enabled instance; only approved publishers can use the production host.
+This guide describes the **unreleased source implementation**. Production `mote.flc.io` uses Cloudflare Access, and the CLI and Codex production publishing flows have passed acceptance; v0.1.1 does not include these client commands. Production revocation/recovery and rollback were not tested, and full 7/30-day natural expiry was not observed. Build the reviewed source revision before using `mote auth`; installing an older npm package does not add these commands. Examples use your own Access-enabled instance; only approved publishers can use the production host.
 
 ## Choose a mode
 

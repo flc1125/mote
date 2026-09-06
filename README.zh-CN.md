@@ -37,7 +37,7 @@ https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
 
 ## 快速开始
 
-下列已发布 v0.1.1 用法使用静态 token，仅适用于 token 模式服务端。生产 `mote.flc.io` 已切换到 Cloudflare Access，生产客户端仍在验收。本检出中的 OAuth / Service Token 能力**尚未发布**；Access 实例请先构建已审核源码，再按[鉴权与迁移指南](docs/authentication.md)操作。
+下列已发布 v0.1.1 用法使用静态 token，仅适用于 token 模式服务端。生产 `mote.flc.io` 已切换到 Cloudflare Access，CLI 与 Codex 生产发布主流程已验收。本检出中的 OAuth / Service Token 能力**尚未发布**；Access 实例请先构建已审核源码，再按[鉴权与迁移指南](docs/authentication.md)操作。
 
 ```bash
 npm install -g mote-cli
@@ -55,9 +55,10 @@ cd apps/cli && npm install -g .
 
 </details>
 
-配置 token（来自你的 Mote 实例，见[自托管指南](docs/self-hosting.md)）：
+配置你自己的 token 模式实例及 token（见[自托管指南](docs/self-hosting.md)），将示例域名替换为实际域名。静态 token 不能用于向生产 `mote.flc.io` 发布：
 
 ```bash
+export MOTE_API_URL="https://mote.example.com"
 export MOTE_TOKEN="你的 token"
 ```
 
@@ -75,7 +76,7 @@ Assets      3
 Total       1.84 MB
 
 Published:
-https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
+https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
 ## 使用

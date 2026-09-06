@@ -210,11 +210,25 @@ export interface LoginOptions {
   signal?: AbortSignal;
   timeoutMs?: number;
 }
+
+/** Cloudflare Access requires an alphanumeric challenge prefix.
+ * Regenerate the pair locally, never edit the hash or replay an OAuth request.
+ * https://developers.cloudflare.com/cloudflare-one/access-controls/authenticate-agents/
+ */
+export async function generateAccessPkce(generateVerifier = oauth.generateRandomCodeVerifier) {
+  for (let attempt = 0; attempt < 32; attempt++) {
+    const verifier = generateVerifier();
+    const challenge = await oauth.calculatePKCECodeChallenge(verifier);
+    if (/^[A-Za-z0-9]/.test(challenge)) return { verifier, challenge };
+  }
+  throw new CliError('could not generate an Access-compatible PKCE challenge; login not started');
+}
+
 export async function login(api: string, options: LoginOptions): Promise<OAuthCredential> {
   const d = await discover(api, options.fetchImpl);
   const request = guardedFetch(options.fetchImpl);
   const state = oauth.generateRandomState();
-  const verifier = oauth.generateRandomCodeVerifier();
+  const { verifier, challenge } = await generateAccessPkce();
   const listener = await callbackListener(
     state,
     options.timeoutMs,
@@ -257,7 +271,7 @@ export async function login(api: string, options: LoginOptions): Promise<OAuthCr
       redirect_uri: listener.redirectUri,
       state,
       resource: d.resource,
-      code_challenge: await oauth.calculatePKCECodeChallenge(verifier),
+      code_challenge: challenge,
       code_challenge_method: 'S256',
     }).toString();
     await options.onUrl(url.href);

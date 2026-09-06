@@ -9,7 +9,7 @@ Mote offers two MCP integrations with the same goal: publish Markdown → get a 
 | Auth     | OAuth for Access; static Bearer for token deployments | Mote CLI OAuth store, explicit service mode, or static token |
 | Verified | Codex 0.153.4 app-server on macOS                     | Actual stdio process on macOS                                |
 
-OAuth/service support describes the unreleased source revision. Production and v0.1.1 have not been switched by this rollout. Other clients/platforms are not covered by these tests. See [authentication and migration](authentication.md).
+OAuth/service support describes the unreleased source revision, not v0.1.1. Production `mote.flc.io` uses Access; the CLI and Codex production publishing flows have passed acceptance. Other clients/platforms are not covered by these tests. See [authentication and migration](authentication.md) for the remaining unverified production scenarios.
 
 ## Remote MCP
 
@@ -33,7 +33,7 @@ The following is a protocol configuration example, not a compatibility claim for
   "mcpServers": {
     "mote": {
       "type": "http",
-      "url": "https://mote.flc.io/api/mcp",
+      "url": "https://mote.example.com/api/mcp",
       "headers": { "Authorization": "Bearer <your-token>" }
     }
   }
@@ -42,10 +42,10 @@ The following is a protocol configuration example, not a compatibility claim for
 
 ### Codex
 
-For the legacy token deployment:
+For your own legacy token deployment (replace the example host; production does not accept static tokens):
 
 ```bash
-codex mcp add mote --url https://mote.flc.io/api/mcp --bearer-token-env-var MOTE_TOKEN
+codex mcp add mote --url https://mote.example.com/api/mcp --bearer-token-env-var MOTE_TOKEN
 ```
 
 This reads the token from the `MOTE_TOKEN` environment variable, so the secret never lands in `config.toml`.
@@ -69,7 +69,7 @@ codex mcp logout mote
 
 Get the actual callback from your Codex setup; do not invent or copy another server's callback ID. Match both the registered URI and listening port. Use the MCP endpoint (including `/api/mcp`) as the OAuth resource. The tested integration uses a pre-registered public client because automatic registration in the earlier baseline omitted the resource required by Access. Do not add a duplicate `oauth_resource` override. Follow the [official Codex callback guidance](https://learn.chatgpt.com/zh-Hans/docs/extend/mcp).
 
-The verified sequence is login → initialize → list tools → publish → anonymous URL read → no-browser reuse across a temporary 10-minute lifetime → application revocation refusal → logout/relogin → publish recovery. Final test settings were restored to 168h / 720h; this is not a full 7/30-day natural-expiry test. Codex stores its own tokens; Mote CLI/stdio must not read or copy them. MCP logout does not log out the Codex account or revoke Access grants.
+The isolated test environment's verified sequence is login → initialize → list tools → publish → anonymous URL read → no-browser reuse across a temporary 10-minute lifetime → application revocation refusal → logout/relogin → publish recovery. Final test settings were restored to 168h / 720h; this is not a production revocation/recovery test or a full 7/30-day natural-expiry test. Codex stores its own tokens; Mote CLI/stdio must not read or copy them. MCP logout does not log out the Codex account or revoke Access grants.
 
 ## Local MCP (stdio)
 

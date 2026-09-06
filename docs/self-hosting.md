@@ -56,13 +56,14 @@ Edit `apps/viewer/wrangler.toml`:
 routes = [{ pattern = "<your-domain>/*", zone_name = "<your-zone>" }]
 ```
 
-Edit `apps/api/wrangler.toml`:
+Edit the existing routes and `[vars]` in `apps/api/wrangler.toml` (do not append a second `[vars]` table). This tutorial uses token mode: replace the checked-in production `MOTE_AUTH_MODE` with `token` and remove `MOTE_ACCESS_ISSUER`, `MOTE_ACCESS_AUD`, and `MOTE_ACCESS_HOSTNAME`. Those values belong to the project's Access deployment, not your instance. Preserve your unrelated settings:
 
 ```toml
 routes = [{ pattern = "<your-domain>/api/*", zone_name = "<your-zone>" }]
 
 [vars]
 VIEWER_BASE_URL = "https://<your-domain>"
+MOTE_AUTH_MODE = "token"
 ```
 
 `<your-zone>` is the zone name of your domain (e.g. `example.com`). Both Workers share one host: the API owns `/api/*`, everything else goes to the viewer (most specific route wins). Do **not** use a Custom Domain for the viewer — it would shadow the `/api/*` route.

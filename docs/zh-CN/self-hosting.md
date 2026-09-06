@@ -56,13 +56,14 @@ pnpm --filter @mote/api exec wrangler secret put MOTE_TOKEN
 routes = [{ pattern = "<your-domain>/*", zone_name = "<your-zone>" }]
 ```
 
-编辑 `apps/api/wrangler.toml`：
+修改 `apps/api/wrangler.toml` 中已有的路由与 `[vars]`（不要追加第二个 `[vars]` 表）。本教程使用 token 模式：将仓库中的生产 `MOTE_AUTH_MODE` 改成 `token`，并移除 `MOTE_ACCESS_ISSUER`、`MOTE_ACCESS_AUD`、`MOTE_ACCESS_HOSTNAME`；这些参数属于项目的 Access 部署，不适用于你的实例。保留你自己的其他配置：
 
 ```toml
 routes = [{ pattern = "<your-domain>/api/*", zone_name = "<your-zone>" }]
 
 [vars]
 VIEWER_BASE_URL = "https://<your-domain>"
+MOTE_AUTH_MODE = "token"
 ```
 
 `<your-zone>` 是域名的 zone 名（如 `example.com`）。两个 Worker 共用一个域名：API 占有 `/api/*`，其余全部走 Viewer（最具体路由优先）。**不要**给 Viewer 用 Custom Domain——它会覆盖同主机名的 `/api/*` 路由。

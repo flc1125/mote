@@ -1,6 +1,6 @@
 # Mote 架构
 
-> 本文是架构概览。架构基线（决策的权威来源）见 `.docs/arcs/Mote：不可变 Markdown 在线发布服务方案.md`，冲突时以基线为准。
+> 本文记录当前架构与核心决策；接口契约以[发布协议](protocol.md)为准，安全约束以[安全模型](security.md)为准，鉴权配置以[鉴权与迁移](authentication.md)为准。理解与维护项目不依赖未随仓库发布的内部计划文档。
 
 ## 总览
 
@@ -39,7 +39,7 @@ Mote 完全运行在 Cloudflare 上，由两个职责分离的 Worker 与一个 
 
 V1 不引入：数据库、KV、D1、Durable Object、Queue、独立服务器。
 
-当前源码已加入可选 Access 发布鉴权（尚未发布、生产未切换）：CLI/远程 MCP → Cloudflare Access 校验 OAuth 或机器双凭据 → API Worker 校验签名断言 → 原发布管线。读取侧不变。默认 `token` 模式保留；模式选择、存储与迁移见[鉴权指南](authentication.md)。
+生产已启用 Access 发布鉴权，CLI 与 Codex 生产发布主流程已验收，客户端能力尚未发布到 npm：CLI/远程 MCP → Cloudflare Access 校验 OAuth 或机器双凭据 → API Worker 校验签名断言 → 原发布管线。读取侧不变。未指定模式时保留 `token` 回退，仓库生产部署配置显式选择 Access；模式选择、存储与验收边界见[鉴权指南](authentication.md)。
 
 发布端点：`POST https://mote.flc.io/api/v1/publish`。两个 Worker 通过 Cloudflare Routes 共用同一域名，按路径前缀分流（最具体路由优先）；不使用 Custom Domain 绑定（它会覆盖同主机名的路由）。
 
@@ -93,3 +93,18 @@ documents/
 - CLI 与本地 stdio 共享 Mote 凭据存储、刷新锁与发布管线；Codex 独立保存自己的 OAuth 凭据。远程 MCP 保持无状态，无文档所有权或用户配额新增。
 
 详见 [发布协议](protocol.md)与[安全模型](security.md)。
+
+## 历史章节引用
+
+源码注释中的 `baseline §…` 是早期设计文档的历史编号，不再代表另一个权威来源。按主题查阅以下公开文档；这些编号无需恢复内部 `.docs` 文件即可理解：
+
+| 历史编号                   | 当前参考                                                                                                                                     |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| §3、§5、§8.2、§10–§12、§54 | 本文的核心原则、Worker 划分与 R2 数据模型；[协议](protocol.md)的 ID 格式与服务端处理                                                         |
+| §13–§18                    | [协议](protocol.md)的请求、服务端处理与响应；[安全模型](security.md)的上传侧防护                                                             |
+| §20–§23                    | [CLI](cli.md)的 Configuration、Options 与 How assets are handled                                                                             |
+| §24、§26–§36、§42          | 本文的渲染与缓存；[协议](protocol.md)的公开访问；[安全模型](security.md)的防泄露与 XSS 防护；渲染细节由 `packages/renderer/src` 及其测试维护 |
+| §38                        | [鉴权与迁移](authentication.md)及[安全模型](security.md)的发布鉴权与凭据管理                                                                 |
+| §43、§45、plan 002 Phase 1 | [MCP](mcp.md)的远程无状态协议、本地工具与共享发布管线                                                                                        |
+| §47、§52、§53、§65.14      | [自托管](self-hosting.md)的健康检查与部署配置；本文的渲染与缓存；当前兼容日期以 Worker 配置为准                                              |
+| §57–§59                    | [安全模型](security.md)的 XSS 回归测试；`apps/api/src/m3.integration.test.ts` 与 `apps/cli/test/e2e.test.ts` 的集成测试契约                  |

@@ -1,20 +1,20 @@
 # Mote 发布协议
 
-> 本文定义 Upload API 协议。`@mote/protocol` 包是该协议的代码实现，CLI 与未来 MCP/Skill 共用同一协议（基线 §45）。
+> 本文定义 Upload API 协议。`@mote/protocol` 包是该协议的代码实现，CLI、MCP 与 Skill 共用同一协议；整体设计见[架构](architecture.md)。
 
 ## 总览
 
-以下 Bearer 示例表示兼容的静态 token 部署。未发布的 Access 模式保持相同发布载荷与结果：OAuth 使用 opaque Bearer，机器使用 `CF-Access-Client-Id` / `CF-Access-Client-Secret`；Access 校验后由 Worker 验证签名断言。两种服务端模式不混用，详见[鉴权与迁移](authentication.md)。
+以下 Bearer 示例表示你自己的静态 token 部署，请替换示例域名。生产已启用的 Access 模式保持相同发布载荷与结果（客户端能力尚未发布到 npm）：OAuth 使用 opaque Bearer，机器使用 `CF-Access-Client-Id` / `CF-Access-Client-Secret`；Access 校验后由 Worker 验证签名断言。两种服务端模式不混用，详见[鉴权与迁移](authentication.md)。
 
 ```text
-POST https://mote.flc.io/api/v1/publish
+POST https://mote.example.com/api/v1/publish
 Authorization: Bearer <MOTE_TOKEN>
 Content-Type: multipart/form-data
 ```
 
 - 文档一经发布**不可变**：每次发布生成全新 Document ID 与 URL，无更新/删除接口。
 - Document ID 与 Asset ID 均由**服务端**生成，客户端不得指定。
-- 只有 `manifest.json` 最后写入 R2 成功后，文档才对外可见（原子发布，基线 §54）。
+- 只有 `manifest.json` 最后写入 R2 成功后，文档才对外可见（见[原子发布](architecture.md#r2-数据模型)）。
 
 ## 请求
 

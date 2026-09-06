@@ -49,11 +49,12 @@ CLI arguments  >  environment variables  >  config file  >  defaults
 | Service ID     | —                    | `MOTE_SERVICE_CLIENT_ID`     | `serviceToken.clientId`     | —                                           |
 | Service secret | —                    | `MOTE_SERVICE_CLIENT_SECRET` | `serviceToken.clientSecret` | —                                           |
 
-Config file location: `$XDG_CONFIG_HOME/mote/config.json` (usually `~/.config/mote/config.json`):
+Config file location: `$XDG_CONFIG_HOME/mote/config.json` (usually `~/.config/mote/config.json`). This example targets your own token-mode instance; replace the host. Production `mote.flc.io` requires Access authentication:
 
 ```json
 {
-  "apiUrl": "https://mote.flc.io",
+  "apiUrl": "https://mote.example.com",
+  "authMode": "token",
   "token": "your-token"
 }
 ```

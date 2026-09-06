@@ -37,7 +37,7 @@ https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
 
 ## Quick Start
 
-The published v0.1.1 flow below uses a static token and requires a token-mode server. Production `mote.flc.io` now uses Cloudflare Access; production client acceptance is still in progress. OAuth and Service Token support in this checkout is **unreleased**. Build the reviewed source revision and follow [authentication and migration](docs/authentication.md) for an Access-enabled instance.
+The published v0.1.1 flow below uses a static token and requires a token-mode server. Production `mote.flc.io` uses Cloudflare Access; the CLI and Codex production publishing flows have passed acceptance. OAuth and Service Token support in this checkout is **unreleased**. Build the reviewed source revision and follow [authentication and migration](docs/authentication.md) for an Access-enabled instance.
 
 ```bash
 npm install -g mote-cli
@@ -55,9 +55,10 @@ cd apps/cli && npm install -g .
 
 </details>
 
-Configure a token from your Mote instance (see [Self-hosting](docs/self-hosting.md)):
+Configure your own token-mode instance and its token (see [Self-hosting](docs/self-hosting.md)); replace the example host with yours. A static token cannot publish to production `mote.flc.io`:
 
 ```bash
+export MOTE_API_URL="https://mote.example.com"
 export MOTE_TOKEN="your-token"
 ```
 
@@ -75,7 +76,7 @@ Assets      3
 Total       1.84 MB
 
 Published:
-https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
+https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
 ## Usage

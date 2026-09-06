@@ -1,6 +1,6 @@
 # Mote 安全模型
 
-> 本文说明 Mote 的权限模型、防护机制与运维红线。架构决策以基线文档为准。
+> 本文定义 Mote 的权限模型、防护机制与运维红线；整体设计见[架构](architecture.md)，部署鉴权见[鉴权与迁移](authentication.md)。
 
 ## 1. Capability URL 权限模型
 
@@ -64,7 +64,7 @@ base-uri 'none'; form-action 'none'; frame-ancestors 'none'
 
 外加 `X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`。
 
-这些行为由 `packages/renderer/src/security.test.ts` 中的基线 §57 测试用例锁定（`<script>`、`javascript:` 链接/图片、`<img onerror>` 等）。
+这些行为由 `packages/renderer/src/security.test.ts` 中的安全回归测试锁定（`<script>`、`javascript:` 链接/图片、`<img onerror>` 等）。
 
 ## 4. 上传侧防护
 
@@ -81,7 +81,7 @@ CLI 侧：只读取 Markdown **实际引用**的文件（AST 解析，非正则�
 
 ## 5. 发布鉴权与凭据管理
 
-本检出的 Access 能力尚未发布，生产未切换。服务端 `MOTE_AUTH_MODE=token|cloudflare-access`，默认仍是 token，未知模式拒绝。客户端选择 `token|oauth|service`，不可与服务端枚举混用，详见[鉴权与迁移](authentication.md)。
+Access 客户端能力尚未发布到 npm；生产已切换 Access，CLI 与 Codex 生产发布主流程已验收。服务端 `MOTE_AUTH_MODE=token|cloudflare-access`，省略时兼容回退到 token，未知模式拒绝；仓库中的生产部署配置显式选择 `cloudflare-access`。客户端选择 `token|oauth|service`，不可与服务端枚举混用，详见[鉴权与迁移](authentication.md)。
 
 Access 模式由 Cloudflare 校验 OAuth 或 Service Token 双凭据、注入 `Cf-Access-Jwt-Assertion`；Worker 仅接受配置的 HTTPS API 主机并校验签名、issuer、AUD、时间、类型与明确身份。用户为非空 sub；机器为合法 common_name 且空 sub，无歧义混用。旧 `MOTE_TOKEN`、邮箱头、Cookie、客户端自报身份及管理 API token 均不能绕过校验。公开阅读仍是 capability URL，不因发布者鉴权升级而要求读者登录。
 
@@ -110,7 +110,7 @@ Mote CLI/stdio 共享自身的按 API 目标、issuer/resource 绑定的凭据�
 
 OAuth logout 删除本地秘密并保留无秘密选择标记，阻止旧 token 自动复活；不执行远端撤权、不删静态配置、不禁用 Service Token。机器模式须显式选择，三项环境配置缺一/目标不同即拒绝；每次发送双凭据，不复用 cookie。`status --offline` 不是在线有效性证明，授权会话到期时间未知时返回 null。
 
-测试配置为 168h / 720h，长生命周期增加泄露暴露窗口，应按实例风险选择。短期自然到期续用及撤权恢复已实测；未等待 7/30 天。并发刷新串行，未知交换或发布结果不自动重放。退出、撤权、禁用均不删除已发布内容；URL 泄露仍需按阅读能力凭证泄露处理。
+测试与生产配置为 168h / 720h，长生命周期增加泄露暴露窗口，应按实例风险选择。短期自然到期续用及撤权恢复仅在隔离环境实测；生产撤权恢复、回滚未实测，也未等待完整 7/30 天。并发刷新串行，未知交换或发布结果不自动重放。退出、撤权、禁用均不删除已发布内容；URL 泄露仍需按阅读能力凭证泄露处理。
 
 ## 6. 日志红线
 

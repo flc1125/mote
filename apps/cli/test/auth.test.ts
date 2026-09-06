@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { authMode, authStatus, prepareAuth } from '../src/auth/manager.js';
-import { callbackListener, discover, login } from '../src/auth/oauth.js';
+import { callbackListener, discover, generateAccessPkce, login } from '../src/auth/oauth.js';
 import { CredentialStore, type KeyringEntry } from '../src/auth/store.js';
 import type { OAuthCredential } from '../src/auth/types.js';
 import { apiOrigin, trustedIssuer } from '../src/auth/urls.js';
@@ -191,6 +191,42 @@ function mockOAuth() {
   });
 }
 describe('OAuth protocol', () => {
+  // Fixed, non-secret fixtures exercise both rejected prefixes without randomness.
+  const underscoreVerifier = '15'.padStart(43, 'a');
+  const hyphenVerifier = '41'.padStart(43, 'a');
+  const validVerifier = '0'.padStart(43, 'a');
+  const challengeFor = (verifier: string) =>
+    createHash('sha256').update(verifier).digest('base64url');
+
+  it('regenerates both incompatible prefixes and preserves the matching S256 pair', async () => {
+    expect(challengeFor(underscoreVerifier)).toMatch(/^_/);
+    expect(challengeFor(hyphenVerifier)).toMatch(/^-/);
+    const generate = vi
+      .fn()
+      .mockReturnValueOnce(underscoreVerifier)
+      .mockReturnValueOnce(hyphenVerifier)
+      .mockReturnValue(validVerifier);
+    const pair = await generateAccessPkce(generate);
+    expect(generate).toHaveBeenCalledTimes(3);
+    expect(pair).toEqual({ verifier: validVerifier, challenge: challengeFor(validVerifier) });
+    expect(pair.challenge).toMatch(/^[A-Za-z0-9][A-Za-z0-9_-]{42}$/);
+  });
+
+  it('accepts a compatible pair without generating another verifier', async () => {
+    const generate = vi.fn(() => validVerifier);
+    expect(await generateAccessPkce(generate)).toEqual({
+      verifier: validVerifier,
+      challenge: challengeFor(validVerifier),
+    });
+    expect(generate).toHaveBeenCalledTimes(1);
+  });
+
+  it('bounds local PKCE retries instead of hanging on an unusable generator', async () => {
+    const generate = vi.fn(() => hyphenVerifier);
+    await expect(generateAccessPkce(generate)).rejects.toThrow(/login not started/);
+    expect(generate).toHaveBeenCalledTimes(32);
+  });
+
   it('validates challenge, resource and trusted issuer', async () => {
     expect((await discover(api, mockOAuth())).issuer).toBe(issuer);
     await expect(
@@ -225,6 +261,7 @@ describe('OAuth protocol', () => {
       onUrl: async (value) => {
         const url = new URL(value);
         challenge = url.searchParams.get('code_challenge')!;
+        expect(challenge).toMatch(/^[A-Za-z0-9][A-Za-z0-9_-]{42}$/);
         expect(url.searchParams.get('resource')).toBe(resource);
         const redirect = url.searchParams.get('redirect_uri')!;
         expect((await fetch(redirect + '?code=bad&state=bad')).status).toBe(400);
