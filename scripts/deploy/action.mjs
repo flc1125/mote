@@ -1,5 +1,5 @@
 import { appendFile, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { argv, env, execPath } from 'node:process';
 import process from 'node:process';
 import { log } from 'node:console';
@@ -22,6 +22,8 @@ import {
 import { pnpm, root, run, sha256, sourceConfig, writeJson } from './lib.mjs';
 import { readSmoke, sampleFrom } from './smoke.mjs';
 import { publishSmoke } from './write-smoke.mjs';
+import { registryClient, releaseClient } from './release-clients.mjs';
+import { preflightRelease } from './release.mjs';
 
 async function output(name, value) {
   await appendFile(env.GITHUB_OUTPUT, `${name}=${value}\n`);
@@ -130,6 +132,25 @@ async function main() {
     if (command === 'deploy') {
       deployPreflight(env, context);
       const sample = sampleFrom(env);
+      if (context.trigger === 'tag') {
+        requireThat(targetSha === context.workflowSha, 'TAG_WORKFLOW_SHA_MISMATCH');
+        const bytes = await readFile(join(directory, manifest.cli.tarball));
+        await registryClient(manifest, bytes)();
+        await preflightRelease({
+          context,
+          manifest,
+          manifestDigest: env.MOTE_MANIFEST_DIGEST,
+          notes: await readFile(join(directory, 'release-notes.md'), 'utf8'),
+          files: [
+            { name: basename(manifest.cli.tarball), bytes },
+            {
+              name: 'build-manifest.json',
+              bytes: await readFile(join(directory, 'build-manifest.json')),
+            },
+          ],
+          api: releaseClient(context.repository, env.GITHUB_TOKEN),
+        });
+      }
       const cloud = await cloudflareClient({
         environment: context.environment,
         directory,

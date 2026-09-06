@@ -87,6 +87,14 @@ jobs:
           MOTE_SOURCE_DIR: ${{ github.workspace }}/.target
           MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
           MOTE_ARTIFACT_DIR: ${{ runner.temp }}/mote-prepared
+      - name: Check release registry identity before production changes
+        if: github.event_name == 'push'
+        run: node scripts/deploy/release-action.mjs preflight
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MOTE_TARGET_SHA: ${{ needs.resolve.outputs.target_sha }}
+          MOTE_MANIFEST_DIGEST: ${{ steps.prepare.outputs.manifest_digest }}
+          MOTE_ARTIFACT_DIR: ${{ runner.temp }}/mote-prepared
       - uses: actions/upload-artifact@v4
         with:
           name: mote-build-${{ github.run_id }}

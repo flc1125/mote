@@ -32,11 +32,12 @@ export function githubClient(repository, token, fetchImpl = globalThis.fetch) {
   };
 }
 
-export function ledger(client, context) {
+export function ledger(client, context, task = 'mote-deploy') {
+  requireThat(['mote-deploy', 'mote-release'].includes(task), 'INVALID_LEDGER_TASK');
   const query = `environment=${encodeURIComponent(context.environment)}&per_page=100`;
   return {
     async previous() {
-      const rows = await client(`deployments?${query}&task=mote-deploy:${context.runId}`);
+      const rows = await client(`deployments?${query}&task=${task}:${context.runId}`);
       requireThat(Array.isArray(rows), 'INVALID_LEDGER');
       return rows.sort((a, b) => b.id - a.id)[0]?.payload ?? null;
     },
@@ -51,7 +52,7 @@ export function ledger(client, context) {
     async save(state) {
       const deployment = await client('deployments', {
         ref: state.targetSha,
-        task: `mote-deploy:${context.runId}`,
+        task: `${task}:${context.runId}`,
         auto_merge: false,
         required_contexts: [],
         environment: context.environment,

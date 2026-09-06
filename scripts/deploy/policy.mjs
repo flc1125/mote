@@ -46,6 +46,10 @@ export function resolveTarget(context, previous, git) {
     }
   }
   assertMainAncestor(sha, git);
+  requireThat(
+    context.trigger !== 'tag' || sha === context.workflowSha,
+    'TAG_WORKFLOW_SHA_MISMATCH',
+  );
   return sha;
 }
 
