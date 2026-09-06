@@ -10,7 +10,10 @@
     "build": "pnpm -r --if-present build",
     "lint": "eslint .",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test",
+    "test": "pnpm -r --if-present test && pnpm test:deployment",
+    "test:deployment": "vitest run --config scripts/deploy/vitest.config.mjs",
+    "artifacts:prepare": "node scripts/deploy/prepare.mjs",
+    "artifacts:verify": "node scripts/deploy/verify.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
