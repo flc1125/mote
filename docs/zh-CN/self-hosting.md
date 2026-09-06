@@ -4,7 +4,7 @@
 
 Mote 完全运行在 Cloudflare 免费额度内：两个 Worker + 一个 R2 bucket，无数据库、无服务器。本指南带你从零部署到自己的 `https://<your-domain>`。
 
-步骤 1–8 是兼容的 **token** 模式。尚未发布的 Access 实现请使用已审核源码并先读下方 Access 部署说明。npm/GitHub Release 不等于 Worker 部署；本仓库目前没有 Cloudflare 自动化部署流水线。
+步骤 1–8 是兼容的 **token** 模式。尚未发布的 Access 实现请使用已审核源码并先读下方 Access 部署说明。仅安装或发布 npm 包不会部署 Worker；仓库工作流见[部署自动化](#部署自动化)。
 
 > 下文命令中的 `<your-domain>` 是占位符——替换成你自己的（子）域名，如 `mote.example.com`。
 
@@ -132,11 +132,11 @@ Header: Authorization: Bearer <你的 token>
 
 使用独立测试域名、Worker 与 R2。仓库的 `access-test` 绑定属于本项目，不得原样部署到别人的账号或复制其 AUD 到生产。
 
-配置目标为 `mote-test-api`、`mote-test-viewer`、`mote-test-documents` 和 `mote-test.flc.io`，使用独立的 `mote-test` Access 应用；逻辑环境名仍为 `access-test`。历史 `mote-oauth-test-*` 资源及数据单独保留，修改配置不会迁移旧文档。`apps/access-oauth-probe` 已改为虚拟账户/身份配置且无路由，仅用于本地回归测试和 dry-run 构建，不得指向真实云端资源。
+配置目标为 `mote-test-api`、`mote-test-viewer`、`mote-test-documents` 和 `mote-test.flc.io`，使用独立的 `mote-test` Access 应用；逻辑环境名为 `access-test`。`apps/access-oauth-probe` 使用虚拟账户/身份配置且无路由，仅用于本地回归测试和 dry-run 构建，不得指向真实云端资源。
 
 1. 配置 Zero Trust 登录源及明确的发布者 Allow 策略。同一应用仅保护 `<your-domain>/api/mcp`、`<your-domain>/api/v1/publish`、`<your-domain>/api/auth/*`；阅读页面、图片、健康检查和必要 OAuth 发现元数据保持公开，不保护整个 Viewer 域名。
 2. 启用 Managed OAuth 与实际客户端需要的 localhost/loopback 回调，不添加任意公网回调通配。核对完整 `/api/mcp` resource 和 issuer。Codex 沿用预注册 public client 与精确回调，见 [MCP 指南](../mcp.md#codex)。
-3. 独立选择时长。本项目验证了 `oauth_configuration.grant.access_token_lifetime="168h"` / `session_duration="720h"`，不是应用普通会话时长。API 更新必须先 GET、保留其他配置再 PUT，最后独立 GET 比对，不能只 PUT 局部片段；测试中控制台的“1 month”为 730h 而非 720h。参考 [Managed OAuth](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/managed-oauth/)。
+3. 按实例风险选择 token 和授权会话时长，在 `oauth_configuration` 下设置 `grant.access_token_lifetime` 和 `grant.session_duration`，不是应用普通会话时长。API 更新必须先 GET、保留其他配置再 PUT，最后独立 GET 比对精确时长，不能只 PUT 局部片段。参考 [Managed OAuth](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/managed-oauth/)。
 4. 机器发布另加 Service Auth 策略，仅选指定令牌且只关联目标应用；不要允许任意服务令牌。创建、轮换、禁用及环境配置见[机器发布](../authentication.md#machine-publishing)。
 5. 保留 API Worker 的路由与绑定，在相应部署配置中替换鉴权变量（不是直接追加第二个 `[vars]`）：
 
@@ -157,7 +157,19 @@ MOTE_ACCESS_HOSTNAME = "mote.example.com"
 6. 人工确认部署环境、Worker、路由优先级、R2 后再部署选定配置；测试不可误用默认生产 deploy。已有生产迁移必须另行批准。
 7. 按[CLI 登录/状态/发布/退出](../authentication.md#user-login-cli-and-local-stdio)及 Codex 指南复核。匿名发布应拒绝、发现 resource 精确匹配、用户与机器发布成功、无效凭据拒绝、阅读和图片匿名可用、备用主机不能发布。记录版本和结果，不记录秘密值。
 
-完整[鉴权与迁移指南](../authentication.md)说明：CLI/stdio 共享 Mote 存储，Codex 独立；默认 macOS Keychain，文件后端须显式选择且为私有明文；7 天/30 天不是所有场景的推荐默认。CLI logout 只清本地 OAuth，远端撤权和 Service Token 禁用需另做，已发布 URL 不受影响。只验证了 macOS 与 Codex，完整 7/30 天自然到期未等待。迁移先盘点旧发布者，清理旧 token 来源；回退先恢复有效 token Worker，再撤 Access 保护并显式切回客户端，不留无鉴权窗口。
+已有 token 实例请按[鉴权与迁移指南](../authentication.md#migrate-an-existing-instance)迁移或回退，不留无鉴权窗口。该指南同时说明凭据存储、兼容性与会话限制。OAuth 登录授权不等于生产部署或配置变更授权。
+
+## 部署自动化
+
+仓库中的工作流面向 Access 部署，不适用于上方 token 模式教程。`scripts/deploy/policy.mjs` 将运行仓库限制为 `flc1125/mote`；fork 使用前还须审核并适配该限制及目标配置。
+
+- **合并到 `main`**：CI 检查代码，不部署 Worker。
+- **手动部署**：从 `main` 运行 `Deploy`，选择 `production` 或 `access-test`，填写 `main`、稳定 `vX.Y.Z` 标签或 main 历史中的完整 SHA。仅部署 Worker，不发布 npm 或 GitHub Release。
+- **标签发布**：推送 `v*` 触发 `Release`，校验只接受稳定 `vX.Y.Z` 标签。Worker 部署和只读冒烟检查通过后，才发布 npm 并完成 GitHub Release。
+
+启用前审核 `scripts/deploy/targets.json` 和 Worker 配置，预先创建所需资源，并配置目标 GitHub Environment。部署需要 `MOTE_DEPLOY_ENABLED=true`、匹配的 `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_API_TOKEN` Secret，以及公开冒烟样本变量 `MOTE_SMOKE_DOCUMENT_ID`、`MOTE_SMOKE_ASSET_ID`、`MOTE_SMOKE_ASSET_SHA256`。环境获准前保持开关关闭；有工作流不等于已经具备生产上线条件。
+
+手动参数 `write_smoke` 默认为 false。启用后需要专用 `MOTE_SERVICE_CLIENT_ID` / `MOTE_SERVICE_CLIENT_SECRET` Secrets，并会发布一篇永久公开测试文档。工作流不创建 R2、DNS 或 Access 策略，也不会在部署失败后自动回滚；重试前先核对部署结果。
 
 ## 下一步
 

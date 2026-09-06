@@ -37,7 +37,7 @@ https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
 
 ## Quick Start
 
-The published v0.1.1 flow below uses a static token and requires a token-mode server. Production `mote.flc.io` uses Cloudflare Access; the CLI and Codex production publishing flows have passed acceptance. OAuth and Service Token support in this checkout is **unreleased**. Build the reviewed source revision and follow [authentication and migration](docs/authentication.md) for an Access-enabled instance.
+The examples below use a static-token instance. For an Access-enabled instance, follow the [authentication guide](docs/authentication.md).
 
 ```bash
 npm install -g mote-cli
@@ -82,7 +82,7 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ## Usage
 
 - **CLI** — options (`--json`, `--no-assets`, `--api`, `--token`, …), config file, and scripting: [docs/cli.md](docs/cli.md)
-- **MCP** — remote OAuth verified with Codex, plus local stdio tools: [docs/mcp.md](docs/mcp.md). Other clients are not covered by the current verification.
+- **MCP** — remote OAuth and local stdio tools; setup and compatibility: [docs/mcp.md](docs/mcp.md).
 - **Skill** — teach agents when/how to use Mote (`npx skills add flc1125/mote`): [docs/skill.md](docs/skill.md)
 - **Self-hosting** — run your own instance on Cloudflare's free tier: [docs/self-hosting.md](docs/self-hosting.md)
 

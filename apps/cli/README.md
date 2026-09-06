@@ -14,6 +14,7 @@ The static-token example below also works with v0.1.1. This checkout adds unrele
 
 ```bash
 export MOTE_TOKEN="your-token"
+export MOTE_API_URL="https://mote.example.com" # your own token-mode instance
 
 mote README.md
 ```
@@ -21,7 +22,7 @@ mote README.md
 ```text
 Published:
 
-https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
+https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
 Local images referenced by your Markdown are uploaded automatically (deduplicated, opaque URLs). Use `--json` for machine-readable output, `--no-assets` to skip images, `--help` for everything else.
