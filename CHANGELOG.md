@@ -6,11 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-07
+
 ### Added
 
 - `cloudflare-access` server authentication with signed assertion validation for user OAuth and Service Token identities; omitted mode settings retain the legacy token fallback, while checked-in production configuration explicitly selects Access.
 - `mote auth login/status/logout`, target-bound system/private-file credentials, PKCE login, serialized refresh and explicit machine mode.
+- `mote login` as a shortcut for `mote auth login`; successful login remembers the API origin after credentials are saved. API selection is flags → environment → config → remembered instance → built-in default; explicit auth-mode settings are unchanged.
 - Local stdio sharing the Mote CLI credential store and publishing pipeline, with authentication before local file reads.
+- A static, JavaScript-free homepage with keyboard-accessible CLI/MCP/Skill quick-start switching and documentation links; static routes do not read R2 or list published documents.
+- Coral branding (`#ef5552`), vector logos and icons, theme-aware homepage wordmarks, and same-origin SVG/ICO favicons for the homepage and published documents. The all-coral logo remains available.
 - Production Worker deployment through Cloudflare Workers Builds on pushes to `main`, with independent API/Viewer rollouts. GitHub Actions retains CI, credential-free Worker dry-runs, npm Trusted Publishing and GitHub Release; stable tags no longer deploy Workers.
 - Authentication/migration guidance and verified macOS CLI/stdio + Codex 0.153.4 app-server scope. Other clients/platforms and full 7-day/30-day natural expiry are not claimed as tested.
 
@@ -19,7 +24,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Regenerate PKCE verifier/challenge pairs locally when the challenge starts with `-` or `_`, as required by Cloudflare Access.
 - Make token-mode self-hosting and quick-start targets explicit, and replace the private architecture baseline dependency with public documentation references.
 
-These client features remain unreleased on npm. Workers Builds requires reviewed production configuration; each Worker rollout is verified separately from GitHub CI and package publication. See [deployment operations](docs/deployment.md), [self-hosting](docs/self-hosting.md#deployment-automation) and [authentication](docs/authentication.md) for setup and validation limits.
+### Upgrade notes
+
+- Upgrade to `mote-cli@0.2.0` for OAuth/service authentication and `mote login`. Existing static-token self-hosted instances remain supported; production `mote.flc.io` requires an approved Access identity. Installing the CLI does not migrate server authentication.
+- `mote auth login` remains supported. Login preserves explicit configuration; environment/config overrides can still select a different instance or auth mode. Logout removes local OAuth credentials but retains the remembered instance and OAuth selection marker, preventing implicit fallback to an old token.
+- Local MCP remains a private workspace package built from the matching source revision; it is not published as a separate npm package. Remote MCP remains a deployed endpoint, and the Skill remains repository-distributed instructions.
+- Stable tags now publish only the CLI package and GitHub Release, not Workers. Workers Builds deploys API and Viewer independently from `main`; verify both production rollouts separately before accepting the release.
+- No broader compatibility or full 7-day/30-day expiry validation is claimed. See [deployment operations](docs/deployment.md), [self-hosting](docs/self-hosting.md#deployment-automation) and [authentication](docs/authentication.md) for setup, migration and validation limits.
 
 ## [0.1.1] - 2026-09-04
 
@@ -46,5 +57,7 @@ Published manually to npm without a matching Git tag or GitHub Release; v0.1.1 i
 - **Docs** — architecture, publish protocol, security model, self-hosting guide, CLI and MCP references (English + 中文)
 - **Infrastructure** — Cloudflare Workers + R2 only; Workers Cache with per-version cache namespaces; runs on the free tier
 
+[Unreleased]: https://github.com/flc1125/mote/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/flc1125/mote/releases/tag/v0.2.0
 [0.1.1]: https://github.com/flc1125/mote/releases/tag/v0.1.1
 [0.1.0]: https://www.npmjs.com/package/mote-cli/v/0.1.0

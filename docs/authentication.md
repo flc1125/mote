@@ -1,6 +1,6 @@
 # Authentication and migration
 
-This guide describes the **unreleased source implementation**; v0.1.1 does not include these client commands. Build the reviewed source revision before using `mote auth`. Examples use your own Access-enabled instance. Production `mote.flc.io` uses Cloudflare Access and permits only approved publishers.
+This guide covers **mote-cli v0.2.0 and the matching server/source revision**; v0.1.1 does not include OAuth/service client commands. Examples use your own Access-enabled instance. Production `mote.flc.io` uses Cloudflare Access and permits only approved publishers.
 
 ## Choose a mode
 
@@ -16,19 +16,17 @@ Do not export the server value `cloudflare-access` into a CLI or stdio process. 
 
 ## User login: CLI and local stdio
 
-From the repository, build the CLI; replace the example origin with your configured instance:
+Install v0.2.0 or build the matching source revision. Replace the example origin with your configured instance:
 
 ```bash
-pnpm --filter @mote/cli build
-export MOTE_API_URL="https://mote.example.com"
-export MOTE_AUTH_MODE="oauth"
-node apps/cli/dist/cli.js auth login
-node apps/cli/dist/cli.js auth status --json
-node apps/cli/dist/cli.js report.md --json
-node apps/cli/dist/cli.js auth logout --json
+npm install -g mote-cli@0.2.0
+mote login --api https://mote.example.com --auth-mode oauth
+mote auth status --json
+mote report.md --json
+mote auth logout --json
 ```
 
-With that build installed, use `mote auth login`, `mote auth status`, `mote report.md`, and `mote auth logout`. Use `--api` with an **origin**, not `/api/mcp` or `/api/v1/publish`. OAuth and service modes require HTTPS. Each target has separate credentials.
+`mote login` and `mote auth login` are equivalent. Successful login saves the default API origin after saving credentials; subsequent commands use it unless flags, environment or configuration select another target. Remove conflicting instance/auth-mode overrides before using the flag-free commands above. Use `--api` with an **origin**, not `/api/mcp` or `/api/v1/publish`. OAuth and service modes require HTTPS. Each target has separate credentials.
 
 Login opens a browser for the configured identity provider and consent. `--no-browser` prints the authorization URL instead, but still requires an interactive terminal. Login does not support `--json`; publishing, status and logout never initiate browser login. An expired or revoked session requires an explicit `mote auth login`.
 
@@ -46,7 +44,7 @@ Verified compatibility is limited to macOS CLI/stdio and Codex CLI 0.153.4's app
 
 ## Configuration selection
 
-API URL, static token and explicit auth mode each resolve as flags → environment → config file → default. Auth mode is chosen separately from the presence of credentials:
+The API URL resolves as flags → environment → config file → remembered instance → `https://mote.flc.io`. Static token and explicit auth mode keep flags → environment → config file precedence. Login stores only the non-secret default origin in `auth/default-api.json`; it does not rewrite `config.json`. A one-off `--api` override does not change this preference, and logout does not clear it. Auth mode is chosen separately from the presence of credentials:
 
 1. Explicit `--auth-mode`, `MOTE_AUTH_MODE`, or `authMode` wins.
 2. Otherwise, an existing OAuth profile for this target selects OAuth, including its logged-out marker.
@@ -85,7 +83,7 @@ Validation limits: production revocation/recovery and rollback, and full 7/30-da
 ## Migrate an existing instance
 
 1. Inventory all publishers and secret sources without recording values. Prepare a working token-mode rollback configuration and a maintenance window.
-2. Follow [self-hosting](self-hosting.md#access-enabled-deployments-unreleased) to prepare Access on an isolated hostname first. Test discovery, CLI login/status/publish/logout, stdio, Codex, service credentials and anonymous reads.
+2. Follow [self-hosting](self-hosting.md#access-enabled-deployments) to prepare Access on an isolated hostname first. Test discovery, CLI login/status/publish/logout, stdio, Codex, service credentials and anonymous reads.
 3. Obtain separate approval for the production Access policy and Worker switch. Do not copy the repository's test account, client IDs, AUD, routes or bucket into a new deployment.
 4. Select OAuth for interactive publishers and service mode for unattended publishers. Remove old `MOTE_TOKEN`, `--token`, config `token`, and remote MCP Bearer settings from each migrated publisher. Update the actual parent process environment and restart stdio clients when necessary.
 5. Verify old credentials cannot publish in Access mode and anonymous reading still works. Keep rollback secrets in an operator-controlled store until the approved rollback window closes; do not keep them as a hidden client fallback.

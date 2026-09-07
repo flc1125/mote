@@ -4,7 +4,7 @@
 
 Mote runs entirely on Cloudflare's free tier: two Workers + one R2 bucket, no database, no servers. This guide takes you from zero to your own instance at `https://<your-domain>`.
 
-Steps 1–8 describe the compatible **token** deployment. For the unreleased Access implementation, build the reviewed source revision and use the [Access section](#access-enabled-deployments-unreleased) before changing authentication. Installing or publishing an npm package alone does not deploy Workers; repository workflows are described under [deployment automation](#deployment-automation).
+Steps 1–8 describe the compatible **token** deployment. For Access, use the reviewed v0.2.0 server/source revision with mote-cli v0.2.0 or a matching build, and follow the [Access section](#access-enabled-deployments) before changing authentication. Installing or publishing an npm package alone does not deploy Workers; repository workflows are described under [deployment automation](#deployment-automation).
 
 > Commands below use `<your-domain>` as a placeholder — replace it with your own (sub)domain, e.g. `mote.example.com`.
 
@@ -128,7 +128,9 @@ Header: Authorization: Bearer <your-token>
 
 Personal-scale usage fits Cloudflare's free tier: 100k Worker requests/day, 10 GB R2 storage, free egress. Long-lived CDN cache means repeat reads don't touch the Worker or R2.
 
-## Access-enabled deployments (unreleased)
+<a id="access-enabled-deployments-unreleased"></a>
+
+## Access-enabled deployments
 
 Use a separate hostname, Worker pair and R2 bucket for validation. The repository's `access-test` environment is project-specific: replace its account, routes, bucket and identity values rather than deploying it unchanged.
 

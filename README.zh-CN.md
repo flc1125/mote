@@ -39,7 +39,7 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 ## 快速开始
 
-以下示例适用于静态 token 模式实例。Access 实例请按[鉴权指南](docs/authentication.md)配置。
+浏览器登录和 Service Token 鉴权需要 mote-cli v0.2.0；旧 npm 版本不包含这些命令。
 
 ```bash
 npm install -g mote-cli
@@ -57,11 +57,23 @@ cd apps/cli && npm install -g .
 
 </details>
 
+### Access 实例
+
+```bash
+mote login
+mote README.md
+```
+
+默认实例 `https://mote.flc.io` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。登录成功后会记住实例；显式环境变量和配置仍优先。配置、迁移及验证范围见[鉴权指南](docs/authentication.md)。
+
+### 静态 token 实例
+
 配置你自己的 token 模式实例及 token（见[自托管指南](docs/self-hosting.md)），将示例域名替换为实际域名。静态 token 不能用于向生产 `mote.flc.io` 发布：
 
 ```bash
 export MOTE_API_URL="https://mote.example.com"
 export MOTE_TOKEN="你的 token"
+export MOTE_AUTH_MODE="token"
 ```
 
 发布：
