@@ -14,9 +14,6 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  MOTE_REF: ${{ github.ref_name }}
-  MOTE_ENVIRONMENT: production
-  MOTE_WRITE_SMOKE: 'false'
   MOTE_TARGET_SHA: ${{ github.sha }}
 
 jobs:

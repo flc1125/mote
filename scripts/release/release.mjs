@@ -1,39 +1,7 @@
 import { json, sha256 } from './lib.mjs';
-import { isVersion, requireThat, safeCode, validatePrevious } from './policy.mjs';
+import { requireThat, safeCode } from './policy.mjs';
 
-export function releaseReady(deployment, context, manifestDigest, targetSha) {
-  validatePrevious(deployment, context);
-  requireThat(context.trigger === 'tag' && context.environment === 'production', 'NOT_A_RELEASE');
-  requireThat(deployment.runAttempt === context.runAttempt, 'RERUN_ALL_JOBS_REQUIRED');
-  requireThat(
-    deployment.targetSha === targetSha && deployment.manifestDigest === manifestDigest,
-    'RELEASE_ARTIFACT_MISMATCH',
-  );
-  requireThat(
-    deployment.state === 'success' &&
-      deployment.smoke.read === 'success' &&
-      ['success', 'skipped'].includes(deployment.smoke.write),
-    'DEPLOYMENT_NOT_VERIFIED',
-  );
-  for (const name of ['viewer', 'api'])
-    requireThat(
-      deployment.components[name].state === 'success' &&
-        isVersion(deployment.components[name].afterVersion),
-      'DEPLOYMENT_NOT_VERIFIED',
-    );
-}
-
-export function releaseState(context, deployment, manifest, digest, previous) {
-  if (previous) {
-    validatePrevious(previous, context);
-    requireThat(
-      previous.targetSha === manifest.source.sha &&
-        previous.manifestDigest === digest &&
-        previous.cli.sha256 === manifest.cli.sha256,
-      'RELEASE_ARTIFACT_MISMATCH',
-    );
-    return globalThis.structuredClone(previous);
-  }
+export function releaseState(context, manifest, digest) {
   return {
     schemaVersion: 1,
     ...context,
@@ -41,7 +9,6 @@ export function releaseState(context, deployment, manifest, digest, previous) {
     manifestDigest: digest,
     tag: manifest.tag,
     cli: manifest.cli,
-    ...(deployment === null ? {} : { deployment: globalThis.structuredClone(deployment) }),
     state: 'in_progress',
     error: null,
     npm: { state: 'pending', integrity: null },
@@ -57,7 +24,7 @@ export async function ensureNpm({ state, lookup, publish, persist, guard }) {
       requireThat(state.npm.state === 'pending', 'NPM_OUTCOME_UNKNOWN_NO_RETRY');
       state.npm.state = 'unknown';
       state.state = 'in_progress';
-      await persist(state); // Durable intent before the irreversible operation.
+      await persist(state); // Record intent before the irreversible operation.
       await guard();
       try {
         await publish();
@@ -112,9 +79,6 @@ export function receipt(state) {
     workflowSha: state.workflowSha,
     runId: state.runId,
     manifestDigest: state.manifestDigest,
-    ...(state.deployment
-      ? { components: state.deployment.components, smoke: state.deployment.smoke }
-      : {}),
     cli: state.cli,
     npm: state.npm,
     release: { id: state.release.id, tag: state.tag },
@@ -152,19 +116,6 @@ export async function preflightRelease({ context, manifest, manifestDigest, note
   }
 }
 
-// Bound to one attempt and exact artifacts, not a reusable boolean approval.
-// The workflow obtains this output only from its isolated, draft-visible job.
-export function releasePreflightIdentity(context, targetSha, manifestDigest) {
-  return `${context.runId}:${context.runAttempt}:${targetSha}:${manifestDigest}`;
-}
-
-export function requireReleasePreflight(context, targetSha, manifestDigest, identity) {
-  requireThat(
-    identity === releasePreflightIdentity(context, targetSha, manifestDigest),
-    'RELEASE_PREFLIGHT_REQUIRED',
-  );
-}
-
 export async function ensureRelease({ state, notes, files, api, persist, guard }) {
   requireThat(state.npm.state === 'success', 'NPM_NOT_VERIFIED');
   await guard();
@@ -192,11 +143,7 @@ export async function ensureRelease({ state, notes, files, api, persist, guard }
     await persist(state);
     const assets = [
       ...files,
-      {
-        name: state.deployment ? 'deployment-result.json' : 'release-result.json',
-        bytes: receipt(state),
-        type: 'application/json',
-      },
+      { name: 'release-result.json', bytes: receipt(state), type: 'application/json' },
     ];
     let remote = await api.assets(existing.id);
     checkAssets(remote, assets);

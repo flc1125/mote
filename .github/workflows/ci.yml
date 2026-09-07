@@ -29,8 +29,10 @@ jobs:
 
       - run: pnpm test
 
-      # Builds both formal Workers in both environments, packs the CLI once,
-      # verifies that tarball, then checks prebuilt upload bytes without secrets.
-      - run: pnpm artifacts:prepare --environment production
+      # Runs credential-free Wrangler dry-runs for both formal Workers in both
+      # environments, then validates the packed CLI exactly as release does.
+      - run: pnpm build
+
+      - run: pnpm --filter @mote/cli test:package
 
       - run: pnpm format:check

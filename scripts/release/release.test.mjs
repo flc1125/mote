@@ -2,37 +2,29 @@ import { Buffer } from 'node:buffer';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { runInNewContext } from 'node:vm';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { initialState } from './engine.mjs';
-import { contextFrom, DeployError, resolveTarget } from './policy.mjs';
+import { contextFrom, ReleaseError } from './policy.mjs';
 import {
   ensureNpm,
   ensureRelease,
   preflightRelease,
-  releasePreflightIdentity,
-  requireReleasePreflight,
   receipt,
   releaseBody,
-  releaseReady,
   releaseState,
 } from './release.mjs';
-import { integrity, npmPublisher, registryClient, releaseClient } from './release-clients.mjs';
+import { integrity, npmPublisher, registryClient, releaseClient } from './clients.mjs';
 import { root, sha256 } from './lib.mjs';
-import { ledger } from './github.mjs';
 
 const sha = 'a'.repeat(40);
 const digest = 'b'.repeat(64);
 const bytes = Buffer.from('fake-tarball');
 const context = {
   repository: 'flc1125/mote',
-  environment: 'production',
   requestedRef: 'v1.2.3',
   workflowSha: sha,
   runId: '123',
   runAttempt: 1,
   trigger: 'tag',
-  writeEnabled: false,
 };
 const manifest = {
   tag: 'v1.2.3',
@@ -45,21 +37,12 @@ const manifest = {
     verified: true,
   },
 };
-function deployed() {
-  const version = '00000000-0000-0000-0000-000000000001';
-  const state = initialState(context, sha, digest, { viewer: { version }, api: { version } });
-  for (const entry of Object.values(state.components))
-    Object.assign(entry, { state: 'success', afterVersion: version });
-  state.state = 'success';
-  state.smoke.read = 'success';
-  return state;
-}
-const fresh = () => releaseState(context, deployed(), manifest, digest, null);
+const fresh = () => releaseState(context, manifest, digest);
 const found = { present: true, integrity: integrity(bytes) };
 const persist = () => vi.fn(async () => {});
 const guard = () => vi.fn(async () => {});
 const fail = (code) => {
-  throw new DeployError(code);
+  throw new ReleaseError(code);
 };
 const temporary = [];
 afterEach(async () => {
@@ -72,7 +55,7 @@ async function scratch() {
 }
 
 describe('release prerequisites', () => {
-  it('accepts only the stable production tag caller identity', () => {
+  it('accepts only the stable tag release workflow identity', () => {
     const env = {
       GITHUB_ACTIONS: 'true',
       GITHUB_REPOSITORY: context.repository,
@@ -82,56 +65,25 @@ describe('release prerequisites', () => {
       GITHUB_EVENT_NAME: 'push',
       GITHUB_REF: 'refs/tags/v1.2.3',
       GITHUB_WORKFLOW_REF: 'flc1125/mote/.github/workflows/release.yml@refs/tags/v1.2.3',
-      MOTE_ENVIRONMENT: 'production',
-      MOTE_REF: 'v1.2.3',
-      MOTE_WRITE_SMOKE: 'false',
     };
     expect(contextFrom(env)).toEqual(context);
-    expect(() => contextFrom({ ...env, MOTE_ENVIRONMENT: 'access-test' })).toThrow(
-      'INVALID_RELEASE_TARGET',
-    );
     expect(() => contextFrom({ ...env, GITHUB_REF: 'refs/tags/v1.2.3-rc.1' })).toThrow(
       'UNTRUSTED_WORKFLOW_REF',
     );
+    expect(() =>
+      contextFrom({
+        ...env,
+        GITHUB_WORKFLOW_REF: 'flc1125/mote/.github/workflows/other.yml@refs/tags/v1.2.3',
+      }),
+    ).toThrow('UNTRUSTED_WORKFLOW_REF');
   });
-  it('requires fresh same-attempt deployment evidence', () => {
-    expect(() => releaseReady(deployed(), context, digest, sha)).not.toThrow();
-    expect(() => releaseReady(deployed(), { ...context, runAttempt: 2 }, digest, sha)).toThrow(
-      'RERUN_ALL_JOBS_REQUIRED',
-    );
-  });
-  it.each(['failed', 'unknown', 'in_progress'])('rejects deployment %s', (state) => {
-    expect(() => releaseReady({ ...deployed(), state }, context, digest, sha)).toThrow(
-      'DEPLOYMENT_NOT_VERIFIED',
-    );
-  });
-  it('rejects failed online checks even with successful Worker uploads', () => {
-    const state = deployed();
-    state.smoke.read = 'failed';
-    expect(() => releaseReady(state, context, digest, sha)).toThrow('DEPLOYMENT_NOT_VERIFIED');
-  });
-  it('rejects a tag moved away from its workflow commit', () => {
-    expect(() => resolveTarget(context, null, () => 'c'.repeat(40))).toThrow(
-      'TAG_WORKFLOW_SHA_MISMATCH',
-    );
-  });
-  it('rejects a checkpoint for different build bytes', () => {
-    expect(() => releaseState(context, deployed(), manifest, 'c'.repeat(64), fresh())).toThrow(
-      'RELEASE_ARTIFACT_MISMATCH',
-    );
-  });
-  it('records release checkpoints under a separate task from deployment recovery', async () => {
-    const client = vi.fn(async () => ({ id: 1 }));
-    await ledger(client, context, 'mote-release').save(fresh());
-    expect(client.mock.calls[0][1].task).toBe('mote-release:123');
-  });
-  it('supports a CLI-only release receipt without Worker deployment evidence', () => {
-    const state = releaseState(context, null, manifest, digest, null);
-    expect(state).not.toHaveProperty('deployment');
+  it('creates a CLI-only release receipt', () => {
+    const state = releaseState(context, manifest, digest);
     expect(JSON.parse(receipt(state))).toMatchObject({
       tag: manifest.tag,
       targetSha: sha,
       cli: manifest.cli,
+      npm: { state: 'pending' },
     });
     expect(JSON.parse(receipt(state))).not.toHaveProperty('components');
     expect(JSON.parse(receipt(state))).not.toHaveProperty('smoke');
@@ -233,7 +185,7 @@ describe('npm recovery', () => {
       expect(publish).not.toHaveBeenCalled();
     },
   );
-  it('does not publish without a durable intent', async () => {
+  it('does not publish when intent recording fails', async () => {
     const publish = vi.fn();
     await expect(
       ensureNpm({
@@ -246,7 +198,7 @@ describe('npm recovery', () => {
     ).rejects.toThrow('GITHUB_REQUEST_FAILED');
     expect(publish).not.toHaveBeenCalled();
   });
-  it('blocks old-run finalization after a superseding deployment', async () => {
+  it('blocks finalization when the remote tag guard fails', async () => {
     const publish = vi.fn();
     const lookup = vi.fn();
     await expect(
@@ -326,24 +278,7 @@ describe('GitHub Release reconciliation', () => {
       }),
     ).rejects.toThrow('RELEASE_IDENTITY_CONFLICT');
   });
-  it('binds the mandatory draft preflight to the exact run, attempt, SHA and artifacts', () => {
-    const identity = releasePreflightIdentity(context, sha, digest);
-    expect(() => requireReleasePreflight(context, sha, digest, identity)).not.toThrow();
-    for (const invalid of [undefined, '', 'true', identity.replace('123:', '124:')])
-      expect(() => requireReleasePreflight(context, sha, digest, invalid)).toThrow(
-        'RELEASE_PREFLIGHT_REQUIRED',
-      );
-    expect(() =>
-      requireReleasePreflight({ ...context, runAttempt: 2 }, sha, digest, identity),
-    ).toThrow('RELEASE_PREFLIGHT_REQUIRED');
-    expect(() => requireReleasePreflight(context, 'c'.repeat(40), digest, identity)).toThrow(
-      'RELEASE_PREFLIGHT_REQUIRED',
-    );
-    expect(() => requireReleasePreflight(context, sha, 'd'.repeat(64), identity)).toThrow(
-      'RELEASE_PREFLIGHT_REQUIRED',
-    );
-  });
-  it('checks known Release conflicts before deployment or npm writes', async () => {
+  it('checks known Release conflicts before npm writes', async () => {
     const s = releaseScenario();
     s.remote.release = {
       id: 10,
@@ -687,86 +622,6 @@ describe('publishing adapters without live writes', () => {
 });
 
 describe('release workflow contract', () => {
-  it('keeps the manual deployment entry isolated from tag releases', async () => {
-    const manual = await readFile(join(root, '.github/workflows/deploy.yml'), 'utf8');
-    const release = await readFile(join(root, '.github/workflows/release.yml'), 'utf8');
-    const direct = manual.split('\n  deploy:\n')[1].split('\n  write-smoke:\n')[0];
-    expect(direct).toContain('runs-on: ubuntu-latest');
-    expect(direct).toContain('needs: prepare');
-    expect(direct).toContain('node scripts/deploy/action.mjs deploy');
-    expect(release).not.toMatch(/scripts\/deploy\/action\.mjs deploy|\n {2}deploy:\n/);
-    expect(manual).toContain('MOTE_REF: ${{ inputs.ref }}');
-    expect(manual).toContain('MOTE_ENVIRONMENT: ${{ inputs.environment }}');
-    expect(manual).toContain('MOTE_WRITE_SMOKE: ${{ inputs.write_smoke }}');
-    expect(release).toContain('MOTE_REF: ${{ github.ref_name }}');
-    expect(release).toContain("MOTE_WRITE_SMOKE: 'false'");
-  });
-
-  it('requires an explicit readiness output in the manual deployment entry point', async () => {
-    const source = await readFile(join(root, '.github/workflows/deploy.yml'), 'utf8');
-    const deploy = source.split('\n  deploy:\n')[1].split(/\n {2}[\w-]+:\n/)[0];
-    expect(deploy).toContain('needs: prepare');
-    const condition = deploy.match(/^ {4}if: (.+)$/m)[1];
-    expect(condition).toBe("needs.prepare.outputs.ready == 'true'");
-    for (const ready of ['', 'false', 'true', 'unexpected']) {
-      const expression = condition.replace('needs.prepare.outputs.ready', JSON.stringify(ready));
-      expect(runInNewContext(expression, {}, { timeout: 100 })).toBe(ready === 'true');
-    }
-    const shared = await readFile(join(root, '.github/workflows/_deploy.yml'), 'utf8');
-    expect(shared).toContain('value: ${{ jobs.ready.outputs.ready }}');
-    const readyJob = shared.split('\n  ready:\n')[1];
-    expect(readyJob).toContain('ready: ${{ steps.ready.outputs.ready }}');
-    expect(readyJob).toContain('run: echo \'ready=true\' >> "$GITHUB_OUTPUT"');
-    expect(readyJob).not.toMatch(/environment:|secrets\.|uses:/);
-  });
-
-  it('runs manual write smoke only after successful preparation and deployment', async () => {
-    const source = await readFile(join(root, '.github/workflows/deploy.yml'), 'utf8');
-    const job = source.split('\n  write-smoke:\n')[1];
-    const condition = job.match(/^ {4}if: (.+)$/m)[1];
-    for (const prepare of ['success', 'failure', 'cancelled', 'skipped']) {
-      for (const deploy of ['success', 'failure', 'cancelled', 'skipped']) {
-        for (const write of [true, false]) {
-          const expression = condition
-            .replaceAll('always()', 'true')
-            .replaceAll('inputs.write_smoke', JSON.stringify(write))
-            .replaceAll('needs.prepare.result', JSON.stringify(prepare))
-            .replaceAll('needs.deploy.result', JSON.stringify(deploy));
-          expect(runInNewContext(expression, {}, { timeout: 100 })).toBe(
-            write && prepare === 'success' && deploy === 'success',
-          );
-        }
-      }
-    }
-    expect(job).toContain('MOTE_SERVICE_CLIENT_ID: ${{ secrets.MOTE_SERVICE_CLIENT_ID }}');
-    expect(job).toContain('MOTE_SERVICE_CLIENT_SECRET: ${{ secrets.MOTE_SERVICE_CLIENT_SECRET }}');
-    expect(job).not.toContain('CLOUDFLARE_API_TOKEN');
-  });
-
-  it('fails closed on missing/failed/cancelled tag preflight, including resumed builds', async () => {
-    const shared = await readFile(join(root, '.github/workflows/_deploy.yml'), 'utf8');
-    const condition = shared.split('\n  ready:')[1].match(/^ {4}if: (.+)$/m)[1];
-    for (const event of ['push', 'workflow_dispatch']) {
-      for (const resolve of ['success', 'failure', 'cancelled', 'skipped']) {
-        for (const prepare of ['success', 'failure', 'cancelled', 'skipped']) {
-          for (const preflight of ['success', 'failure', 'cancelled', 'skipped']) {
-            const results = { resolve, prepare, 'release-preflight': preflight };
-            // Evaluate the actual simple workflow expression, not a copied gate.
-            const expression = condition
-              .replaceAll('always()', 'true')
-              .replaceAll('github.event_name', JSON.stringify(event))
-              .replace(/needs\.([\w-]+)\.result/g, (_, job) => JSON.stringify(results[job]));
-            const allowed = runInNewContext(expression, {}, { timeout: 100 });
-            expect(allowed).toBe(
-              resolve === 'success' &&
-                ['success', 'skipped'].includes(prepare) &&
-                preflight === (event === 'push' ? 'success' : 'skipped'),
-            );
-          }
-        }
-      }
-    }
-  });
   it('orders CLI validation, read-only preflight, npm OIDC and GitHub Release', async () => {
     const workflow = await readFile(join(root, '.github/workflows/release.yml'), 'utf8');
     expect(workflow).toContain("tags: ['v*']");
@@ -796,7 +651,5 @@ describe('release workflow contract', () => {
       /CLOUDFLARE|MOTE_RELEASE_PREFLIGHT_IDENTITY|MOTE_SMOKE_|mote-build-|mote-deploy-result|deployment-result|scripts\/deploy\/action\.mjs deploy|npm@latest|--clobber|npm view|gh release edit|NODE_AUTH_TOKEN|NPM_TOKEN/,
     );
     expect(workflow.match(/mote-release-\$\{\{ github\.run_id \}\}/g)).toHaveLength(4);
-    const manual = await readFile(join(root, '.github/workflows/deploy.yml'), 'utf8');
-    expect(manual).not.toMatch(/release-action|id-token: write/);
   });
 });

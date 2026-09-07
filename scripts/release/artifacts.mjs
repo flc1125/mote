@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { assertInventory, fileInventory, root, sha256, stableTagVersion } from '../deploy/lib.mjs';
+import { assertInventory, fileInventory, root, sha256, stableTagVersion } from './lib.mjs';
 
 export async function verifyReleaseArtifacts(
   directory,

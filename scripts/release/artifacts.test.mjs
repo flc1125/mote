@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { fileInventory, root, sha256, writeJson } from '../deploy/lib.mjs';
+import { fileInventory, root, sha256, writeJson } from './lib.mjs';
 import { verifyReleaseArtifacts } from './artifacts.mjs';
 
 const sha = 'a'.repeat(40);
