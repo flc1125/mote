@@ -2,6 +2,9 @@ import { isAssetId, isDocumentId } from '@mote/core';
 import { isDocumentManifest, type DocumentManifest } from '@mote/protocol';
 import { documentSecurityHeaders, render } from '@mote/renderer';
 
+import { FAVICON_BASE64, ICON_SVG } from './brand.generated.js';
+import { HOME_HTML } from './home.js';
+
 export interface Env {
   DOCUMENTS: R2Bucket;
 }
@@ -164,6 +167,27 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   const { pathname } = new URL(request.url);
 
   if (method !== 'GET' && method !== 'HEAD') return notFound();
+
+  if (pathname === '/') {
+    return new Response(method === 'HEAD' ? null : HOME_HTML, {
+      headers: documentHeaders(),
+    });
+  }
+
+  if (pathname === '/favicon.ico' || pathname === '/favicon.svg') {
+    const isSvg = pathname === '/favicon.svg';
+    const body = isSvg
+      ? ICON_SVG
+      : Uint8Array.from(atob(FAVICON_BASE64), (char) => char.charCodeAt(0));
+    return new Response(method === 'HEAD' ? null : body, {
+      headers: {
+        ...assetHeaders(isSvg ? 'image/svg+xml' : 'image/x-icon'),
+        // Stable paths must revalidate; do not cache a changeable brand as immutable.
+        'Cache-Control': 'public, max-age=300',
+        'Content-Security-Policy': "default-src 'none'; sandbox",
+      },
+    });
+  }
 
   if (pathname === '/health') {
     // Deliberately does not touch R2 (baseline §47).
