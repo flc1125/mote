@@ -4,7 +4,7 @@
 
 ## 总览
 
-以下 Bearer 示例表示你自己的静态 token 部署，请替换示例域名。生产已启用的 Access 模式保持相同发布载荷与结果（客户端能力尚未发布到 npm）：OAuth 使用 opaque Bearer，机器使用 `CF-Access-Client-Id` / `CF-Access-Client-Secret`；Access 校验后由 Worker 验证签名断言。两种服务端模式不混用，详见[鉴权与迁移](authentication.md)。
+以下 Bearer 示例表示你自己的静态 token 部署，请替换示例域名。生产已启用的 Access 模式保持相同发布载荷与结果（OAuth/Service Token 客户端需要 mote-cli v0.2.0 或匹配的源码构建）：OAuth 使用 opaque Bearer，机器使用 `CF-Access-Client-Id` / `CF-Access-Client-Secret`；Access 校验后由 Worker 验证签名断言。两种服务端模式不混用，详见[鉴权与迁移](authentication.md)。
 
 ```text
 POST https://mote.example.com/api/v1/publish

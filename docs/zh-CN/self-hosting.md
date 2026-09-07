@@ -4,7 +4,7 @@
 
 Mote 完全运行在 Cloudflare 免费额度内：两个 Worker + 一个 R2 bucket，无数据库、无服务器。本指南带你从零部署到自己的 `https://<your-domain>`。
 
-步骤 1–8 是兼容的 **token** 模式。尚未发布的 Access 实现请使用已审核源码并先读下方 Access 部署说明。仅安装或发布 npm 包不会部署 Worker；仓库工作流见[部署自动化](#部署自动化)。
+步骤 1–8 是兼容的 **token** 模式。Access 模式请使用已审核的 v0.2.0 服务端源码与 mote-cli v0.2.0（或匹配的源码构建），切换鉴权前先读下方 Access 部署说明。仅安装或发布 npm 包不会部署 Worker；仓库工作流见[部署自动化](#部署自动化)。
 
 > 下文命令中的 `<your-domain>` 是占位符——替换成你自己的（子）域名，如 `mote.example.com`。
 
@@ -128,7 +128,9 @@ Header: Authorization: Bearer <你的 token>
 
 个人使用规模在 Cloudflare 免费额度内即可运行：每天 10 万 Worker 请求、10 GB R2 存储、流量免费。CDN 长缓存让重复读取不触达 Worker 和 R2。
 
-## Access 部署（尚未发布）
+<a id="access-部署尚未发布"></a>
+
+## Access 部署
 
 使用独立测试域名、Worker 与 R2。仓库的 `access-test` 绑定属于本项目，不得原样部署到别人的账号或复制其 AUD 到生产。
 

@@ -10,11 +10,21 @@ npm install -g mote-cli
 
 ## Usage
 
-The static-token example below also works with v0.1.1. This checkout adds unreleased `mote auth login`, `mote auth status` and `mote auth logout`, plus explicit Service Token mode. Build the reviewed source revision and use an Access-enabled instance; installing an older npm release or publishing this package does not switch a Worker deployment. Read `docs/authentication.md` in that source checkout for authentication and migration guidance.
+With v0.2.0, log in to an Access-enabled instance and publish:
+
+```bash
+mote login
+mote README.md
+```
+
+The default instance is `https://mote.flc.io`, which permits only approved publishers. For your own instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Login remembers the instance; explicit environment/config overrides still take precedence. The original `mote auth login`, status and logout commands remain supported. See the [authentication guide](https://github.com/flc1125/mote/blob/main/docs/authentication.md) for secure storage, machine mode and migration limits. Installing or publishing this package does not deploy Workers.
+
+For your own static-token instance (also supported by v0.1.1), explicitly select token mode:
 
 ```bash
 export MOTE_TOKEN="your-token"
 export MOTE_API_URL="https://mote.example.com" # your own token-mode instance
+export MOTE_AUTH_MODE="token"
 
 mote README.md
 ```

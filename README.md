@@ -39,7 +39,7 @@ The output above is illustrative. View a real [public sample with an image](http
 
 ## Quick Start
 
-The examples below use a static-token instance. For an Access-enabled instance, follow the [authentication guide](docs/authentication.md).
+Use mote-cli v0.2.0 for browser login and Service Token authentication. Older npm versions do not include these commands.
 
 ```bash
 npm install -g mote-cli
@@ -57,11 +57,23 @@ cd apps/cli && npm install -g .
 
 </details>
 
+### Access-enabled instance
+
+```bash
+mote login
+mote README.md
+```
+
+The default instance, `https://mote.flc.io`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Successful login remembers the instance; explicit environment/config overrides still apply. See the [authentication guide](docs/authentication.md) for setup and migration limits.
+
+### Static-token instance
+
 Configure your own token-mode instance and its token (see [Self-hosting](docs/self-hosting.md)); replace the example host with yours. A static token cannot publish to production `mote.flc.io`:
 
 ```bash
 export MOTE_API_URL="https://mote.example.com"
 export MOTE_TOKEN="your-token"
+export MOTE_AUTH_MODE="token"
 ```
 
 Publish:

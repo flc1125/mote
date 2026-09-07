@@ -9,7 +9,7 @@ Mote offers two MCP integrations with the same goal: publish Markdown → get a 
 | Auth     | OAuth for Access; static Bearer for token deployments | Mote CLI OAuth store, explicit service mode, or static token |
 | Verified | Codex 0.153.4 app-server on macOS                     | Actual stdio process on macOS                                |
 
-OAuth/service support describes the unreleased source revision, not v0.1.1. Production `mote.flc.io` uses Access. Compatibility is limited to the verified clients/platforms above; see [authentication and migration](authentication.md) for setup and validation limits.
+OAuth/service support requires the v0.2.0 source revision or later compatible builds; the CLI credential flow requires mote-cli v0.2.0, not v0.1.1. Production `mote.flc.io` uses Access. Compatibility is limited to the verified clients/platforms above; see [authentication and migration](authentication.md) for setup and validation limits.
 
 ## Remote MCP
 
@@ -75,7 +75,7 @@ Codex stores its own tokens; Mote CLI/stdio must not read or copy them. MCP logo
 
 The local server additionally exposes `publish_markdown_file`, which runs the CLI's asset scanning chain (local images uploaded and deduplicated automatically).
 
-Build:
+The local MCP server remains a private workspace package; installing `mote-cli` does not install `mote-mcp`. Build it from the matching v0.2.0 source checkout:
 
 ```bash
 pnpm --filter @mote/mcp build
@@ -94,7 +94,7 @@ Configure:
 }
 ```
 
-Use the same OS user and `XDG_CONFIG_HOME` as the Mote CLI. After `mote auth login --api https://mote.example.com --auth-mode oauth`, set `MOTE_API_URL=https://mote.example.com` and `MOTE_AUTH_MODE=oauth` in the stdio process environment. Do not put OAuth tokens in the MCP JSON. Local tools share the Mote credential store and refresh lock; they never initiate browser login. A previously launched process reads the current credentials on each tool call, so logout causes it to refuse further OAuth publishing.
+Use the same OS user and `XDG_CONFIG_HOME` as the Mote CLI. After `mote login --api https://mote.example.com --auth-mode oauth`, explicitly pin the stdio target and mode by setting `MOTE_API_URL=https://mote.example.com` and `MOTE_AUTH_MODE=oauth` in the stdio process environment. Do not put OAuth tokens in the MCP JSON. Local tools share the Mote credential store and refresh lock; they never initiate browser login. A previously launched process reads the current credentials on each tool call, so logout causes it to refuse further OAuth publishing.
 
 For unattended publishing, explicitly select `service` and inject the three service variables described in [machine publishing](authentication.md#machine-publishing). Static `MOTE_TOKEN`/config remains available only when token mode is selected. Environment selection belongs to the MCP parent process; changing an unrelated terminal's exports does not change it.
 

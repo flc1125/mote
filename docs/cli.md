@@ -2,7 +2,7 @@
 
 The `mote` CLI publishes a local Markdown file to a Mote instance and prints its URL.
 
-OAuth/Service Token commands below describe the **unreleased source**, not v0.1.1. Build the reviewed revision for an Access-enabled deployment. See [authentication and migration](authentication.md) for setup, secure storage and mode selection.
+OAuth/Service Token commands and the `mote login` shortcut require **mote-cli v0.2.0 or the matching source build**; v0.1.1 does not include them. Use an Access-enabled deployment for OAuth/service authentication. See [authentication and migration](authentication.md) for setup, secure storage and mode selection.
 
 ```bash
 mote <markdown-file>
@@ -37,7 +37,8 @@ mote --help
 Resolution order (highest priority first):
 
 ```text
-CLI arguments  >  environment variables  >  config file  >  defaults
+API URL: CLI arguments > environment variables > config file > remembered instance > default
+Other settings: CLI arguments > environment variables > config file > defaults
 ```
 
 | Setting        | CLI argument         | Environment variable         | Config file key             | Default                                     |
@@ -66,11 +67,13 @@ Use an API **origin** (for example `https://mote.example.com`), not an endpoint 
 ## Authentication commands
 
 ```bash
-mote auth login --api https://mote.example.com --auth-mode oauth
+mote login --api https://mote.example.com --auth-mode oauth
 mote auth status --api https://mote.example.com --json
 mote auth status --api https://mote.example.com --offline --json
 mote auth logout --api https://mote.example.com --json
 ```
+
+`mote login` is an alias for `mote auth login`; both remain supported. After credentials are saved successfully, login remembers the API origin in `auth/default-api.json`. You can then run `mote README.md` without `--api`, unless environment or config overrides select another instance. Explicit auth-mode settings still apply; a one-off `--api` publish does not change the saved default. Logout retains the default and OAuth selection marker but removes the selected target's OAuth credentials.
 
 Login requires an interactive terminal and rejects `--json`. `--no-browser` prints the login URL but is still interactive. `--client-id <public-id>` reuses a registration; keep its exact callback port using `--callback-port <port>`. Default storage is Keychain on verified macOS; `--credential-store file` explicitly opts into private plaintext files. There is no automatic fallback. See [storage and refresh](authentication.md#credential-storage-and-refresh).
 
