@@ -3,8 +3,8 @@ import { execFile } from 'node:child_process';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
-import { boundedFetch, readRetry } from './smoke.mjs';
-import { DeployError, requireThat, stableTag } from './policy.mjs';
+import { boundedFetch, readRetry } from './http.mjs';
+import { ReleaseError, requireThat, stableTag } from './policy.mjs';
 import { sha256 } from './lib.mjs';
 
 const execAsync = promisify(execFile);
@@ -62,7 +62,7 @@ export function registryClient(manifest, bytes, fetchImpl = globalThis.fetch) {
         return { present: true, integrity: expectedIntegrity };
       });
     } catch (error) {
-      throw error instanceof DeployError ? error : new DeployError('REGISTRY_QUERY_FAILED');
+      throw error instanceof ReleaseError ? error : new ReleaseError('REGISTRY_QUERY_FAILED');
     }
   };
 }
@@ -130,7 +130,7 @@ export async function npmPublisher({ tarball, scratch, processEnv, execImpl = ex
       options,
     );
   } catch (error) {
-    throw error instanceof DeployError ? error : new DeployError('NPM_PUBLISH_UNKNOWN');
+    throw error instanceof ReleaseError ? error : new ReleaseError('NPM_PUBLISH_UNKNOWN');
   }
 }
 
@@ -159,7 +159,7 @@ export function releaseClient(repository, token, fetchImpl = globalThis.fetch) {
         requireThat(response.status >= 200 && response.status < 300, 'RELEASE_REQUEST_FAILED');
         return JSON.parse(response.text);
       } catch (error) {
-        throw error instanceof DeployError ? error : new DeployError('RELEASE_REQUEST_FAILED');
+        throw error instanceof ReleaseError ? error : new ReleaseError('RELEASE_REQUEST_FAILED');
       }
     };
     return method === 'GET' ? readRetry(operation) : operation();
@@ -172,7 +172,7 @@ export function releaseClient(repository, token, fetchImpl = globalThis.fetch) {
       result.push(...items);
       if (items.length < 100) return result;
     }
-    throw new DeployError('RELEASE_PAGINATION_LIMIT');
+    throw new ReleaseError('RELEASE_PAGINATION_LIMIT');
   }
   const validId = (id) => requireThat(Number.isSafeInteger(id) && id > 0, 'INVALID_RELEASE_ID');
   return {

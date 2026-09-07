@@ -2,10 +2,10 @@ import { appendFile, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import process from 'node:process';
 import { log } from 'node:console';
-import { contextFrom, isDigest, requireThat, safeCode } from '../deploy/policy.mjs';
-import { npmPublisher, registryClient, releaseClient } from '../deploy/release-clients.mjs';
-import { ensureNpm, ensureRelease, preflightRelease, releaseState } from '../deploy/release.mjs';
-import { writeJson } from '../deploy/lib.mjs';
+import { npmPublisher, registryClient, releaseClient } from './clients.mjs';
+import { writeJson } from './lib.mjs';
+import { contextFrom, isDigest, requireThat, safeCode } from './policy.mjs';
+import { ensureNpm, ensureRelease, preflightRelease, releaseState } from './release.mjs';
 import { verifyReleaseArtifacts } from './artifacts.mjs';
 
 const env = process.env;
@@ -14,7 +14,7 @@ let state;
 async function main() {
   const command = process.argv[2];
   const context = contextFrom(env);
-  requireThat(context.trigger === 'tag' && !context.writeEnabled, 'NOT_A_RELEASE');
+  requireThat(context.trigger === 'tag', 'NOT_A_RELEASE');
   requireThat(['preflight', 'npm', 'github'].includes(command), 'INVALID_RELEASE_COMMAND');
   requireThat(
     env.MOTE_TARGET_SHA === context.workflowSha && isDigest(env.MOTE_MANIFEST_DIGEST),
@@ -53,7 +53,7 @@ async function main() {
     return;
   }
 
-  state = releaseState(context, null, manifest, env.MOTE_MANIFEST_DIGEST, null);
+  state = releaseState(context, manifest, env.MOTE_MANIFEST_DIGEST);
   const resultDir = join(env.RUNNER_TEMP, 'mote-release-result');
   await mkdir(resultDir, { recursive: true });
   const persist = async (value) => {

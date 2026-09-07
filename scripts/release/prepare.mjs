@@ -15,7 +15,7 @@ import {
   sha256,
   stableTagVersion,
   writeJson,
-} from '../deploy/lib.mjs';
+} from './lib.mjs';
 import { verifyReleaseArtifacts } from './artifacts.mjs';
 
 const { values } = parseArgs({
