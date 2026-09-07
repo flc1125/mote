@@ -141,11 +141,31 @@ describe('public homepage and branding', () => {
     expect(html).toBe(HOME_HTML);
     expect(html).toContain('Markdown in.');
     expect(html).toContain('URL out.');
-    expect(html).toContain('mote login --api https://mote.example.com');
+    expect(html).toContain('npm install -g mote-cli\nmote login\nmote README.md');
     expect(html).not.toContain('export MOTE_TOKEN');
+    expect(html).toContain('for="method-cli">CLI</label>');
+    expect(html).toContain('for="method-mcp">MCP</label>');
+    expect(html).toContain('for="method-skill">Skill</label>');
+    expect(html).toContain(
+      'href="https://github.com/flc1125/mote/blob/main/docs/mcp.md">MCP setup guide</a>',
+    );
+    expect(html).toContain(
+      'href="https://github.com/flc1125/mote/blob/main/docs/skill.md">Skill guide</a>',
+    );
+    expect(html).toContain('The skill uses your configured CLI or MCP tools');
+    expect(html).toContain('href="https://github.com/flc1125/mote/blob/main/docs/cli.md">CLI</a>');
+    expect(html).toContain(
+      'href="https://github.com/flc1125/mote/blob/main/docs/skill.md">Skill</a>',
+    );
+    expect(html).toContain('codex mcp add mote --url https://mote.flc.io/api/mcp');
+    expect(html).toContain('codex mcp login mote');
+    expect(html).toContain('npx skills add flc1125/mote --skill mote');
+    expect(html.match(/type="radio" name="publish-method"/g)).toHaveLength(3);
+    expect(html).toContain('id="method-cli" aria-controls="panel-cli" checked');
     expect(html).toContain('#ef5552');
     expect(html).toContain('prefers-color-scheme: dark');
-    expect(html).not.toMatch(/<script|<form|<input/i);
+    expect(html).not.toMatch(/<script|<form/i);
+    expect(html.match(/<input\b/g)).toHaveLength(3);
     expect(html).not.toContain(ID);
     expect(html).not.toContain(ASSET_ID);
     expect(html).not.toContain('Hello Mote');
