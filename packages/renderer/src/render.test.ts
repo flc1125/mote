@@ -66,9 +66,9 @@ describe('render (§42)', () => {
     expect(html).toContain('<title>README.md</title>');
   });
 
-  it('renders a TOC linking to heading anchors', () => {
+  it('renders a collapsed TOC linking to heading anchors', () => {
     const html = render(markdown, manifest, DOCUMENT_ID);
-    expect(html).toContain('<nav class="toc"');
+    expect(html).toContain('<details class="toc"><summary>Contents</summary>');
     expect(html).toContain('<a href="#背景">背景</a>');
     expect(html).toContain('<h2 id="背景">背景</h2>');
   });

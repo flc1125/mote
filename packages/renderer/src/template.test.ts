@@ -26,8 +26,26 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
     expect(page).toContain('<link rel="icon" href="/favicon.ico" sizes="16x16 32x32">');
   });
 
-  it('escapes the title and uses the main > article structure', () => {
+  it('escapes the title wherever it appears', () => {
     expect(page).toContain('<title>Doc &lt;One&gt;</title>');
+    expect(page).toContain('<span class="mote-doc-title">Doc &lt;One&gt;</span>');
+    expect(page).not.toContain('Doc <One>');
+  });
+
+  it('uses the banner > main > article > colophon structure', () => {
+    expect(page).toContain('<header class="mote-banner">');
     expect(page).toContain('<main>\n<article>\n<nav class="toc">x</nav>\n<h1 id="one">One</h1>');
+    expect(page).toContain('<footer class="mote-colophon">');
+  });
+
+  it('points the brand links at the same-origin home (self-host friendly)', () => {
+    expect(page).toContain('<a class="mote-brand" href="/">');
+    expect(page).toContain('Published with <a href="/">Mote</a>');
+  });
+
+  it('inlines no external resources beyond the favicons', () => {
+    expect(page).not.toMatch(/url\(/);
+    expect(page).not.toContain('@import');
+    expect(page).not.toContain('@font-face');
   });
 });

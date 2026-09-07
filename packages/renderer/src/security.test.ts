@@ -18,6 +18,16 @@ function renderAttack(markdown: string): string {
   return render(markdown, manifest, DOCUMENT_ID);
 }
 
+/**
+ * The page chrome (banner/colophon) legitimately contains links; XSS
+ * assertions about produced elements target the article body only.
+ */
+function articleContent(html: string): string {
+  const match = html.match(/<article>\n([\s\S]*?)<\/article>/);
+  if (!match) throw new Error('rendered page has no <article>');
+  return match[1]!;
+}
+
 describe('XSS security tests (§57)', () => {
   it('<script>alert(1)</script> must not become an element', () => {
     const html = renderAttack('<script>alert(1)</script>');
@@ -26,12 +36,12 @@ describe('XSS security tests (§57)', () => {
   });
 
   it('[click](javascript:alert(1)) must not produce a javascript URL', () => {
-    const html = renderAttack('[click](javascript:alert(1))');
+    const article = articleContent(renderAttack('[click](javascript:alert(1))'));
     // markdown-it refuses to parse the destination: it stays inert literal
     // text and no <a> element (let alone a javascript: href) is produced.
-    expect(html.toLowerCase()).not.toContain('href="javascript');
-    expect(html).not.toContain('<a ');
-    expect(html).toContain('[click](javascript:alert(1))');
+    expect(article.toLowerCase()).not.toContain('href="javascript');
+    expect(article).not.toContain('<a ');
+    expect(article).toContain('[click](javascript:alert(1))');
   });
 
   it('![](javascript:alert(1)) must not output a dangerous src', () => {
@@ -48,24 +58,26 @@ describe('XSS security tests (§57)', () => {
   });
 
   it('data:, vbscript: and file: URLs never become href/src attributes', () => {
-    const html = renderAttack(
-      '[a](data:text/html;base64,PHNjcmlwdD4=)\n\n' +
-        '[b](vbscript:msgbox(1))\n\n' +
-        '![c](data:image/svg+xml;base64,PHN2Zz4=)\n\n' +
-        '[d](file:///etc/passwd)',
+    const article = articleContent(
+      renderAttack(
+        '[a](data:text/html;base64,PHNjcmlwdD4=)\n\n' +
+          '[b](vbscript:msgbox(1))\n\n' +
+          '![c](data:image/svg+xml;base64,PHN2Zz4=)\n\n' +
+          '[d](file:///etc/passwd)',
+      ),
     );
-    expect(html).not.toContain('href="data:');
-    expect(html).not.toContain('href="vbscript:');
-    expect(html).not.toContain('src="data:');
-    expect(html).not.toContain('href="file:');
-    expect(html).not.toContain('<a ');
-    expect(html).not.toContain('<img');
+    expect(article).not.toContain('href="data:');
+    expect(article).not.toContain('href="vbscript:');
+    expect(article).not.toContain('src="data:');
+    expect(article).not.toContain('href="file:');
+    expect(article).not.toContain('<a ');
+    expect(article).not.toContain('<img');
   });
 
   it('obfuscated javascript links are not honored', () => {
-    const html = renderAttack('[a](jAvAsCrIpT:alert(1))');
-    expect(html.toLowerCase()).not.toContain('href="javascript');
-    expect(html).not.toContain('<a ');
+    const article = articleContent(renderAttack('[a](jAvAsCrIpT:alert(1))'));
+    expect(article.toLowerCase()).not.toContain('href="javascript');
+    expect(article).not.toContain('<a ');
   });
 
   it('a protocol-relative href that slips through parsing is stripped', () => {

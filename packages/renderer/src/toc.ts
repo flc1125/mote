@@ -46,9 +46,16 @@ function renderNodes(nodes: TocNode[]): string {
   return `<ul>${items.join('')}</ul>`;
 }
 
-/** Renders the TOC nav block, or an empty string when there is nothing to show. */
+/**
+ * Renders the TOC as a collapsed disclosure so the document content leads
+ * the page; <details> gives expand/collapse and keyboard access without JS.
+ * Returns an empty string when there is nothing to show.
+ */
 export function renderToc(headings: Heading[]): string {
   const tree = buildTocTree(headings);
   if (tree.length === 0) return '';
-  return `<nav class="toc" aria-label="Table of contents">${renderNodes(tree)}</nav>\n`;
+  return (
+    `<details class="toc"><summary>Contents</summary>` +
+    `<nav aria-label="Table of contents">${renderNodes(tree)}</nav></details>\n`
+  );
 }
