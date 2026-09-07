@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-08
+
 ### Added
 
 - Shared `@mote/theme` design package: light/dark token palettes derived from the brand red, baseline element styles, and the embedded icon mark (kept in sync by `scripts/brand/sync.mjs`).
@@ -68,7 +70,8 @@ Published manually to npm without a matching Git tag or GitHub Release; v0.1.1 i
 - **Docs** — architecture, publish protocol, security model, self-hosting guide, CLI and MCP references (English + 中文)
 - **Infrastructure** — Cloudflare Workers + R2 only; Workers Cache with per-version cache namespaces; runs on the free tier
 
-[Unreleased]: https://github.com/flc1125/mote/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/flc1125/mote/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/flc1125/mote/releases/tag/v0.3.0
 [0.2.0]: https://github.com/flc1125/mote/releases/tag/v0.2.0
 [0.1.1]: https://github.com/flc1125/mote/releases/tag/v0.1.1
 [0.1.0]: https://www.npmjs.com/package/mote-cli/v/0.1.0
