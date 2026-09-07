@@ -121,6 +121,25 @@ export class CredentialStore {
       );
     }
   }
+  /** Non-secret, atomic preference shared by CLI and local MCP. */
+  async defaultApi(): Promise<string | undefined> {
+    if (!(await this.directoryReady(false))) return;
+    const raw = await this.read(join(this.directory, 'default-api.json'));
+    if (raw === undefined) return;
+    try {
+      const value = JSON.parse(raw) as { version?: unknown; apiUrl?: unknown } | null;
+      if (value?.version !== 1 || typeof value.apiUrl !== 'string') throw new Error();
+      return apiOrigin(value.apiUrl, true);
+    } catch {
+      throw new CliError('invalid saved default API; run mote login --api <origin> to replace it');
+    }
+  }
+  /** Call only after login and credential persistence succeed. Last atomic write wins. */
+  async rememberApi(api: string): Promise<void> {
+    const apiUrl = apiOrigin(api, true);
+    await this.directoryReady();
+    await this.atomic(join(this.directory, 'default-api.json'), { version: 1, apiUrl });
+  }
   private async profile(api: string): Promise<Profile | undefined> {
     const raw = await this.read(this.path(api));
     if (raw === undefined) return;
