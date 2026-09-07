@@ -307,6 +307,59 @@ describe('OAuth protocol', () => {
     await expect(listener.result).rejects.toThrow(/cancelled/);
     await listener.close();
   });
+
+  it('serves branded static HTML pages for success, denial, and invalid callbacks', async () => {
+    const listener = await callbackListener('state');
+    try {
+      const successUrl = new URL(listener.redirectUri);
+      successUrl.searchParams.set('state', 'state');
+      successUrl.searchParams.set('code', 'code');
+      const success = await fetch(successUrl);
+      expect(success.status).toBe(200);
+      expect(success.headers.get('Content-Type')).toBe('text/html; charset=utf-8');
+      expect(success.headers.get('Cache-Control')).toBe('no-store');
+      expect(success.headers.get('Content-Security-Policy')).toBe(
+        "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'",
+      );
+      const html = await success.text();
+      expect(html).toContain('Authorization received.');
+      expect(html).toContain('<style>');
+      expect(html).not.toMatch(/<script|state=|code=/);
+      expect((await listener.result).searchParams.get('code')).toBe('code');
+    } finally {
+      await listener.close();
+    }
+
+    const denied = await callbackListener('state');
+    try {
+      const deniedUrl = new URL(denied.redirectUri);
+      deniedUrl.searchParams.set('state', 'state');
+      deniedUrl.searchParams.set('error', 'access_denied');
+      const response = await fetch(deniedUrl);
+      expect(response.status).toBe(400);
+      expect(await response.text()).toContain('Authorization was not completed.');
+      await expect(denied.result).rejects.toThrow(/denied/);
+    } finally {
+      await denied.close();
+    }
+
+    const invalid = await callbackListener('state');
+    try {
+      const wrongState = new URL(invalid.redirectUri);
+      wrongState.searchParams.set('state', 'wrong');
+      const response = await fetch(wrongState);
+      expect(response.status).toBe(400);
+      expect(await response.text()).toContain('Invalid callback.');
+
+      const missingCode = new URL(invalid.redirectUri);
+      missingCode.searchParams.set('state', 'state');
+      const missing = await fetch(missingCode);
+      expect(missing.status).toBe(400);
+      expect(await missing.text()).toContain('Missing authorization code.');
+    } finally {
+      await invalid.close();
+    }
+  });
 });
 describe('mode and commands', () => {
   it('isolates service credentials by explicit target and never mixes legacy token', async () => {

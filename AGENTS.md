@@ -10,6 +10,7 @@ Mote is a TypeScript/pnpm monorepo for publishing Markdown as immutable pages on
 - `apps/viewer`: anonymous document/asset rendering Worker.
 - `apps/auth-probe`: isolated Access verification app.
 - `packages/core`, `protocol`, `renderer`: primitives, wire contracts, and safe rendering.
+- `packages/theme`: shared design tokens and baseline CSS inlined by every HTML surface.
 - `docs/`: architecture, protocol, security, and deployment guidance.
 
 Keep shared behavior in packages. Tests live beside source as `src/*.test.ts` or in an app-level `test/` directory.

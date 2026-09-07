@@ -17,10 +17,17 @@ exports[`render (§42) > renders a complete page (snapshot) 1`] = `
   --mote-bg: #ffffff;
   --mote-muted: #59636e;
   --mote-border: #d1d9e0;
-  --mote-link: #0969da;
   --mote-code-bg: #eff1f3;
   --mote-pre-bg: #f6f8fa;
   --mote-toc-bg: #f6f8fa;
+  --mote-brand: #ef5552;
+  --mote-accent: #c23c39;
+  --mote-accent-strong: #a92f2c;
+  --mote-on-accent: #ffffff;
+  --mote-tint: #fef1f0;
+  --mote-tint-border: #f3c8c5;
+  --mote-glow-from: rgb(239 85 82 / 0.16);
+  --mote-glow-to: rgb(239 85 82 / 0);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,10 +36,17 @@ exports[`render (§42) > renders a complete page (snapshot) 1`] = `
     --mote-bg: #0d1117;
     --mote-muted: #9198a1;
     --mote-border: #3d444d;
-    --mote-link: #4493f8;
     --mote-code-bg: #2f3742;
     --mote-pre-bg: #161b22;
     --mote-toc-bg: #161b22;
+    --mote-brand: #ff6d6a;
+    --mote-accent: #ff8582;
+    --mote-accent-strong: #ff9d9a;
+    --mote-on-accent: #2b0d0c;
+    --mote-tint: #2b1617;
+    --mote-tint-border: #5a2a29;
+    --mote-glow-from: rgb(255 109 106 / 0.14);
+    --mote-glow-to: rgb(255 109 106 / 0);
   }
 }
 
@@ -47,10 +61,71 @@ body {
   word-wrap: break-word;
 }
 
+::selection {
+  background: var(--mote-brand);
+  color: var(--mote-on-accent);
+}
+
+a { color: var(--mote-accent); }
+a:hover { color: var(--mote-accent-strong); }
+a:focus-visible {
+  outline: 2px solid var(--mote-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+code, kbd, pre {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
+
+.mote-banner {
+  border-bottom: 1px solid var(--mote-border);
+}
+
+.mote-banner-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mote-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--mote-fg);
+  text-decoration: none;
+}
+
+.mote-brand:hover { color: var(--mote-fg); text-decoration: none; }
+
+.mote-brand-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--mote-brand);
+}
+
+.mote-doc-title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  color: var(--mote-muted);
+}
+
 main {
   max-width: 860px;
   margin: 0 auto;
-  padding: 2rem 1rem 4rem;
+  padding: 2rem 1rem 3rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -66,13 +141,8 @@ h4 { font-size: 1em; }
 
 p, ul, ol, blockquote, table, pre { margin: 0 0 1em; }
 
-a { color: var(--mote-link); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-code, kbd, pre {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", monospace;
-}
+article a { text-decoration: none; }
+article a:hover { text-decoration: underline; }
 
 code {
   background: var(--mote-code-bg);
@@ -83,6 +153,7 @@ code {
 
 pre {
   background: var(--mote-pre-bg);
+  border: 1px solid var(--mote-border);
   padding: 0.8rem 1rem;
   border-radius: 8px;
   overflow-x: auto;
@@ -101,7 +172,7 @@ blockquote {
   margin-left: 0;
   padding: 0 1em;
   color: var(--mote-muted);
-  border-left: 0.25em solid var(--mote-border);
+  border-left: 0.25em solid var(--mote-brand);
 }
 
 table {
@@ -117,7 +188,7 @@ th, td {
   border: 1px solid var(--mote-border);
 }
 
-th { font-weight: 600; }
+th { font-weight: 600; background: var(--mote-pre-bg); }
 
 img { max-width: 100%; height: auto; box-sizing: border-box; }
 
@@ -129,22 +200,50 @@ hr {
 }
 
 .toc {
-  background: var(--mote-toc-bg);
-  border: 1px solid var(--mote-border);
+  background: var(--mote-tint);
+  border: 1px solid var(--mote-tint-border);
   border-radius: 8px;
-  padding: 0.8rem 1.2rem;
+  padding: 0.55rem 1rem;
   margin: 0 0 1.5em;
   font-size: 0.9em;
 }
 
+.toc summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--mote-accent);
+}
+
+.toc summary:hover { color: var(--mote-accent-strong); }
+.toc nav { margin-top: 0.55rem; }
 .toc ul { margin: 0; padding-left: 1.2em; }
 .toc li { margin: 0.15em 0; }
+
+.mote-colophon {
+  border-top: 1px solid var(--mote-border);
+}
+
+.mote-colophon-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 18px 16px 28px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--mote-muted);
+}
+
+.mote-colophon a { text-decoration: none; }
+.mote-colophon a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
+<header class="mote-banner"><div class="mote-banner-inner">
+<a class="mote-brand" href="/"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
+<span class="mote-doc-title">Mote 设计文档</span>
+</div></header>
 <main>
 <article>
-<nav class="toc" aria-label="Table of contents"><ul><li><a href="#mote-设计文档">Mote 设计文档</a><ul><li><a href="#背景">背景</a></li><li><a href="#小结">小结</a></li></ul></li></ul></nav>
+<details class="toc"><summary>Contents</summary><nav aria-label="Table of contents"><ul><li><a href="#mote-设计文档">Mote 设计文档</a><ul><li><a href="#背景">背景</a></li><li><a href="#小结">小结</a></li></ul></li></ul></nav></details>
 <h1 id="mote-设计文档">Mote 设计文档</h1>
 <h2 id="背景">背景</h2>
 <p>一些 <strong>加粗</strong> 文字与 <code>code</code>，见 <a href="https://example.com">https://example.com</a> 。</p>
@@ -171,6 +270,9 @@ hr {
 </blockquote>
 </article>
 </main>
+<footer class="mote-colophon"><div class="mote-colophon-inner">
+<span>Published with <a href="/">Mote</a></span>
+</div></footer>
 </body>
 </html>
 "

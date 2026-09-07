@@ -18,10 +18,17 @@ exports[`public homepage and branding > serves a static homepage without publish
   --mote-bg: #ffffff;
   --mote-muted: #59636e;
   --mote-border: #d1d9e0;
-  --mote-link: #0969da;
   --mote-code-bg: #eff1f3;
   --mote-pre-bg: #f6f8fa;
   --mote-toc-bg: #f6f8fa;
+  --mote-brand: #ef5552;
+  --mote-accent: #c23c39;
+  --mote-accent-strong: #a92f2c;
+  --mote-on-accent: #ffffff;
+  --mote-tint: #fef1f0;
+  --mote-tint-border: #f3c8c5;
+  --mote-glow-from: rgb(239 85 82 / 0.16);
+  --mote-glow-to: rgb(239 85 82 / 0);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,10 +37,17 @@ exports[`public homepage and branding > serves a static homepage without publish
     --mote-bg: #0d1117;
     --mote-muted: #9198a1;
     --mote-border: #3d444d;
-    --mote-link: #4493f8;
     --mote-code-bg: #2f3742;
     --mote-pre-bg: #161b22;
     --mote-toc-bg: #161b22;
+    --mote-brand: #ff6d6a;
+    --mote-accent: #ff8582;
+    --mote-accent-strong: #ff9d9a;
+    --mote-on-accent: #2b0d0c;
+    --mote-tint: #2b1617;
+    --mote-tint-border: #5a2a29;
+    --mote-glow-from: rgb(255 109 106 / 0.14);
+    --mote-glow-to: rgb(255 109 106 / 0);
   }
 }
 
@@ -48,151 +62,121 @@ body {
   word-wrap: break-word;
 }
 
-main {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 2rem 1rem 4rem;
+::selection {
+  background: var(--mote-brand);
+  color: var(--mote-on-accent);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  margin: 1.5em 0 0.6em;
-  line-height: 1.25;
-  font-weight: 600;
+a { color: var(--mote-accent); }
+a:hover { color: var(--mote-accent-strong); }
+a:focus-visible {
+  outline: 2px solid var(--mote-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
-
-h1 { font-size: 1.9em; padding-bottom: 0.3em; border-bottom: 1px solid var(--mote-border); }
-h2 { font-size: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--mote-border); }
-h3 { font-size: 1.25em; }
-h4 { font-size: 1em; }
-
-p, ul, ol, blockquote, table, pre { margin: 0 0 1em; }
-
-a { color: var(--mote-link); text-decoration: none; }
-a:hover { text-decoration: underline; }
 
 code, kbd, pre {
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
 }
 
-code {
-  background: var(--mote-code-bg);
-  padding: 0.15em 0.35em;
-  border-radius: 6px;
-  font-size: 0.85em;
-}
-
-pre {
-  background: var(--mote-pre-bg);
-  padding: 0.8rem 1rem;
-  border-radius: 8px;
-  overflow-x: auto;
-  font-size: 0.85em;
-  line-height: 1.5;
-}
-
-pre code {
-  background: transparent;
-  padding: 0;
-  border-radius: 0;
-  font-size: inherit;
-}
-
-blockquote {
-  margin-left: 0;
-  padding: 0 1em;
-  color: var(--mote-muted);
-  border-left: 0.25em solid var(--mote-border);
-}
-
-table {
-  display: block;
-  width: max-content;
-  max-width: 100%;
-  overflow-x: auto;
-  border-collapse: collapse;
-}
-
-th, td {
-  padding: 0.4em 0.8em;
-  border: 1px solid var(--mote-border);
-}
-
-th { font-weight: 600; }
-
-img { max-width: 100%; height: auto; box-sizing: border-box; }
-
-hr {
-  height: 1px;
-  border: 0;
-  background: var(--mote-border);
-  margin: 1.5em 0;
-}
-
-.toc {
-  background: var(--mote-toc-bg);
-  border: 1px solid var(--mote-border);
-  border-radius: 8px;
-  padding: 0.8rem 1.2rem;
-  margin: 0 0 1.5em;
-  font-size: 0.9em;
-}
-
-.toc ul { margin: 0; padding-left: 1.2em; }
-.toc li { margin: 0.15em 0; }
-
-:root { --mote-brand: #ef5552; --home-link: #c23c39; }
-@media (prefers-color-scheme: dark) { :root { --home-link: #ff8582; } }
-.home-header, .home-footer, .features { max-width: 1152px; margin: 0 auto; }
-.home-header { display: flex; justify-content: space-between; align-items: center; padding: 30px 24px; }
-.home-header svg { display: block; width: 164px; height: auto; }
-@media (prefers-color-scheme: dark) { .home-header [data-wordmark] { fill: #e6edf3; } }
-.header-rule { border-bottom: 1px solid var(--mote-border); }
-a { color: var(--home-link); text-decoration: underline; text-underline-offset: 4px; }
-a:hover { text-decoration-thickness: 2px; }
-a:focus-visible { outline: 2px solid var(--home-link); outline-offset: 6px; border-radius: 2px; }
-.home-header a, .home-footer a { color: var(--mote-fg); }
-.home-main { max-width: 792px; padding: 62px 24px 0; }
-.hero h1 { font-size: clamp(42px, 7.3vw, 100px); line-height: 1.04; letter-spacing: -0.025em; font-weight: 700; border: 0; margin: 0 0 26px; padding: 0; }
-.hero h1 span { color: var(--mote-brand); }
-.hero p { font-size: 22px; margin-bottom: 28px; }
-.hero nav { display: flex; gap: 40px; font-size: 20px; }
-.quickstart { padding-top: 62px; scroll-margin-top: 24px; }
-.quickstart h2 { border: 0; margin: 0 0 14px; padding: 0; font-size: 34px; letter-spacing: -0.03em; }
-.quickstart pre { border: 1px solid var(--mote-border); padding: 18px; font-size: 16px; line-height: 1.65; margin-bottom: 14px; }
-.quickstart p { color: var(--mote-muted); font-size: 15px; }
-.publish-methods { border: 0; margin: 24px 0 0; padding: 0; min-width: 0; display: grid; grid-template-columns: repeat(3, 1fr); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
-.method-label { text-align: center; padding: 12px 16px; font-size: 17px; font-weight: 600; color: var(--mote-muted); cursor: pointer; border-bottom: 2px solid var(--mote-border); }
-.method-label:hover { color: var(--mote-fg); background: var(--mote-pre-bg); }
-.method-choice:checked + .method-label { color: var(--home-link); border-color: var(--mote-brand); }
-.method-choice:focus-visible + .method-label { outline: 2px solid var(--home-link); outline-offset: -4px; border-radius: 4px; }
-.publish-option { display: none; grid-column: 1 / -1; min-width: 0; padding-top: 24px; }
+code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6px; font-size: 0.85em; }
+
+.header-rule { border-bottom: 1px solid var(--mote-border); }
+.home-header { max-width: 1152px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 26px 24px; }
+.home-header svg { display: block; width: 148px; height: auto; }
+@media (prefers-color-scheme: dark) { .home-header [data-wordmark] { fill: #e6edf3; } }
+.home-header nav { display: flex; gap: 28px; font-size: 15px; }
+.home-header nav a, .home-footer a { color: var(--mote-fg); text-decoration: none; }
+.home-header nav a:hover, .home-footer a:hover { color: var(--mote-accent); text-decoration: none; }
+
+.hero-wrap {
+  background:
+    radial-gradient(760px 360px at 15% -80px, var(--mote-glow-from), var(--mote-glow-to)),
+    radial-gradient(620px 320px at 85% -40px, var(--mote-glow-from), var(--mote-glow-to)),
+    radial-gradient(var(--mote-tint-border) 1px, transparent 1.5px);
+  background-size: auto, auto, 24px 24px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+.hero { max-width: 1152px; margin: 0 auto; padding: 88px 24px 104px; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+.hero h1 { font-size: clamp(46px, 6.2vw, 88px); line-height: 1.02; letter-spacing: -0.03em; font-weight: 750; margin: 0 0 24px; }
+.hero h1 span { color: var(--mote-brand); }
+.hero-sub { font-size: 20px; color: var(--mote-muted); margin: 0 0 34px; max-width: 38ch; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+.button { display: inline-block; padding: 12px 24px; border-radius: 10px; font-size: 16px; font-weight: 600; text-decoration: none; }
+.button-primary { background: var(--mote-accent); color: var(--mote-on-accent); }
+.button-primary:hover { background: var(--mote-accent-strong); color: var(--mote-on-accent); text-decoration: none; }
+.button-secondary { background: var(--mote-bg); border: 1px solid var(--mote-border); color: var(--mote-fg); }
+.button-secondary:hover { border-color: var(--mote-accent); color: var(--mote-accent); text-decoration: none; }
+
+.terminal { background: #1c2128; border: 1px solid rgb(255 255 255 / 0.09); border-radius: 14px; box-shadow: 0 32px 64px -32px rgb(239 85 82 / 0.35), 0 12px 28px rgb(15 17 21 / 0.18); overflow: hidden; font-size: 15px; }
+.terminal-bar { display: flex; gap: 7px; padding: 14px 16px; border-bottom: 1px solid rgb(255 255 255 / 0.07); }
+.terminal-dot { width: 11px; height: 11px; border-radius: 50%; background: #3d444d; }
+.terminal-dot:first-child { background: var(--mote-brand); }
+.terminal pre { margin: 0; padding: 20px 22px 24px; overflow-x: auto; color: #e6edf3; line-height: 1.75; }
+.terminal pre code { background: transparent; padding: 0; font-size: inherit; }
+.terminal-prompt { color: #ff8582; font-weight: 600; }
+.terminal a { color: #ff8582; text-decoration: underline; text-underline-offset: 3px; }
+.terminal a:hover { color: #ffb3b1; }
+@media (prefers-color-scheme: dark) { .terminal { border-color: rgb(255 255 255 / 0.12); box-shadow: 0 32px 64px -32px rgb(255 109 106 / 0.22), 0 12px 28px rgb(0 0 0 / 0.5); } }
+
+.section { max-width: 1152px; margin: 0 auto; padding: 72px 24px; }
+.section-title { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mote-accent); margin: 0 0 32px; padding: 0; border: 0; }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.steps li { border: 1px solid var(--mote-border); border-radius: 14px; padding: 24px; }
+.step-number { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; margin-bottom: 16px; border-radius: 50%; background: var(--mote-tint); border: 1px solid var(--mote-tint-border); color: var(--mote-accent); font-size: 15px; font-weight: 700; }
+.steps h3 { margin: 0 0 8px; font-size: 19px; letter-spacing: -0.01em; }
+.steps p { margin: 0; color: var(--mote-muted); font-size: 15px; }
+
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.feature { border: 1px solid var(--mote-border); border-radius: 14px; padding: 24px; }
+.feature h3 { margin: 0 0 8px; font-size: 17px; }
+.feature h3::before { content: ''; display: block; width: 22px; height: 3px; margin-bottom: 14px; border-radius: 2px; background: var(--mote-brand); }
+.feature p { margin: 0; color: var(--mote-muted); font-size: 15px; }
+
+.quickstart-band { background: var(--mote-tint); border-top: 1px solid var(--mote-tint-border); border-bottom: 1px solid var(--mote-tint-border); }
+.quickstart { scroll-margin-top: 24px; }
+.quickstart-title { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.03em; margin: 0 0 12px; padding: 0; border: 0; }
+.quickstart-lead { color: var(--mote-muted); font-size: 17px; margin: 0 0 26px; }
+.publish-methods { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.method-label { padding: 9px 20px; border-radius: 999px; background: var(--mote-bg); border: 1px solid var(--mote-border); font-size: 15px; font-weight: 600; color: var(--mote-muted); cursor: pointer; }
+.method-label:hover { color: var(--mote-fg); border-color: var(--mote-muted); }
+.method-choice:checked + .method-label { color: var(--mote-accent); border-color: var(--mote-accent); background: var(--mote-bg); }
+.method-choice:focus-visible + .method-label { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.publish-option { display: none; width: 100%; min-width: 0; padding-top: 18px; }
 #method-cli:checked ~ #panel-cli, #method-mcp:checked ~ #panel-mcp, #method-skill:checked ~ #panel-skill { display: block; }
+.publish-option .option-summary { font-size: 17px; margin: 0 0 16px; }
 .publish-option p:last-child { margin-bottom: 0; }
-.publish-option .option-summary { font-size: 17px; margin-bottom: 16px; }
+.quickstart pre { background: #1c2128; color: #e6edf3; border: 1px solid rgb(255 255 255 / 0.09); border-radius: 12px; padding: 18px 20px; font-size: 15px; line-height: 1.7; overflow-x: auto; margin: 0 0 14px; box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.18); }
+.quickstart pre code { background: transparent; padding: 0; font-size: inherit; }
+.quickstart p { color: var(--mote-muted); font-size: 15px; }
+.quickstart p a, .steps a { text-decoration: underline; text-underline-offset: 3px; }
 @media print {
   .publish-option { display: block; }
   .method-label { display: none; }
 }
-.features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; padding: 48px 24px; }
-.features h2 { font-size: 22px; border: 0; padding: 0; margin: 0 0 8px; }
-.features p { font-size: 18px; color: var(--mote-muted); margin: 0; }
-.home-footer { border-top: 1px solid var(--mote-border); display: flex; justify-content: space-between; gap: 24px; padding: 28px 0 36px; }
-.home-footer nav { display: flex; flex-wrap: wrap; gap: 16px 30px; }
-.footer-wrap { padding: 0 24px; }
+
+.footer-wrap { border-top: 1px solid var(--mote-border); }
+.home-footer { max-width: 1152px; margin: 0 auto; padding: 48px 24px 56px; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; }
+.footer-mark { display: inline-block; width: 12px; height: 12px; border-radius: 4px; background: var(--mote-brand); }
+.footer-brand p { color: var(--mote-muted); font-size: 14px; margin: 12px 0 0; }
+.footer-heading { display: block; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mote-muted); margin-bottom: 14px; }
+.home-footer nav { display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 44px; padding: 56px 24px 72px; }
+  .steps, .feature-grid { grid-template-columns: 1fr 1fr; }
+  .home-footer { grid-template-columns: 1fr 1fr; }
+}
 @media (max-width: 640px) {
   .home-header { padding: 20px 24px; }
   .home-header svg { width: 120px; }
-  .home-main { padding-top: 40px; }
-  .hero p { font-size: 18px; }
-  .hero nav { font-size: 18px; gap: 32px; }
-  .quickstart { padding-top: 42px; }
-  .quickstart h2 { font-size: 26px; }
-  .features { grid-template-columns: repeat(2, 1fr); gap: 28px 20px; padding-top: 36px; }
-  .features h2 { font-size: 20px; }
-  .features p { font-size: 16px; }
-  .home-footer { flex-direction: column; }
+  .hero-sub { font-size: 18px; }
+  .section { padding: 48px 24px; }
+  .steps, .feature-grid, .home-footer { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -211,16 +195,28 @@ a:focus-visible { outline: 2px solid var(--home-link); outline-offset: 6px; bord
   </g>
 </svg>
 
-<a href="https://github.com/flc1125/mote">GitHub</a>
+<nav aria-label="Project"><a href="https://github.com/flc1125/mote/blob/main/docs/cli.md">Docs</a><a href="https://github.com/flc1125/mote">GitHub</a></nav>
 </header></div>
-<main class="home-main">
+<div class="hero-wrap"><main>
 <section class="hero" aria-labelledby="intro">
+<div>
 <h1 id="intro">Markdown in.<br><span>URL out.</span></h1>
-<p>Publish local Markdown as immutable, browser-readable pages.</p>
-<nav aria-label="Get started"><a href="#quickstart">Get started</a><a href="https://github.com/flc1125/mote#readme">Read the docs</a></nav>
+<p class="hero-sub">Publish local Markdown as immutable, browser-readable pages. No database, no JavaScript — just a link that works forever.</p>
+<p class="hero-actions"><a class="button button-primary" href="#quickstart">Get started</a><a class="button button-secondary" href="https://github.com/flc1125/mote#readme">Read the docs</a></p>
+</div>
+<div class="terminal">
+<div class="terminal-bar" aria-hidden="true"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span></div>
+<pre tabindex="0" role="region" aria-label="Publishing a document with the Mote CLI"><code><span class="terminal-prompt">$</span> mote README.md
+
+Published:
+<a href="https://mote.flc.io/1tAPUJjNt67GQ2pS">https://mote.flc.io/1tAPUJjNt67GQ2pS</a></code></pre>
+</div>
 </section>
-<section class="quickstart" id="quickstart" aria-labelledby="quickstart-title">
-<h2 id="quickstart-title">From file to link.</h2>
+</main></div>
+<div class="quickstart-band"><section class="section quickstart" id="quickstart" aria-labelledby="quickstart-title">
+<h2 class="section-title" id="quickstart-title">Quick start</h2>
+<p class="quickstart-title">From file to link.</p>
+<p class="quickstart-lead">Three ways to publish — pick the one that fits your workflow.</p>
 <fieldset class="publish-methods">
 <legend class="visually-hidden">Choose a publishing method</legend>
 <input class="method-choice visually-hidden" type="radio" name="publish-method" id="method-cli" aria-controls="panel-cli" checked>
@@ -248,25 +244,43 @@ codex mcp login mote</code></pre>
 <p>Choose your agent during installation. The skill uses your configured CLI or MCP tools; set up one of them first. See the <a href="https://github.com/flc1125/mote/blob/main/docs/skill.md">Skill guide</a>.</p>
 </section>
 </fieldset>
+</section></div>
+<section class="section" aria-labelledby="how-title">
+<h2 class="section-title" id="how-title">How it works</h2>
+<ol class="steps">
+<li><span class="step-number" aria-hidden="true">1</span><h3>Write</h3><p>Keep Markdown as the single source of truth, with images next to the file.</p></li>
+<li><span class="step-number" aria-hidden="true">2</span><h3>Publish</h3><p><code>mote README.md</code> uploads the document and every referenced image.</p></li>
+<li><span class="step-number" aria-hidden="true">3</span><h3>Share</h3><p>The URL is the credential — anyone with the unguessable link can read.</p></li>
+</ol>
 </section>
-</main>
-<section class="features" aria-label="Features">
-<div><h2>Immutable</h2><p>Every publish is a new page.</p></div>
-<div><h2>Capability URLs</h2><p>Share the link, share access.</p></div>
-<div><h2>Fast</h2><p>Served from the edge.</p></div>
-<div><h2>No JavaScript</h2><p>Just the document.</p></div>
+<section class="section" aria-labelledby="features-title">
+<h2 class="section-title" id="features-title">Why Mote</h2>
+<div class="feature-grid">
+<div class="feature"><h3>Immutable</h3><p>Every publish creates a new URL; old links keep their content forever.</p></div>
+<div class="feature"><h3>Capability URLs</h3><p>94-bit unguessable IDs. No accounts, no ACLs — the link is the access.</p></div>
+<div class="feature"><h3>Local images</h3><p>Referenced images upload automatically, deduplicated, served from opaque URLs.</p></div>
+<div class="feature"><h3>Fast at the edge</h3><p>Cloudflare Workers + R2 + CDN cache. No database to slow anything down.</p></div>
+<div class="feature"><h3>No JavaScript</h3><p>Pages are pure HTML and CSS under a maximally strict CSP.</p></div>
+<div class="feature"><h3>Agent-ready</h3><p>CLI <code>--json</code> output, remote and local MCP servers, and an agent Skill.</p></div>
+</div>
 </section>
 <div class="footer-wrap"><footer class="home-footer">
-<nav aria-label="Documentation">
+<div class="footer-brand"><span class="footer-mark" aria-hidden="true"></span><p>Markdown in, URL out.</p></div>
+<div><span class="footer-heading">Docs</span><nav aria-label="Documentation">
 <a href="https://github.com/flc1125/mote/blob/main/docs/self-hosting.md">Self-hosting</a>
 <a href="https://github.com/flc1125/mote/blob/main/docs/architecture.md">Architecture</a>
 <a href="https://github.com/flc1125/mote/blob/main/docs/protocol.md">Protocol</a>
 <a href="https://github.com/flc1125/mote/blob/main/docs/security.md">Security</a>
+</nav></div>
+<div><span class="footer-heading">Publish</span><nav aria-label="Publishing tools">
 <a href="https://github.com/flc1125/mote/blob/main/docs/cli.md">CLI</a>
 <a href="https://github.com/flc1125/mote/blob/main/docs/mcp.md">MCP</a>
 <a href="https://github.com/flc1125/mote/blob/main/docs/skill.md">Skill</a>
-</nav>
+</nav></div>
+<div><span class="footer-heading">Project</span><nav aria-label="Project links">
+<a href="https://github.com/flc1125/mote">GitHub</a>
 <a href="https://github.com/flc1125/mote/blob/main/LICENSE">MIT License</a>
+</nav></div>
 </footer></div>
 </body>
 </html>

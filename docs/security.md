@@ -112,6 +112,8 @@ OAuth logout 删除本地秘密并保留无秘密选择标记，阻止旧 token 
 
 长生命周期增加泄露暴露窗口，应按实例风险选择并验证撤权和恢复流程；验证边界见[会话与撤权](authentication.md#session-duration-logout-and-revocation)。并发刷新串行，未知交换或发布结果不自动重放。退出、撤权、禁用均不删除已发布内容；URL 泄露仍需按阅读能力凭证泄露处理。
 
+`mote login` 的回环回调页（`http://127.0.0.1:<port>/oauth/callback`）是纯静态品牌页：不回显任何回调参数（state/code/error 都不会出现在 HTML 中），CSP 为 `default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'`——仅在默认全禁之上允许内联样式，并保持 `Cache-Control: no-store` 与 host/state 校验不变。
+
 ## 6. 日志红线
 
 允许记录（结构化 JSON）：

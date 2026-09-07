@@ -33,25 +33,6 @@ importers:
         specifier: ^4.0.0
         version: 4.1.11(@types/node@26.4.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1))
 
-  apps/auth-probe:
-    dependencies:
-      '@mote/api':
-        specifier: workspace:*
-        version: link:../api
-      '@mote/viewer':
-        specifier: workspace:*
-        version: link:../viewer
-      jose:
-        specifier: 6.2.10
-        version: 6.2.10
-    devDependencies:
-      '@cloudflare/vitest-pool-workers':
-        specifier: ^0.22.0
-        version: 0.22.0(@vitest/runner@4.1.11)(@vitest/snapshot@4.1.11)(vitest@4.1.11(@types/node@26.4.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)))
-      wrangler:
-        specifier: ^4.128.0
-        version: 4.128.0
-
   apps/api:
     dependencies:
       '@mote/core':
@@ -71,6 +52,25 @@ importers:
         specifier: ^4.128.0
         version: 4.128.0
 
+  apps/auth-probe:
+    dependencies:
+      '@mote/api':
+        specifier: workspace:*
+        version: link:../api
+      '@mote/viewer':
+        specifier: workspace:*
+        version: link:../viewer
+      jose:
+        specifier: 6.2.10
+        version: 6.2.10
+    devDependencies:
+      '@cloudflare/vitest-pool-workers':
+        specifier: ^0.22.0
+        version: 0.22.0(@vitest/runner@4.1.11)(@vitest/snapshot@4.1.11)(vitest@4.1.11(@types/node@26.4.1)(vite@8.2.2(@types/node@26.4.1)(esbuild@0.28.1)))
+      wrangler:
+        specifier: ^4.128.0
+        version: 4.128.0
+
   apps/cli:
     devDependencies:
       '@mote/core':
@@ -79,6 +79,9 @@ importers:
       '@mote/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
+      '@mote/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
       esbuild:
         specifier: ^0.25.0
         version: 0.25.12
@@ -136,6 +139,9 @@ importers:
       '@mote/renderer':
         specifier: workspace:*
         version: link:../../packages/renderer
+      '@mote/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.22.0
@@ -163,9 +169,14 @@ importers:
       '@mote/protocol':
         specifier: workspace:*
         version: link:../protocol
+      '@mote/theme':
+        specifier: workspace:*
+        version: link:../theme
       markdown-it:
         specifier: ^15.0.1
         version: 15.0.1
+
+  packages/theme: {}
 
 packages:
 

@@ -4,6 +4,12 @@ import type { AddressInfo } from 'node:net';
 import * as oauth from 'oauth4webapi';
 
 import { CliError } from '../errors.js';
+import {
+  CALLBACK_DENIED_HTML,
+  CALLBACK_INVALID_HTML,
+  CALLBACK_MISSING_CODE_HTML,
+  CALLBACK_SUCCESS_HTML,
+} from './pages.js';
 import type { Identity, OAuthCredential, OAuthServer } from './types.js';
 import { apiOrigin, sameOriginEndpoint, trustedIssuer } from './urls.js';
 
@@ -137,7 +143,13 @@ export async function callbackListener(
   void result.catch(() => {});
   const server = createServer((req, res) => {
     res.setHeader('Cache-Control', 'no-store');
-    res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    // Branded static HTML; inline styles are the only relaxation, and the
+    // pages never echo request parameters.
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'",
+    );
     const url = new URL(req.url ?? '/', redirectUri);
     if (
       req.method !== 'GET' ||
@@ -146,19 +158,19 @@ export async function callbackListener(
       url.searchParams.getAll('state').length !== 1 ||
       url.searchParams.get('state') !== state
     ) {
-      res.writeHead(400).end('Invalid callback.');
+      res.writeHead(400).end(CALLBACK_INVALID_HTML);
       return;
     }
     if (url.searchParams.has('error')) {
-      res.writeHead(400).end('Authorization was not completed.');
+      res.writeHead(400).end(CALLBACK_DENIED_HTML);
       reject(new CliError('OAuth authorization denied'));
       return;
     }
     if (url.searchParams.getAll('code').length !== 1 || !url.searchParams.get('code')) {
-      res.writeHead(400).end('Missing authorization code.');
+      res.writeHead(400).end(CALLBACK_MISSING_CODE_HTML);
       return;
     }
-    res.end('Authorization received. Return to the terminal to check the result.');
+    res.end(CALLBACK_SUCCESS_HTML);
     resolve(url);
   });
   server.requestTimeout = 5000;
