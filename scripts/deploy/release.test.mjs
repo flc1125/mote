@@ -125,6 +125,17 @@ describe('release prerequisites', () => {
     await ledger(client, context, 'mote-release').save(fresh());
     expect(client.mock.calls[0][1].task).toBe('mote-release:123');
   });
+  it('supports a CLI-only release receipt without Worker deployment evidence', () => {
+    const state = releaseState(context, null, manifest, digest, null);
+    expect(state).not.toHaveProperty('deployment');
+    expect(JSON.parse(receipt(state))).toMatchObject({
+      tag: manifest.tag,
+      targetSha: sha,
+      cli: manifest.cli,
+    });
+    expect(JSON.parse(receipt(state))).not.toHaveProperty('components');
+    expect(JSON.parse(receipt(state))).not.toHaveProperty('smoke');
+  });
 });
 
 describe('npm recovery', () => {
@@ -676,24 +687,14 @@ describe('publishing adapters without live writes', () => {
 });
 
 describe('release workflow contract', () => {
-  it('keeps direct deployment jobs identical except for the target Environment', async () => {
+  it('keeps the manual deployment entry isolated from tag releases', async () => {
     const manual = await readFile(join(root, '.github/workflows/deploy.yml'), 'utf8');
     const release = await readFile(join(root, '.github/workflows/release.yml'), 'utf8');
     const direct = manual.split('\n  deploy:\n')[1].split('\n  write-smoke:\n')[0];
-    const tagged = release.split('\n  deploy:\n')[1].split('\n  npm:\n')[0];
-    expect(
-      direct.replace('environment: ${{ inputs.environment }}', 'environment: production').trim(),
-    ).toBe(tagged.trim());
-    for (const job of [direct, tagged]) {
-      expect(job).toContain('runs-on: ubuntu-latest');
-      expect(job).toContain('needs: prepare');
-      expect(job).not.toContain('uses: ./.github/workflows/');
-      const beforeCommand = job.split('      - run: node scripts/deploy/action.mjs deploy')[0];
-      expect(beforeCommand).not.toMatch(/\$\{\{ secrets\.|path: \.target/);
-      expect(job).not.toMatch(/id-token: write|contents: write|secrets: inherit/);
-      expect(job).toContain('target_sha: ${{ needs.prepare.outputs.target_sha }}');
-      expect(job).toContain('manifest_digest: ${{ needs.prepare.outputs.manifest_digest }}');
-    }
+    expect(direct).toContain('runs-on: ubuntu-latest');
+    expect(direct).toContain('needs: prepare');
+    expect(direct).toContain('node scripts/deploy/action.mjs deploy');
+    expect(release).not.toMatch(/scripts\/deploy\/action\.mjs deploy|\n {2}deploy:\n/);
     expect(manual).toContain('MOTE_REF: ${{ inputs.ref }}');
     expect(manual).toContain('MOTE_ENVIRONMENT: ${{ inputs.environment }}');
     expect(manual).toContain('MOTE_WRITE_SMOKE: ${{ inputs.write_smoke }}');
@@ -701,19 +702,15 @@ describe('release workflow contract', () => {
     expect(release).toContain("MOTE_WRITE_SMOKE: 'false'");
   });
 
-  it('requires an explicit readiness output in both direct deployment entry points', async () => {
-    for (const file of ['deploy.yml', 'release.yml']) {
-      const source = await readFile(join(root, '.github/workflows', file), 'utf8');
-      const deploy = source.split('\n  deploy:\n')[1].split(/\n {2}[\w-]+:\n/)[0];
-      expect(deploy).toContain('needs: prepare');
-      const condition = deploy.match(/^ {4}if: (.+)$/m)[1];
-      // No status function: GitHub's default success() also requires preparation
-      // to succeed. Never use always() to bypass failed/cancelled preparation.
-      expect(condition).toBe("needs.prepare.outputs.ready == 'true'");
-      for (const ready of ['', 'false', 'true', 'unexpected']) {
-        const expression = condition.replace('needs.prepare.outputs.ready', JSON.stringify(ready));
-        expect(runInNewContext(expression, {}, { timeout: 100 })).toBe(ready === 'true');
-      }
+  it('requires an explicit readiness output in the manual deployment entry point', async () => {
+    const source = await readFile(join(root, '.github/workflows/deploy.yml'), 'utf8');
+    const deploy = source.split('\n  deploy:\n')[1].split(/\n {2}[\w-]+:\n/)[0];
+    expect(deploy).toContain('needs: prepare');
+    const condition = deploy.match(/^ {4}if: (.+)$/m)[1];
+    expect(condition).toBe("needs.prepare.outputs.ready == 'true'");
+    for (const ready of ['', 'false', 'true', 'unexpected']) {
+      const expression = condition.replace('needs.prepare.outputs.ready', JSON.stringify(ready));
+      expect(runInNewContext(expression, {}, { timeout: 100 })).toBe(ready === 'true');
     }
     const shared = await readFile(join(root, '.github/workflows/_deploy.yml'), 'utf8');
     expect(shared).toContain('value: ${{ jobs.ready.outputs.ready }}');
@@ -770,51 +767,36 @@ describe('release workflow contract', () => {
       }
     }
   });
-  it('orders deploy → npm → release with a shared caller lock and separated privileges', async () => {
+  it('orders CLI validation, read-only preflight, npm OIDC and GitHub Release', async () => {
     const workflow = await readFile(join(root, '.github/workflows/release.yml'), 'utf8');
-    const shared = await readFile(join(root, '.github/workflows/_deploy.yml'), 'utf8');
     expect(workflow).toContain("tags: ['v*']");
-    expect(workflow).toContain('group: mote-production');
+    expect(workflow).toContain('group: mote-release-${{ github.ref }}');
     expect(workflow).toContain('cancel-in-progress: false');
-    expect(shared).not.toContain('concurrency:');
+    expect(workflow).toContain('node scripts/release/prepare.mjs');
+    expect(workflow).toContain('node scripts/release/action.mjs preflight');
+    expect(workflow).toContain('node scripts/release/action.mjs npm');
+    expect(workflow).toContain('node scripts/release/action.mjs github');
+    const prepare = workflow.split('  prepare:')[1].split('  preflight:')[0];
+    const preflight = workflow.split('  preflight:')[1].split('  npm:')[0];
     const npm = workflow.split('  npm:')[1].split('  release:')[0];
     const release = workflow.split('  release:')[1];
-    expect(npm).toContain('needs: deploy');
-    expect(release).toContain('needs: [deploy, npm]');
+    expect(preflight).toContain('needs: prepare');
+    expect(npm).toContain('needs: [prepare, preflight]');
+    expect(release).toContain('needs: [prepare, npm]');
+    expect(prepare).not.toContain('contents: write');
+    expect(preflight).toContain('contents: write');
+    expect(preflight).not.toContain('id-token: write');
     expect(npm).toContain('id-token: write');
     expect(npm).not.toContain('contents: write');
-    expect(npm).not.toMatch(/environment:|secrets\./);
+    expect(npm).not.toMatch(/environment:|secrets\.|deployments: write/);
     expect(release).not.toContain('id-token: write');
-    expect(workflow).not.toMatch(/npm@latest|pnpm pack|--clobber|npm view|gh release edit/);
+    expect(release).toContain('contents: write');
+    expect(release).not.toContain('deployments: write');
+    expect(workflow).not.toMatch(
+      /CLOUDFLARE|MOTE_RELEASE_PREFLIGHT_IDENTITY|MOTE_SMOKE_|mote-build-|mote-deploy-result|deployment-result|scripts\/deploy\/action\.mjs deploy|npm@latest|--clobber|npm view|gh release edit|NODE_AUTH_TOKEN|NPM_TOKEN/,
+    );
+    expect(workflow.match(/mote-release-\$\{\{ github\.run_id \}\}/g)).toHaveLength(4);
     const manual = await readFile(join(root, '.github/workflows/deploy.yml'), 'utf8');
     expect(manual).not.toMatch(/release-action|id-token: write/);
-    // Callers grant a ceiling; only the isolated tag preflight actually uses it.
-    expect(manual).toContain('contents: write');
-    expect(workflow.split('  prepare:')[1].split('  deploy:')[0]).toContain('contents: write');
-    const preflight = shared.split('  release-preflight:')[1].split('\n  ready:')[0];
-    expect(preflight).toContain('contents: write');
-    expect(preflight).toContain("always() && github.event_name == 'push'");
-    expect(preflight).toContain("needs.prepare.result == 'skipped'");
-    expect(preflight).toContain('pnpm install --frozen-lockfile --ignore-scripts');
-    expect(preflight).not.toMatch(
-      /\$\{\{ secrets\.|id-token:|path: \.target|prepare-target|pnpm (test|build)/,
-    );
-    expect(preflight).toContain('ref: ${{ github.workflow_sha }}');
-    expect(preflight).toContain('node scripts/deploy/release-action.mjs preflight');
-    expect(preflight).toContain('mote-build-${{ github.run_id }}');
-    expect(preflight).toContain(
-      'needs.resolve.outputs.manifest_digest || needs.prepare.outputs.manifest_digest',
-    );
-    const deploy = workflow.split('  deploy:')[1].split('  npm:')[0];
-    expect(deploy).toContain('needs: prepare');
-    expect(deploy).toContain("if: needs.prepare.outputs.ready == 'true'");
-    expect(deploy).toContain('environment: production');
-    expect(deploy).toContain('contents: read');
-    expect(deploy).not.toContain('contents: write');
-    expect(deploy).toContain(
-      'MOTE_RELEASE_PREFLIGHT_IDENTITY: ${{ needs.prepare.outputs.release_preflight_identity }}',
-    );
-    expect(shared).toContain('value: ${{ jobs.ready.outputs.ready }}');
-    expect(shared).toContain('value: ${{ jobs.release-preflight.outputs.identity }}');
   });
 });

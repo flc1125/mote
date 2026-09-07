@@ -59,12 +59,15 @@ describe('secret availability diagnostic boundaries', () => {
     expect(after).not.toContain('uses:');
   });
 
-  it('does not add secret forwarding to either deployment entry point', async () => {
-    for (const file of ['deploy.yml', 'release.yml']) {
-      const source = uncommented(await readFile(join(root, '.github/workflows', file), 'utf8'));
-      expect(source).not.toMatch(/^\s*secrets:/m);
-      expect(source.match(/secrets\.CLOUDFLARE_API_TOKEN/g)).toHaveLength(1);
-    }
+  it('keeps the Cloudflare token only in the manual deployment entry point', async () => {
+    const deploy = uncommented(await readFile(join(root, '.github/workflows/deploy.yml'), 'utf8'));
+    const release = uncommented(
+      await readFile(join(root, '.github/workflows/release.yml'), 'utf8'),
+    );
+    expect(deploy).not.toMatch(/^\s*secrets:/m);
+    expect(deploy.match(/secrets\.CLOUDFLARE_API_TOKEN/g)).toHaveLength(1);
+    expect(release).not.toMatch(/^\s*secrets:/m);
+    expect(release).not.toMatch(/CLOUDFLARE|secrets\./);
   });
 
   for (const [name, source, owner] of [

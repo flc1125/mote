@@ -41,7 +41,7 @@ export function releaseState(context, deployment, manifest, digest, previous) {
     manifestDigest: digest,
     tag: manifest.tag,
     cli: manifest.cli,
-    deployment: globalThis.structuredClone(deployment),
+    ...(deployment === null ? {} : { deployment: globalThis.structuredClone(deployment) }),
     state: 'in_progress',
     error: null,
     npm: { state: 'pending', integrity: null },
@@ -112,8 +112,9 @@ export function receipt(state) {
     workflowSha: state.workflowSha,
     runId: state.runId,
     manifestDigest: state.manifestDigest,
-    components: state.deployment.components,
-    smoke: state.deployment.smoke,
+    ...(state.deployment
+      ? { components: state.deployment.components, smoke: state.deployment.smoke }
+      : {}),
     cli: state.cli,
     npm: state.npm,
     release: { id: state.release.id, tag: state.tag },
@@ -191,7 +192,11 @@ export async function ensureRelease({ state, notes, files, api, persist, guard }
     await persist(state);
     const assets = [
       ...files,
-      { name: 'deployment-result.json', bytes: receipt(state), type: 'application/json' },
+      {
+        name: state.deployment ? 'deployment-result.json' : 'release-result.json',
+        bytes: receipt(state),
+        type: 'application/json',
+      },
     ];
     let remote = await api.assets(existing.id);
     checkAssets(remote, assets);
