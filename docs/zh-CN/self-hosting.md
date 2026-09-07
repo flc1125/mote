@@ -161,15 +161,13 @@ MOTE_ACCESS_HOSTNAME = "mote.example.com"
 
 ## 部署自动化
 
-仓库中的工作流面向 Access 部署，不适用于上方 token 模式教程。`scripts/deploy/policy.mjs` 将运行仓库限制为 `flc1125/mote`；fork 使用前还须审核并适配该限制及目标配置。
+生产 `mote-api`、`mote-viewer` 在每次推送 `main` 时，由 Cloudflare Workers Builds 分别部署。GitHub Actions 在 PR 和 `main` 上执行 CI；稳定 `vX.Y.Z` 标签仅发布 CLI 包与 GitHub Release。仓库没有 GitHub 手动 Worker 部署工作流。
 
-- **合并到 `main`**：CI 检查代码，不部署 Worker。
-- **手动部署**：从 `main` 运行 `Deploy`，选择 `production` 或 `access-test`，填写 `main`、稳定 `vX.Y.Z` 标签或 main 历史中的完整 SHA。仅部署 Worker，不发布 npm 或 GitHub Release。
-- **标签发布**：推送 `v*` 触发 `Release`，校验只接受稳定 `vX.Y.Z` 标签。Worker 部署和只读冒烟检查通过后，才发布 npm 并完成 GitHub Release。
+资源、路由和鉴权审核完成后，再将两个生产 Worker 分别连接到自己的仓库。按[Workers Builds 预期设置](deployment.md#workers-builds-预期设置)使用 workspace 根目录 `/`、空 build command 和对应应用的 filtered Wrangler deploy command。构建凭据与构建变量配置在 Cloudflare，运行时 Secret 独立管理。步骤 5 的命令仍可用于首次自托管和明确获准的人工操作。
 
-启用前审核 `scripts/deploy/targets.json` 和 Worker 配置，预先创建所需资源，并配置目标 GitHub Environment。部署需要 `MOTE_DEPLOY_ENABLED=true`、匹配的 `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_API_TOKEN` Secret，以及公开冒烟样本变量 `MOTE_SMOKE_DOCUMENT_ID`、`MOTE_SMOKE_ASSET_ID`、`MOTE_SMOKE_ASSET_SHA256`。环境获准前保持开关关闭；有工作流不等于已经具备生产上线条件。
+fork 必须同时适配两个 Wrangler 配置及 `scripts/workers/targets.json`、`scripts/workers/config.mjs` 中的配置检查，使用自己的资源和鉴权模式。这些检查有意固定本项目生产和测试配置；只改域名会使 `pnpm build` 的白名单检查失败。CLI Release 代码还固定了 `flc1125/mote` 和 `mote-cli`，在 fork 启用包发布前需审核 `scripts/release/` 与 npm Trusted Publishing。
 
-手动参数 `write_smoke` 默认为 false。启用后需要专用 `MOTE_SERVICE_CLIENT_ID` / `MOTE_SERVICE_CLIENT_SECRET` Secrets，并会发布一篇永久公开测试文档。工作流不创建 R2、DNS 或 Access 策略，也不会在部署失败后自动回滚；重试前先核对部署结果。
+两个 Worker 最终必须对应同一个预期源码 SHA；独立上线期间保持向后兼容。验收、故障、重试和回退见[部署操作手册](deployment.md)。Workers Builds 不代建 DNS、R2 或 Access 策略；本生产方案也不自动部署独立的 `access-test` 环境。
 
 ## 下一步
 

@@ -2,43 +2,75 @@
 
 [English](../deployment.md)
 
-本手册面向使用仓库 Access 部署工作流的维护者。先完成[环境配置](self-hosting.md#部署自动化)；工作流可用不代表环境已获准上线生产。
+本手册面向已接入 Cloudflare Workers Builds 的生产 Worker 维护者。新实例先完成[自托管配置](self-hosting.md)。
 
-## 选择入口
+## 部署与发布触发方式
 
-- **Deploy**：在 GitHub Actions 中选择 `main` 上的工作流，指定环境，填写 `main`、稳定 `vX.Y.Z` 标签或 main 历史中的完整 SHA。除非明确需要发布永久公开测试文档，否则保持 `write_smoke=false`。
-- **Release**：推送稳定版本标签后，先部署生产并执行只读冒烟，再发布 npm 和完成 GitHub Release。预发布标签会被拒绝。推送前核对标签、包版本、Changelog 及环境准入；不要用会触发生产的标签演练。
+| 事件               | 执行方                                                  | 结果                                                                   |
+| ------------------ | ------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Pull request       | GitHub Actions CI                                       | lint、类型检查、测试、Worker dry-run 与 CLI 包验证                     |
+| 推送 `main`        | GitHub Actions CI 与 Cloudflare Workers Builds 独立执行 | CI 检查提交；两个生产 Worker 分别构建并部署                            |
+| 稳定 `vX.Y.Z` 标签 | GitHub Actions Release                                  | 通过 npm Trusted Publishing 发布已验证的 CLI 包，并创建 GitHub Release |
+| 重试或回退         | 维护者在 Cloudflare Dashboard 操作                      | 明确选定的 Worker Build 或版本                                         |
 
-两种入口都要求已审核目标、预先创建的基础设施、环境凭据及开启的部署门禁。历史 SHA 仍须满足当前源码和配置校验，不能把它当作不受限制的回退机制。
+合并到 `main` 后，生产部署可能早于该提交的 push CI 完成。合并前应要求 PR 检查通过；GitHub 检查成功本身不代表部署成功。标签不部署 Worker，也不等待 Worker 上线。旧 GitHub Deploy 与诊断工作流已移除，不要重跑历史部署 job。
+
+## Workers Builds 预期设置
+
+在每个 Worker 的**设置 → 构建**中核对以下生产设置。fork 必须换成自己的仓库、资源与身份配置。
+
+| 设置                         | `mote-api`                                              | `mote-viewer`                                              |
+| ---------------------------- | ------------------------------------------------------- | ---------------------------------------------------------- |
+| Repository                   | `flc1125/mote`                                          | `flc1125/mote`                                             |
+| Production branch            | `main`                                                  | `main`                                                     |
+| Root directory               | `/`                                                     | `/`                                                        |
+| Build command                | 留空                                                    | 留空                                                       |
+| Deploy command               | `pnpm --filter @mote/api exec wrangler deploy --env=""` | `pnpm --filter @mote/viewer exec wrangler deploy --env=""` |
+| Non-production branch builds | 关闭                                                    | 关闭                                                       |
+| Build watch paths            | Include `*`；Exclude 留空                               | Include `*`；Exclude 留空                                  |
+| Build cache                  | 开启                                                    | 开启                                                       |
+| `NODE_VERSION`               | `24`                                                    | `24`                                                       |
+| `PNPM_VERSION`               | `11.23.0`                                               | `11.23.0`                                                  |
+
+根目录保持为 workspace 根目录以安装依赖；`pnpm --filter` 在选定应用目录执行 Wrangler。显式 `--env=""` 选择顶层生产配置。Wrangler 在部署阶段打包 TypeScript，因此无需独立 build command。监听所有路径可覆盖共享包、锁文件、根配置，也会触发纯文档提交的构建。
+
+使用由 Cloudflare 管理的专用构建凭据。构建变量和 Secret 与 Worker 运行时配置分离。Worker 名称、Route、R2 binding 和非秘密运行时变量保存在 `apps/api/wrangler.toml`、`apps/viewer/wrangler.toml`，运行时 Secret 单独管理。Access Service Token 和 Mote 发布凭据不能用作 Cloudflare 构建凭据。参考 [Cloudflare 构建配置](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)。
+
+两条生产连接都不部署 `access-test`。测试资源与本地探针保持独立。本方案不使用 Deploy Hook。
 
 ## 验收部署
 
-将源码提交 SHA 作为两个生产 Worker 的部署身份。自动部署后，分别记录每个 Worker 的 Build、生成版本和源码 SHA。只有 `mote-api` 与 `mote-viewer` 都匹配预期 SHA，且健康、鉴权、发布和匿名读取检查通过，才能验收本次部署。
+1. 记录预期的完整 `main` SHA 及其 GitHub CI 结果。
+2. 打开两个 Worker 的**部署**页面，分别记录 Build ID、来源 SHA、结果、新 Worker 版本及当前流量比例。两者都须匹配预期提交并承接预期生产流量。
+3. 检查 `/health`、`/api/health`，再读取既有文档和图片，核对成功响应、缓存行为、安全响应头和未改变的图片字节。
+4. 鉴权或发布相关变更还须验证匿名发布拒绝、OAuth 发现及适用的用户/机器授权发布。真实发布会生成永久公开 URL，只能使用明确获准的非敏感样本。例行纯文档上线可复用只读样本与已有鉴权基线。
 
-两个 Worker 独立部署，短暂的混合版本窗口属于预期情况。跨 API、CLI 或 Viewer 边界的变更必须保持向后兼容，直到两个生产 Worker 收敛到同一提交。
+两个 Worker 独立部署，短暂混合版本窗口属于预期情况；单个 Build 成功不能代表整组验收通过。跨 API/CLI/Viewer 的变更采用两阶段兼容：先同时支持新旧行为，待两个 Worker 与受支持客户端均迁移后再移除旧行为。服务端上线可能早于对应 CLI 版本发布。
 
-## 检查失败运行
+## 构建失败、重试与回退
 
-打开失败 job 并下载结果产物，保存 run ID、attempt、目标 SHA、manifest 摘要及组件版本。部署结果命名为 `mote-deploy-result-<run-id>-<attempt>`；npm 和 Release 有独立结果产物。不要在故障报告中公开凭据或私密文档 URL。
+先检查受影响 Worker 的 Build 日志和当前部署，记录提交、Build ID、当前版本及目标恢复版本。报告不得包含凭据或私密文档 URL。
 
-| 结果                                                           | 处理方式                                                                 |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| 上传前失败                                                     | 修复前置条件并检查失败阶段，不能仅凭没有 checkpoint 就认定没有发生变更。 |
-| Viewer 成功、API 失败                                          | 核对两个当前版本及 checkpoint；不会自动回滚，可能暂时运行混合版本。      |
-| 两个上传成功、只读冒烟失败                                     | 部署仍未验收。检查服务响应和边缘质询，不绕过鉴权，也不把冒烟标成成功。   |
-| 上传或写入结果为 `unknown`                                     | 先调查再操作；超时可能发生在写入成功之后，不盲目重试。                   |
-| `STALE_RETRY`、`EXTERNAL_DEPLOYMENT_DRIFT` 或 `SUPERSEDED_RUN` | 停止旧运行，核对更新的部署，再选择新的获准操作。                         |
+| 现象                   | 处理方式                                                    |
+| ---------------------- | ----------------------------------------------------------- |
+| 初始化、安装或构建失败 | 修复前置条件；读回当前版本，不仅凭失败 Build 推断线上状态。 |
+| 仅一个 Worker 部署成功 | 核对两个版本及兼容性；没有共享事务或整组自动回退。          |
+| 部署超时或结果不明确   | 重试前读回当前版本和流量；部署可能已经成功。                |
+| Build 成功但冒烟失败   | 保持未验收，调查路由、运行时行为与边缘质询。                |
+| 已有更新提交上线       | 重试前审核旧 Build 是否仍适合执行。                         |
 
-## 安全重跑
+维护者审核明确目标后，在 Cloudflare Dashboard 执行重试或回退。重试前重新核对当前命令、分支、变量和凭据，不能假定首次运行时的设置已被冻结。回退前选择已知兼容的 Worker 版本，并核对是否有待执行的自动构建会覆盖恢复结果；适合通过源码修正时，使用经审核的 PR。
 
-已知失败原因解决后，在原运行选择 **Re-run all jobs**。恢复依赖原 checkpoint、SHA 和产物摘要；删除产物或新建运行不等价。只有当前版本与 checkpoint 相符，才跳过已成功组件。未知上传即使版本标记匹配，也会阻止续跑。
+Worker 回退不恢复 R2 数据或独立管理的 DNS、Access 策略及其他基础设施。分别核对 Route、binding、Secret 与预期状态。不要通过关闭 Access、开放备用发布主机或删除 R2 数据处理部署失败。恢复后重复健康检查、匿名发布拒绝及既有文档/图片检查；真实发布另行按授权验证。
 
-Release 收尾要求同一 attempt 的新部署证据，不要只重跑 npm 或 Release job。已发布且内容一致的结果会被核对复用；字节或身份冲突则停止，不覆盖。结果未知的写冒烟不会自动重做。
+## CLI Release 操作
 
-## 并发与人工恢复
+推送稳定标签前，核对其指向预期提交，且与 `apps/cli/package.json` 版本和非空 Changelog 章节匹配。工作流验证并打包 CLI，核对 npm/tag/Release 身份，经 OIDC 发布 npm，再创建或核对 GitHub Release；不部署 Worker。
 
-手动部署和标签发布共享环境并发组，生产为 `mote-production`，设置 `cancel-in-progress=false`。它保护正在执行的工作流，但不保证每个等待中的运行都会执行或按提交顺序执行。避免同时在工作流之外部署，外部操作不受该锁保护。
+Release 失败时，检查原 Actions 运行并保留 manifest、tarball 和结果产物：`mote-release-<run-id>`、`mote-npm-result-<run-id>-<attempt>`、`mote-release-result-<run-id>-<attempt>`。发布结果不明确时先核对 npm/GitHub 再重跑；相同结果可复用，字节或身份冲突则停止。不要移动已发布标签、覆盖资产或添加长期 npm Token 来绕过错误。
 
-人工回退须明确批准环境、Worker 版本及配置。保留 checkpoint 的 `beforeVersion`、`afterVersion`，独立核对当前版本，确认 API/Viewer 兼容后再恢复组件。版本恢复不等于 DNS、Route、绑定、Secret 或 Access 策略恢复，须分别审核；发布入口仍可达时不能先移除 Access 保护。
+## 退役旧部署资源
 
-Worker 回退不恢复或删除 R2 数据。获准恢复后，检查两个健康端点、匿名发布拒绝及既有文档和图片，才能声明恢复完成；真实发布另行按授权验证。未解决的故障排查期间保持部署门禁关闭。
+删除前，按当前工作流引用盘点旧 GitHub Environment 凭据、部署变量及 Actions 产物，记录准确目标并取得清理批准。删除 GitHub Secret 副本不等于撤销 Cloudflare Token；须先识别令牌及其他使用方，再单独执行撤销。
+
+保留当前 Workers Builds 凭据、npm Trusted Publishing、GitHub Release 资产、当前 Worker 版本、R2 文档、Access 资源和故障调查仍需要的历史证据。退役 GitHub 部署自动化不代表可以删除测试 Worker 或测试 bucket。

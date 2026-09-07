@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `cloudflare-access` server authentication with signed assertion validation for user OAuth and Service Token identities; omitted mode settings retain the legacy token fallback, while checked-in production configuration explicitly selects Access.
 - `mote auth login/status/logout`, target-bound system/private-file credentials, PKCE login, serialized refresh and explicit machine mode.
 - Local stdio sharing the Mote CLI credential store and publishing pipeline, with authentication before local file reads.
-- Gated Cloudflare Worker deployment workflows: manual deployment and stable-tag release, artifact verification, read smoke checks, and optional manual write smoke. Infrastructure provisioning and automatic rollback are not included.
+- Production Worker deployment through Cloudflare Workers Builds on pushes to `main`, with independent API/Viewer rollouts. GitHub Actions retains CI, credential-free Worker dry-runs, npm Trusted Publishing and GitHub Release; stable tags no longer deploy Workers.
 - Authentication/migration guidance and verified macOS CLI/stdio + Codex 0.153.4 app-server scope. Other clients/platforms and full 7-day/30-day natural expiry are not claimed as tested.
 
 ### Fixed
@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Regenerate PKCE verifier/challenge pairs locally when the challenge starts with `-` or `_`, as required by Cloudflare Access.
 - Make token-mode self-hosting and quick-start targets explicit, and replace the private architecture baseline dependency with public documentation references.
 
-These client features remain unreleased on npm. Deployment workflows require environment configuration and approval; their presence is not a production-readiness guarantee. See [self-hosting](docs/self-hosting.md#deployment-automation) and [authentication](docs/authentication.md) for setup and validation limits.
+These client features remain unreleased on npm. Workers Builds requires reviewed production configuration; each Worker rollout is verified separately from GitHub CI and package publication. See [deployment operations](docs/deployment.md), [self-hosting](docs/self-hosting.md#deployment-automation) and [authentication](docs/authentication.md) for setup and validation limits.
 
 ## [0.1.1] - 2026-09-04
 

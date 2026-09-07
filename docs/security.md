@@ -9,8 +9,8 @@ Mote 没有账号体系。访问权限模型为：
 > **Anyone who knows the URL can access the document.**
 
 ```text
-https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
-                        └── 这就是访问凭证本身
+https://mote.example.com/7Vk3mQ9x2NFaP4Ls
+                         └── 这就是访问凭证本身
 ```
 
 防枚举靠的是**高熵随机 ID**，而不是访问控制：

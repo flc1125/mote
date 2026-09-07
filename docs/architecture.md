@@ -62,6 +62,14 @@ The CDN is the materialized view.  → 渲染结果由 CDN 长缓存
 
 两者绑定同一个 R2 Bucket `mote-documents`。
 
+## 构建、部署与包发布
+
+GitHub Actions 在 PR 和 `main` 推送时执行质量检查；Cloudflare Workers Builds 独立监听 `main`，分别构建、部署 `mote-api` 和 `mote-viewer`。稳定 `vX.Y.Z` 标签只触发 npm 与 GitHub Release，不再部署 Worker。
+
+两个 Worker 没有跨服务部署事务，允许短暂混合版本；跨 API/CLI/Viewer 的变更须采用向后兼容的两阶段发布。以同一源码 SHA、各自 Build/版本和生产冒烟结果共同验收，不能把 GitHub CI 成功当作部署完成。
+
+Worker 配置以仓库中的 Wrangler 文件为准；Cloudflare 管理 Git 连接、构建设置和构建凭据，运行时 Secret 单独管理。重试、回退由维护者在 Cloudflare Dashboard 操作；R2 数据和 Access 策略不随 Worker 回退自动恢复。详见[部署操作手册](zh-CN/deployment.md) / [English operations guide](deployment.md)。
+
 ## R2 数据模型
 
 每个 Document 是一个不可变 Bundle：

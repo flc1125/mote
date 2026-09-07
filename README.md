@@ -24,8 +24,10 @@ mote README.md
 ```text
 Published:
 
-https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
+https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
+
+The output above is illustrative. View a real [public sample with an image](https://mote.flc.io/1tAPUJjNt67GQ2pS).
 
 ## Features
 
@@ -99,6 +101,8 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 SVG is not supported (active-content risk). Documents are immutable — republishing edited content creates a new URL.
 
 ## Documentation
+
+Production Workers deploy from `main` through Cloudflare Workers Builds. GitHub Actions handles CI and stable-tag CLI/GitHub releases; see [deployment operations](docs/deployment.md).
 
 - [CLI reference](docs/cli.md)
 - [Authentication and migration](docs/authentication.md)

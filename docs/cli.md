@@ -99,13 +99,13 @@ Assets      3
 Total       1.84 MB
 
 Published:
-https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
+https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
 Machine output (`--json`, only content on stdout):
 
 ```json
-{ "id": "7Vk3mQ9x2NFaP4Ls", "url": "https://mote.flc.io/7Vk3mQ9x2NFaP4Ls" }
+{ "id": "7Vk3mQ9x2NFaP4Ls", "url": "https://mote.example.com/7Vk3mQ9x2NFaP4Ls" }
 ```
 
 Scripting:
