@@ -1,0 +1,17 @@
+{
+  "brand": "Mote",
+  "primaryColor": "#ef5552",
+  "approvedConcept": "logo-concept-approved.png",
+  "provenance": "User-selected native ImageGen concept; contours reconstructed as font-independent SVG paths, flat color and transparent backgrounds.",
+  "masters": ["logo.svg", "icon.svg"],
+  "exports": {
+    "logo.png": [1204, 304],
+    "logo-dark.png": [1204, 304],
+    "icon.png": [512, 512],
+    "favicon-16.png": [16, 16],
+    "favicon-32.png": [32, 32],
+    "favicon.ico": [16, 32]
+  },
+  "rasterizer": "sharp 0.35.4",
+  "notes": "Both logo PNGs intentionally use the same coral artwork on transparency. SVG masters contain no font dependencies. ICO embeds the exported PNG frames. Run node scripts/brand/sync.mjs after asset changes; CI checks embedded assets remain synchronized."
+}

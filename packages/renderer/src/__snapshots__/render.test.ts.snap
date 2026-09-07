@@ -9,6 +9,8 @@ exports[`render (§42) > renders a complete page (snapshot) 1`] = `
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>Mote 设计文档</title>
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
 :root {
   --mote-fg: #1f2328;

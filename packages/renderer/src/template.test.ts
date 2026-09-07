@@ -21,6 +21,11 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
     expect(page).not.toContain('<script');
   });
 
+  it('uses same-origin vector and ICO favicons', () => {
+    expect(page).toContain('<link rel="icon" href="/favicon.svg" type="image/svg+xml">');
+    expect(page).toContain('<link rel="icon" href="/favicon.ico" sizes="16x16 32x32">');
+  });
+
   it('escapes the title and uses the main > article structure', () => {
     expect(page).toContain('<title>Doc &lt;One&gt;</title>');
     expect(page).toContain('<main>\n<article>\n<nav class="toc">x</nav>\n<h1 id="one">One</h1>');

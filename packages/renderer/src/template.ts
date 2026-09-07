@@ -20,6 +20,8 @@ export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): stri
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>${escapeHtml(title)}</title>
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>${PAGE_CSS}</style>
 </head>
 <body>

@@ -2,6 +2,9 @@ import { env, exports } from 'cloudflare:workers';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { DocumentManifest } from '@mote/protocol';
+import { HOME_HTML } from './home.js';
+import { FAVICON_BASE64, ICON_SVG } from './brand.generated.js';
+import viewer from './index.js';
 
 const workerFetch = (input: string, init?: RequestInit): Promise<Response> =>
   exports.default.fetch(input, init);
@@ -110,7 +113,7 @@ describe('uniform 404 (§24)', () => {
   });
 
   it('returns 404 for unknown routes and unsupported methods', async () => {
-    expect((await workerFetch('http://localhost/')).status).toBe(404);
+    expect((await workerFetch('http://localhost/unknown-route')).status).toBe(404);
     expect((await workerFetch(`http://localhost/${ID}/extra/path`)).status).toBe(404);
     expect((await workerFetch(`http://localhost/${ID}`, { method: 'POST' })).status).toBe(404);
   });
@@ -128,4 +131,77 @@ describe('utility routes', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ status: 'ok' });
   });
+});
+
+describe('public homepage and branding', () => {
+  it('serves a static homepage without published document information or JS', async () => {
+    const response = await workerFetch('http://localhost/');
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toBe(HOME_HTML);
+    expect(html).toContain('Markdown in.');
+    expect(html).toContain('URL out.');
+    expect(html).toContain('#ef5552');
+    expect(html).toContain('prefers-color-scheme: dark');
+    expect(html).not.toMatch(/<script|<form|<input/i);
+    expect(html).not.toContain(ID);
+    expect(html).not.toContain(ASSET_ID);
+    expect(html).not.toContain('Hello Mote');
+    expect(html).toMatchSnapshot();
+    const document = await workerFetch(`http://localhost/${ID}`, { method: 'HEAD' });
+    expect([...response.headers]).toEqual([...document.headers]);
+  });
+
+  it.each(['/', '/favicon.ico', '/favicon.svg'])('%s never accesses R2', async (path) => {
+    // A throwing binding catches every attempted R2 operation, including list().
+    const isolatedEnv = {
+      get DOCUMENTS(): R2Bucket {
+        throw new Error('Static routes must not access R2');
+      },
+    };
+    const response = await viewer.fetch(new Request(`http://localhost${path}`), isolatedEnv);
+    expect(response.status).toBe(200);
+  });
+
+  it.each(['/', '/favicon.ico', '/favicon.svg'])(
+    '%s supports HEAD and rejects writes',
+    async (path) => {
+      const get = await workerFetch(`http://localhost${path}`);
+      const head = await workerFetch(`http://localhost${path}`, { method: 'HEAD' });
+      expect(head.status).toBe(200);
+      expect([...head.headers]).toEqual([...get.headers]);
+      expect(await head.text()).toBe('');
+      for (const method of ['POST', 'PUT', 'DELETE', 'OPTIONS']) {
+        const response = await workerFetch(`http://localhost${path}`, { method });
+        expect(response.status).toBe(404);
+        expect(await response.text()).toBe('404 Not Found');
+      }
+    },
+  );
+
+  it('serves the exact SVG and ICO with safe cache and content headers', async () => {
+    const svg = await workerFetch('http://localhost/favicon.svg');
+    expect(svg.headers.get('Content-Type')).toBe('image/svg+xml');
+    expect(await svg.text()).toBe(ICON_SVG);
+    const ico = await workerFetch('http://localhost/favicon.ico');
+    expect(ico.headers.get('Content-Type')).toBe('image/x-icon');
+    expect(new Uint8Array(await ico.arrayBuffer())).toEqual(
+      Uint8Array.from(atob(FAVICON_BASE64), (char) => char.charCodeAt(0)),
+    );
+    for (const response of [svg, ico]) {
+      expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
+      expect(response.headers.get('Cache-Control')).toBe('public, max-age=300');
+      expect(response.headers.get('Cloudflare-CDN-Cache-Control')).toBe('public, max-age=31536000');
+      expect(response.headers.get('Content-Security-Policy')).toContain("default-src 'none'");
+    }
+  });
+
+  it.each(['/favicon.png', '/favicon.svg/extra', '/index.html'])(
+    'keeps %s a uniform 404',
+    async (path) => {
+      const response = await workerFetch(`http://localhost${path}`);
+      expect(response.status).toBe(404);
+      expect(await response.text()).toBe('404 Not Found');
+    },
+  );
 });
