@@ -146,6 +146,7 @@ hr {
 .home-header, .home-footer, .features { max-width: 1152px; margin: 0 auto; }
 .home-header { display: flex; justify-content: space-between; align-items: center; padding: 30px 24px; }
 .home-header svg { display: block; width: 164px; height: auto; }
+@media (prefers-color-scheme: dark) { .home-header [data-wordmark] { fill: #e6edf3; } }
 .header-rule { border-bottom: 1px solid var(--mote-border); }
 a { color: var(--home-link); text-decoration: underline; text-underline-offset: 4px; }
 a:hover { text-decoration-thickness: 2px; }
@@ -201,10 +202,12 @@ a:focus-visible { outline: 2px solid var(--home-link); outline-offset: 6px; bord
   <g fill="#ef5552" transform="translate(-394 -225)">
     <path fill-rule="evenodd" d="M415 361Q415 348 426 337L508 257Q517 248 530 248H594Q610 248 621 259L704 339Q714 349 714 363V483Q714 504 693 504H652V424C652 382 590 382 590 424V504H547V424C547 382 484 382 484 424V504H437Q415 504 415 482ZM438 351H495Q524 351 524 322V267Z"/>
     <rect x="702" y="245" width="64" height="65" rx="12"/>
+    <g fill="#20252b" data-wordmark="true">
     <path d="M828 335H870V351C896 322 941 326 967 354C997 322 1042 326 1066 350Q1082 368 1082 395V504H1039V404C1039 360 977 360 977 404V504H934V404C934 360 870 360 870 404V504H828Z"/>
     <path fill-rule="evenodd" d="M1187 331C1240 331 1279 369 1279 420C1279 471 1240 508 1187 508C1134 508 1095 471 1095 420C1095 369 1134 331 1187 331ZM1187 371C1159 371 1138 391 1138 420C1138 449 1159 469 1187 469C1215 469 1236 449 1236 420C1236 391 1215 371 1187 371Z"/>
     <path d="M1309 278H1353V333H1391V367H1353V444Q1353 467 1376 467H1397V502Q1383 505 1370 505Q1309 505 1309 447V367H1281V333H1309Z"/>
     <path fill-rule="evenodd" d="M1578 437H1442C1448 459 1464 471 1488 471Q1513 471 1528 454H1572C1558 489 1528 508 1488 508C1435 508 1399 471 1399 420C1399 369 1436 331 1489 331C1544 331 1578 369 1578 420ZM1444 404H1535C1529 382 1513 369 1489 369C1467 369 1450 382 1444 404Z"/>
+    </g>
   </g>
 </svg>
 

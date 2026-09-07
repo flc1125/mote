@@ -1,6 +1,6 @@
 import { PAGE_CSS } from '@mote/renderer';
 
-import { LOGO_SVG } from './brand.generated.js';
+import { LOGO_BLACK_SVG } from './brand.generated.js';
 
 const REPO = 'https://github.com/flc1125/mote';
 const DOCS = `${REPO}/blob/main/docs`;
@@ -23,6 +23,7 @@ export const HOME_HTML = `<!doctype html>
 .home-header, .home-footer, .features { max-width: 1152px; margin: 0 auto; }
 .home-header { display: flex; justify-content: space-between; align-items: center; padding: 30px 24px; }
 .home-header svg { display: block; width: 164px; height: auto; }
+@media (prefers-color-scheme: dark) { .home-header [data-wordmark] { fill: #e6edf3; } }
 .header-rule { border-bottom: 1px solid var(--mote-border); }
 a { color: var(--home-link); text-decoration: underline; text-underline-offset: 4px; }
 a:hover { text-decoration-thickness: 2px; }
@@ -74,7 +75,7 @@ a:focus-visible { outline: 2px solid var(--home-link); outline-offset: 6px; bord
 </head>
 <body>
 <div class="header-rule"><header class="home-header">
-${LOGO_SVG}
+${LOGO_BLACK_SVG}
 <a href="${REPO}">GitHub</a>
 </header></div>
 <main class="home-main">
