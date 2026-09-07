@@ -204,13 +204,10 @@ a:focus-visible { outline: 2px solid var(--home-link); outline-offset: 6px; bord
 </section>
 <section class="quickstart" id="quickstart" aria-labelledby="quickstart-title">
 <h2 id="quickstart-title">From file to link.</h2>
-<pre tabindex="0" role="region" aria-label="Static-token quick start commands"><code>npm install -g mote-cli
-
-export MOTE_API_URL="https://mote.example.com"
-export MOTE_TOKEN="your-token"
-
+<pre tabindex="0" role="region" aria-label="Quick start commands"><code>npm install -g mote-cli
+mote login --api https://mote.example.com
 mote README.md</code></pre>
-<p>For your own static-token instance. Using Cloudflare Access? See the <a href="https://github.com/flc1125/mote/blob/main/docs/authentication.md">authentication guide</a>.</p>
+<p>Log in to your Access-enabled Mote instance. Your instance is remembered for future publishes. For other authentication modes, see the <a href="https://github.com/flc1125/mote/blob/main/docs/authentication.md">authentication guide</a>.</p>
 </section>
 </main>
 <section class="features" aria-label="Features">

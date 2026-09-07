@@ -141,6 +141,8 @@ describe('public homepage and branding', () => {
     expect(html).toBe(HOME_HTML);
     expect(html).toContain('Markdown in.');
     expect(html).toContain('URL out.');
+    expect(html).toContain('mote login --api https://mote.example.com');
+    expect(html).not.toContain('export MOTE_TOKEN');
     expect(html).toContain('#ef5552');
     expect(html).toContain('prefers-color-scheme: dark');
     expect(html).not.toMatch(/<script|<form|<input/i);
