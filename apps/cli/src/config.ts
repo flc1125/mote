@@ -1,8 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { CliError } from './errors.js';
+import { CredentialStore } from './auth/store.js';
 
 export const DEFAULT_API_URL = 'https://mote.flc.io';
 
@@ -30,6 +31,8 @@ export interface ResolveConfigOptions {
   env?: Record<string, string | undefined>;
   /** Config file path override, for tests. */
   configPath?: string;
+  /** Store override for callers using an isolated credential directory. */
+  store?: CredentialStore;
 }
 
 export function defaultConfigPath(env: Record<string, string | undefined>): string {
@@ -58,11 +61,21 @@ async function readConfigFile(path: string): Promise<ConfigFile> {
 
 /**
  * Configuration priority (baseline §21):
- * CLI arguments > environment (MOTE_API_URL, MOTE_TOKEN) > config file > defaults.
+ * CLI arguments > environment > config file > remembered API > built-in default.
+ * Only the API URL has a remembered preference; credential/mode priority is unchanged.
  */
 export async function resolveConfig(options: ResolveConfigOptions = {}): Promise<CliConfig> {
   const env = options.env ?? process.env;
-  const file = await readConfigFile(options.configPath ?? defaultConfigPath(env));
+  const configPath = options.configPath ?? defaultConfigPath(env);
+  const file = await readConfigFile(configPath);
+  const explicitApi = options.api ?? env.MOTE_API_URL ?? file.apiUrl;
+  // Lazy read: explicit targets must still work if the saved default is unavailable.
+  const rememberedApi =
+    explicitApi === undefined
+      ? await (
+          options.store ?? new CredentialStore({ directory: join(dirname(configPath), 'auth') })
+        ).defaultApi()
+      : undefined;
   const authMode = options.authMode ?? env.MOTE_AUTH_MODE ?? file.authMode;
   if (authMode !== undefined && !['token', 'oauth', 'service'].includes(authMode)) {
     throw new CliError('auth mode must be token, oauth or service');
@@ -80,7 +93,7 @@ export async function resolveConfig(options: ResolveConfigOptions = {}): Promise
       }
     : file.serviceToken;
   return {
-    apiUrl: options.api ?? env.MOTE_API_URL ?? file.apiUrl ?? DEFAULT_API_URL,
+    apiUrl: explicitApi ?? rememberedApi ?? DEFAULT_API_URL,
     token: options.token ?? env.MOTE_TOKEN ?? file.token,
     authMode: authMode as CliConfig['authMode'],
     serviceToken,

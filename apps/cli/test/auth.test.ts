@@ -359,6 +359,8 @@ describe('mode and commands', () => {
     for (const args of [
       ['auth', 'login'],
       ['auth', 'login', '--json'],
+      ['login'],
+      ['login', '--json'],
     ])
       expect(
         await run(args, io, {
@@ -383,5 +385,189 @@ describe('mode and commands', () => {
     fetchImpl.mockClear();
     expect(await run(['auth', 'status', '--offline', '--json'], io, deps)).toBe(0);
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
+describe('login shortcut and default instance', () => {
+  const capture = () => {
+    const out: string[] = [];
+    const err: string[] = [];
+    return {
+      out,
+      err,
+      io: { stdout: (s: string) => out.push(s), stderr: (s: string) => err.push(s) },
+    };
+  };
+  const deps = () => ({ env: {}, configPath: join(dir, 'config.json'), store, interactive: true });
+
+  it.each([['login'], ['auth', 'login']])(
+    '%j saves a default only after successful login',
+    async (...args) => {
+      const output = capture();
+      const loginImpl = vi.fn(async () => credential());
+      expect(await run([...args, '--api', api], output.io, { ...deps(), loginImpl })).toBe(0);
+      expect(loginImpl).toHaveBeenCalledOnce();
+      expect(await store.defaultApi()).toBe(api);
+      expect((await resolveConfig({ env: {}, configPath: join(dir, 'config.json') })).apiUrl).toBe(
+        api,
+      );
+      expect(output.out.join()).toContain(`Default instance saved: ${api}`);
+      expect(output.out.join()).not.toContain('access-secret');
+      const metadata = join(store.directory, 'default-api.json');
+      expect(JSON.parse(await readFile(metadata, 'utf8'))).toEqual({ version: 1, apiUrl: api });
+      if (process.platform !== 'win32') expect((await lstat(metadata)).mode & 0o777).toBe(0o600);
+    },
+  );
+
+  it('publishes to the remembered origin without flags and isolates a temporary override', async () => {
+    const output = capture();
+    const loginImpl = vi.fn(async () => credential());
+    expect(await run(['login', '--api', api], output.io, { ...deps(), loginImpl })).toBe(0);
+    const file = join(dir, 'README.md');
+    await writeFile(file, '# Example');
+    const fetchImpl = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      expect(String(input)).toBe(`${api}/api/v1/publish`);
+      expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer access-secret');
+      return json({ id: '7Vk3mQ9x2NFaP4Ls', url: `${api}/7Vk3mQ9x2NFaP4Ls` }, 201);
+    });
+    expect(await run([file, '--json'], output.io, { ...deps(), fetchImpl })).toBe(0);
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    fetchImpl.mockClear();
+    expect(
+      await run([file, '--api', 'https://other.example.com'], output.io, { ...deps(), fetchImpl }),
+    ).toBe(1);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(await store.defaultApi()).toBe(api);
+    expect(await run(['auth', 'logout'], output.io, deps())).toBe(0);
+    expect(await store.defaultApi()).toBe(api);
+    expect(
+      await run([file], output.io, { ...deps(), fetchImpl, env: { MOTE_TOKEN: 'old-token' } }),
+    ).toBe(1);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it('keeps both profiles when another login changes the default', async () => {
+    const output = capture();
+    expect(
+      await run(['login', '--api', api], output.io, {
+        ...deps(),
+        loginImpl: async () => credential(),
+      }),
+    ).toBe(0);
+    const other = 'https://other.example.com';
+    expect(
+      await run(['login', '--api', other], output.io, {
+        ...deps(),
+        loginImpl: async () => ({
+          ...credential(),
+          apiUrl: other,
+          resource: `${other}/api/mcp`,
+          accessToken: 'other-secret',
+        }),
+      }),
+    ).toBe(0);
+    expect(await store.defaultApi()).toBe(other);
+    expect((await store.load(api))?.accessToken).toBe('access-secret');
+    expect((await store.load(other))?.accessToken).toBe('other-secret');
+    expect(output.out.join()).toContain(`Default instance saved: ${other}`);
+  });
+
+  it('leaves the default unchanged on failure, cancellation, or rejected arguments', async () => {
+    const old = 'https://old.example.com';
+    await store.rememberApi(old);
+    const output = capture();
+    const failure = vi.fn(async () => {
+      throw new Error('Login cancelled');
+    });
+    expect(await run(['login', '--api', api], output.io, { ...deps(), loginImpl: failure })).toBe(
+      1,
+    );
+    const loginImpl = vi.fn(async () => credential());
+    for (const args of [
+      ['login', 'extra'],
+      ['login', '--json'],
+      ['login', '--callback-port', '0'],
+      ['login', '--api', 'http://example.com'],
+      ['login', '--credential-store', 'unknown'],
+      ['login', '--auth-mode', 'service'],
+    ])
+      expect(await run(args, output.io, { ...deps(), loginImpl })).toBe(1);
+    expect(loginImpl).not.toHaveBeenCalled();
+    expect(await store.defaultApi()).toBe(old);
+  });
+
+  it('does not change default when saving credentials fails', async () => {
+    await store.rememberApi('https://old.example.com');
+    vi.spyOn(store, 'save').mockRejectedValue(new Error('credential store locked'));
+    expect(
+      await run(['login', '--api', api], capture().io, {
+        ...deps(),
+        loginImpl: async () => credential(),
+      }),
+    ).toBe(1);
+    expect(await store.defaultApi()).toBe('https://old.example.com');
+  });
+
+  it('reports partial success if preference persistence fails', async () => {
+    await store.rememberApi('https://old.example.com');
+    vi.spyOn(store, 'rememberApi').mockRejectedValue(new Error('disk full'));
+    const output = capture();
+    expect(
+      await run(['login', '--api', api], output.io, {
+        ...deps(),
+        loginImpl: async () => credential(),
+      }),
+    ).toBe(1);
+    expect(output.err.join()).toContain('Credentials saved, but');
+    expect((await store.load(api))?.accessToken).toBe('access-secret');
+    expect(await store.defaultApi()).toBe('https://old.example.com');
+  });
+
+  it('preserves and explains explicit instance and auth-mode overrides', async () => {
+    const original = JSON.stringify({
+      apiUrl: 'https://configured.example.com',
+      token: 'legacy-secret',
+      authMode: 'token',
+      custom: true,
+    });
+    await writeFile(join(dir, 'config.json'), original);
+    const output = capture();
+    expect(
+      await run(['login', '--api', api, '--auth-mode', 'oauth'], output.io, {
+        ...deps(),
+        loginImpl: async () => credential(),
+      }),
+    ).toBe(0);
+    expect(await readFile(join(dir, 'config.json'), 'utf8')).toBe(original);
+    expect(output.err.join()).toContain('still selects https://configured.example.com');
+    expect(output.err.join()).toContain('configured auth mode is token');
+    expect(output.err.join()).not.toContain('legacy-secret');
+    expect((await resolveConfig(deps())).apiUrl).toBe('https://configured.example.com');
+    expect(
+      (await resolveConfig({ ...deps(), env: { MOTE_API_URL: 'https://env.example.com' } })).apiUrl,
+    ).toBe('https://env.example.com');
+    expect(
+      (
+        await resolveConfig({
+          ...deps(),
+          api: api,
+          env: { MOTE_API_URL: 'https://env.example.com' },
+        })
+      ).apiUrl,
+    ).toBe(api);
+  });
+
+  it('fails closed on a corrupted preference but lets an explicit login repair it', async () => {
+    await store.rememberApi(api);
+    await writeFile(join(store.directory, 'default-api.json'), '{bad', { mode: 0o600 });
+    await expect(resolveConfig(deps())).rejects.toThrow('invalid saved default');
+    expect((await resolveConfig({ ...deps(), api })).apiUrl).toBe(api);
+    expect(
+      await run(['login', '--api', api], capture().io, {
+        ...deps(),
+        loginImpl: async () => credential(),
+      }),
+    ).toBe(0);
+    expect(await store.defaultApi()).toBe(api);
   });
 });

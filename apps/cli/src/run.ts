@@ -33,12 +33,13 @@ const USAGE = `mote — Markdown in, URL out.
 Usage:
   mote <markdown-file> [options]
   mote publish <markdown-file> [options]
+  mote login [--api <url>] [login options]
   mote auth login [--no-browser] [--client-id <id>] [--credential-store keyring|file]
   mote auth status [--offline] [--json]
   mote auth logout [--json]
 
 Options:
-  --api <url>       Publish API URL      (env: MOTE_API_URL, default: https://mote.flc.io)
+  --api <url>       API origin (overrides MOTE_API_URL, config and remembered instance)
   --token <token>   Publish token        (env: MOTE_TOKEN)
   --auth-mode <mode> token | oauth | service (env: MOTE_AUTH_MODE)
   --no-browser      Login: print URL instead of opening browser (interactive only)
@@ -53,6 +54,10 @@ Options:
   --verbose         Verbose progress on stderr
   -h, --help        Show this help
   -v, --version     Show version
+
+Login opens your browser and remembers the instance after credentials are saved.
+API priority: --api > MOTE_API_URL > config apiUrl > remembered instance > https://mote.flc.io.
+Explicit auth-mode settings still apply. Use --auth-mode oauth for OAuth login.
 `;
 
 export function formatBytes(bytes: number): string {
@@ -116,17 +121,22 @@ export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promis
     const json = values.json;
     const verbose = values.verbose && !json;
 
+    const store = deps.store ?? defaultCredentialStore(deps.env, deps.configPath);
     const config = await resolveConfig({
       api: values.api,
       token: values.token,
       authMode: values['auth-mode'],
       env: deps.env,
       configPath: deps.configPath,
+      store,
     });
-    const store = deps.store ?? defaultCredentialStore(deps.env, deps.configPath);
-    if (positionals[0] === 'auth') {
-      const command = positionals[1];
-      if (positionals.length !== 2 || !['login', 'status', 'logout'].includes(command ?? ''))
+    const loginAlias = positionals[0] === 'login';
+    if (loginAlias || positionals[0] === 'auth') {
+      const command = loginAlias ? 'login' : positionals[1];
+      if (
+        positionals.length !== (loginAlias ? 1 : 2) ||
+        !['login', 'status', 'logout'].includes(command ?? '')
+      )
         throw new CliError('usage: mote auth login|status|logout');
       if (command === 'login') {
         if (json || !(deps.interactive ?? process.stdin.isTTY))
@@ -169,10 +179,31 @@ export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promis
                 else io.stderr('Complete login in your browser. Waiting for authorization...');
               },
             });
+            abort.signal.throwIfAborted();
+            if (credential.apiUrl !== apiOrigin(config.apiUrl, true))
+              throw new CliError('login credential API does not match requested instance');
             await store.save(credential, backend);
+            abort.signal.throwIfAborted();
+            try {
+              await store.rememberApi(credential.apiUrl);
+            } catch {
+              throw new CliError(
+                `Credentials saved, but the default instance could not be saved. Use --api ${credential.apiUrl}; do not repeat login just to retry publishing.`,
+              );
+            }
             io.stdout(
               `Logged in to ${credential.apiUrl} as ${credential.identity.email ?? credential.identity.subject}. Credentials: ${backend}.`,
             );
+            io.stdout(`Default instance saved: ${credential.apiUrl}.`);
+            const next = await resolveConfig({ env: deps.env, configPath: deps.configPath, store });
+            if (apiOrigin(next.apiUrl) !== credential.apiUrl)
+              io.stderr(
+                `Notice: MOTE_API_URL or config apiUrl still selects ${apiOrigin(next.apiUrl)}. Remove that override or use --api ${credential.apiUrl} when publishing.`,
+              );
+            if (next.authMode && next.authMode !== 'oauth')
+              io.stderr(
+                `Notice: your configured auth mode is ${next.authMode}. Use --auth-mode oauth or update that setting to publish with this login.`,
+              );
           });
         } finally {
           process.removeListener('SIGINT', cancel);
