@@ -11,6 +11,12 @@
 
 两种入口都要求已审核目标、预先创建的基础设施、环境凭据及开启的部署门禁。历史 SHA 仍须满足当前源码和配置校验，不能把它当作不受限制的回退机制。
 
+## 验收部署
+
+将源码提交 SHA 作为两个生产 Worker 的部署身份。自动部署后，分别记录每个 Worker 的 Build、生成版本和源码 SHA。只有 `mote-api` 与 `mote-viewer` 都匹配预期 SHA，且健康、鉴权、发布和匿名读取检查通过，才能验收本次部署。
+
+两个 Worker 独立部署，短暂的混合版本窗口属于预期情况。跨 API、CLI 或 Viewer 边界的变更必须保持向后兼容，直到两个生产 Worker 收敛到同一提交。
+
 ## 检查失败运行
 
 打开失败 job 并下载结果产物，保存 run ID、attempt、目标 SHA、manifest 摘要及组件版本。部署结果命名为 `mote-deploy-result-<run-id>-<attempt>`；npm 和 Release 有独立结果产物。不要在故障报告中公开凭据或私密文档 URL。

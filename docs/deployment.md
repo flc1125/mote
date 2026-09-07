@@ -11,6 +11,12 @@ This guide is for maintainers operating the checked-in Access deployment workflo
 
 Both paths require reviewed target configuration, pre-existing infrastructure, environment credentials and an enabled deployment gate. A historical SHA must still satisfy current source and configuration checks; it is not an unrestricted rollback mechanism.
 
+## Validate a rollout
+
+Treat the source commit SHA as the deployment identity across the production Workers. After an automated rollout, record each Worker's build, resulting version and source SHA. Do not accept the rollout until `mote-api` and `mote-viewer` both match the expected SHA and the health, authentication, publishing and anonymous-read checks pass.
+
+The Workers deploy independently, so a temporary mixed-version window is expected. Changes that cross the API, CLI or Viewer boundary must remain backward compatible until both production Workers converge on the same commit.
+
 ## Inspect a failed run
 
 Open the failed job and download its result artifacts. Keep the run ID, attempt, target SHA, manifest digest and component versions. Deployment results use `mote-deploy-result-<run-id>-<attempt>`; npm and Release results have separate artifacts. Never publish credentials or private document URLs in incident reports.
