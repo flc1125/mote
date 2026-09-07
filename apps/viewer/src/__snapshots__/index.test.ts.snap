@@ -137,18 +137,20 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .feature h3::before { content: ''; display: block; width: 22px; height: 3px; margin-bottom: 14px; border-radius: 2px; background: var(--mote-brand); }
 .feature p { margin: 0; color: var(--mote-muted); font-size: 15px; }
 
+.quickstart-band { background: var(--mote-tint); border-top: 1px solid var(--mote-tint-border); border-bottom: 1px solid var(--mote-tint-border); }
 .quickstart { scroll-margin-top: 24px; }
-.quickstart-title { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.03em; margin: 0 0 26px; padding: 0; border: 0; }
+.quickstart-title { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.03em; margin: 0 0 12px; padding: 0; border: 0; }
+.quickstart-lead { color: var(--mote-muted); font-size: 17px; margin: 0 0 26px; }
 .publish-methods { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-wrap: wrap; gap: 10px; }
-.method-label { padding: 9px 20px; border-radius: 999px; border: 1px solid var(--mote-border); font-size: 15px; font-weight: 600; color: var(--mote-muted); cursor: pointer; }
-.method-label:hover { color: var(--mote-fg); border-color: var(--mote-muted); background: var(--mote-pre-bg); }
-.method-choice:checked + .method-label { color: var(--mote-accent); border-color: var(--mote-tint-border); background: var(--mote-tint); }
+.method-label { padding: 9px 20px; border-radius: 999px; background: var(--mote-bg); border: 1px solid var(--mote-border); font-size: 15px; font-weight: 600; color: var(--mote-muted); cursor: pointer; }
+.method-label:hover { color: var(--mote-fg); border-color: var(--mote-muted); }
+.method-choice:checked + .method-label { color: var(--mote-accent); border-color: var(--mote-accent); background: var(--mote-bg); }
 .method-choice:focus-visible + .method-label { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
 .publish-option { display: none; width: 100%; min-width: 0; padding-top: 18px; }
 #method-cli:checked ~ #panel-cli, #method-mcp:checked ~ #panel-mcp, #method-skill:checked ~ #panel-skill { display: block; }
 .publish-option .option-summary { font-size: 17px; margin: 0 0 16px; }
 .publish-option p:last-child { margin-bottom: 0; }
-.quickstart pre { border: 1px solid var(--mote-border); background: var(--mote-pre-bg); border-radius: 12px; padding: 18px 20px; font-size: 15px; line-height: 1.7; overflow-x: auto; margin: 0 0 14px; }
+.quickstart pre { background: #1c2128; color: #e6edf3; border: 1px solid rgb(255 255 255 / 0.09); border-radius: 12px; padding: 18px 20px; font-size: 15px; line-height: 1.7; overflow-x: auto; margin: 0 0 14px; box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.18); }
 .quickstart pre code { background: transparent; padding: 0; font-size: inherit; }
 .quickstart p { color: var(--mote-muted); font-size: 15px; }
 .quickstart p a, .steps a { text-decoration: underline; text-underline-offset: 3px; }
@@ -211,28 +213,10 @@ Published:
 </div>
 </section>
 </main></div>
-<section class="section" aria-labelledby="how-title">
-<h2 class="section-title" id="how-title">How it works</h2>
-<ol class="steps">
-<li><span class="step-number" aria-hidden="true">1</span><h3>Write</h3><p>Keep Markdown as the single source of truth, with images next to the file.</p></li>
-<li><span class="step-number" aria-hidden="true">2</span><h3>Publish</h3><p><code>mote README.md</code> uploads the document and every referenced image.</p></li>
-<li><span class="step-number" aria-hidden="true">3</span><h3>Share</h3><p>The URL is the credential — anyone with the unguessable link can read.</p></li>
-</ol>
-</section>
-<section class="section" aria-labelledby="features-title">
-<h2 class="section-title" id="features-title">Why Mote</h2>
-<div class="feature-grid">
-<div class="feature"><h3>Immutable</h3><p>Every publish creates a new URL; old links keep their content forever.</p></div>
-<div class="feature"><h3>Capability URLs</h3><p>94-bit unguessable IDs. No accounts, no ACLs — the link is the access.</p></div>
-<div class="feature"><h3>Local images</h3><p>Referenced images upload automatically, deduplicated, served from opaque URLs.</p></div>
-<div class="feature"><h3>Fast at the edge</h3><p>Cloudflare Workers + R2 + CDN cache. No database to slow anything down.</p></div>
-<div class="feature"><h3>No JavaScript</h3><p>Pages are pure HTML and CSS under a maximally strict CSP.</p></div>
-<div class="feature"><h3>Agent-ready</h3><p>CLI <code>--json</code> output, remote and local MCP servers, and an agent Skill.</p></div>
-</div>
-</section>
-<section class="section quickstart" id="quickstart" aria-labelledby="quickstart-title">
+<div class="quickstart-band"><section class="section quickstart" id="quickstart" aria-labelledby="quickstart-title">
 <h2 class="section-title" id="quickstart-title">Quick start</h2>
 <p class="quickstart-title">From file to link.</p>
+<p class="quickstart-lead">Three ways to publish — pick the one that fits your workflow.</p>
 <fieldset class="publish-methods">
 <legend class="visually-hidden">Choose a publishing method</legend>
 <input class="method-choice visually-hidden" type="radio" name="publish-method" id="method-cli" aria-controls="panel-cli" checked>
@@ -260,6 +244,25 @@ codex mcp login mote</code></pre>
 <p>Choose your agent during installation. The skill uses your configured CLI or MCP tools; set up one of them first. See the <a href="https://github.com/flc1125/mote/blob/main/docs/skill.md">Skill guide</a>.</p>
 </section>
 </fieldset>
+</section></div>
+<section class="section" aria-labelledby="how-title">
+<h2 class="section-title" id="how-title">How it works</h2>
+<ol class="steps">
+<li><span class="step-number" aria-hidden="true">1</span><h3>Write</h3><p>Keep Markdown as the single source of truth, with images next to the file.</p></li>
+<li><span class="step-number" aria-hidden="true">2</span><h3>Publish</h3><p><code>mote README.md</code> uploads the document and every referenced image.</p></li>
+<li><span class="step-number" aria-hidden="true">3</span><h3>Share</h3><p>The URL is the credential — anyone with the unguessable link can read.</p></li>
+</ol>
+</section>
+<section class="section" aria-labelledby="features-title">
+<h2 class="section-title" id="features-title">Why Mote</h2>
+<div class="feature-grid">
+<div class="feature"><h3>Immutable</h3><p>Every publish creates a new URL; old links keep their content forever.</p></div>
+<div class="feature"><h3>Capability URLs</h3><p>94-bit unguessable IDs. No accounts, no ACLs — the link is the access.</p></div>
+<div class="feature"><h3>Local images</h3><p>Referenced images upload automatically, deduplicated, served from opaque URLs.</p></div>
+<div class="feature"><h3>Fast at the edge</h3><p>Cloudflare Workers + R2 + CDN cache. No database to slow anything down.</p></div>
+<div class="feature"><h3>No JavaScript</h3><p>Pages are pure HTML and CSS under a maximally strict CSP.</p></div>
+<div class="feature"><h3>Agent-ready</h3><p>CLI <code>--json</code> output, remote and local MCP servers, and an agent Skill.</p></div>
+</div>
 </section>
 <div class="footer-wrap"><footer class="home-footer">
 <div class="footer-brand"><span class="footer-mark" aria-hidden="true"></span><p>Markdown in, URL out.</p></div>

@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- Redesigned the homepage: hero with a terminal demo linking to the live public sample, how-it-works steps, six feature cards, and pill-style quick-start tabs. Still fully static and JavaScript-free.
+- Redesigned the homepage: hero with a terminal demo linking to the live public sample, then the CLI/MCP/Skill quick start as the central tinted band with terminal-styled command blocks, followed by how-it-works steps and six feature cards. Still fully static and JavaScript-free.
 - Restyled published document pages on the shared design system: a slim brand banner and colophon, red accent links replacing the GitHub blue, a collapsible tinted Contents block replacing the always-expanded TOC, and bordered code blocks. Existing document URLs pick up the new look automatically through per-Worker-version cache keys; no purge needed.
 - The `mote login` loopback callback now serves branded static HTML pages (success / denied / invalid / missing code) instead of plain text. The pages never echo callback parameters; the callback CSP gains `style-src 'unsafe-inline'` and nothing else.
 - ESLint now ignores the gitignored `.docs/` scratch directory, so `pnpm lint` works with local recovery data present.
