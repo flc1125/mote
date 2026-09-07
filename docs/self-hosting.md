@@ -132,7 +132,7 @@ Personal-scale usage fits Cloudflare's free tier: 100k Worker requests/day, 10 G
 
 Use a separate hostname, Worker pair and R2 bucket for validation. The repository's `access-test` environment is project-specific: replace its account, routes, bucket and identity values rather than deploying it unchanged.
 
-Its configured targets are `mote-test-api`, `mote-test-viewer`, `mote-test-documents` and `mote-test.flc.io`, with the independent `mote-test` Access application. The logical environment name is `access-test`. `apps/access-oauth-probe` uses fake account/identity values and no routes for local regression tests and dry-run builds only; never point it at live resources.
+Its configured targets are `mote-test-api`, `mote-test-viewer`, `mote-test-documents` and `mote-test.flc.io`, with the independent `mote-test` Access application. The logical environment name is `access-test`. `apps/auth-probe` uses fake account/identity values and no routes for local regression tests and dry-run builds only; never point it at live resources.
 
 1. Configure Zero Trust with your identity provider and an explicit publisher Allow policy. Protect only `<your-domain>/api/mcp`, `<your-domain>/api/v1/publish` and `<your-domain>/api/auth/*` in the same Access application. Keep document/asset URLs, health checks and required public OAuth metadata reachable without login; do not gate the entire Viewer hostname.
 2. Enable Managed OAuth and the localhost/loopback callback support required by your actual clients. Do not allow arbitrary public callback wildcards. Discover the exact MCP resource and authorization issuer; use a pre-registered client and exact callback for the tested Codex flow in [the MCP guide](mcp.md#codex).

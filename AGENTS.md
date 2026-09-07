@@ -8,7 +8,7 @@ Mote is a TypeScript/pnpm monorepo for publishing Markdown as immutable pages on
 - `apps/mcp`: local stdio MCP server built on the CLI pipeline.
 - `apps/api`: authenticated REST and remote MCP Worker.
 - `apps/viewer`: anonymous document/asset rendering Worker.
-- `apps/access-oauth-probe`: isolated Access verification app.
+- `apps/auth-probe`: isolated Access verification app.
 - `packages/core`, `protocol`, `renderer`: primitives, wire contracts, and safe rendering.
 - `docs/`: architecture, protocol, security, and deployment guidance.
 
