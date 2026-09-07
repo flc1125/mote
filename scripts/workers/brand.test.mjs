@@ -6,6 +6,15 @@ import { describe, expect, it } from 'vitest';
 
 const root = new URL('../../', import.meta.url);
 describe('brand exports', () => {
+  it('preserves the original logo geometry and coral icon in the black wordmark variant', async () => {
+    const original = await readFile(new URL('docs/assets/logo.svg', root), 'utf8');
+    const variant = await readFile(new URL('docs/assets/logo-black.svg', root), 'utf8');
+    expect(variant.match(/<path[^>]*>/g)).toEqual(original.match(/<path[^>]*>/g));
+    expect(variant.match(/<rect[^>]*>/g)).toEqual(original.match(/<rect[^>]*>/g));
+    expect(original).not.toContain('#20252b');
+    expect(variant).toContain('<g fill="#20252b" data-wordmark="true">');
+    expect(variant).toContain('fill="#ef5552"');
+  });
   it('keeps the embedded Worker assets synchronized with the source files', () => {
     expect(() =>
       execFileSync(execPath, ['scripts/brand/sync.mjs', '--check'], { cwd: root }),
