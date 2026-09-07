@@ -132,7 +132,7 @@ Header: Authorization: Bearer <你的 token>
 
 使用独立测试域名、Worker 与 R2。仓库的 `access-test` 绑定属于本项目，不得原样部署到别人的账号或复制其 AUD 到生产。
 
-配置目标为 `mote-test-api`、`mote-test-viewer`、`mote-test-documents` 和 `mote-test.flc.io`，使用独立的 `mote-test` Access 应用；逻辑环境名为 `access-test`。`apps/access-oauth-probe` 使用虚拟账户/身份配置且无路由，仅用于本地回归测试和 dry-run 构建，不得指向真实云端资源。
+配置目标为 `mote-test-api`、`mote-test-viewer`、`mote-test-documents` 和 `mote-test.flc.io`，使用独立的 `mote-test` Access 应用；逻辑环境名为 `access-test`。`apps/auth-probe` 使用虚拟账户/身份配置且无路由，仅用于本地回归测试和 dry-run 构建，不得指向真实云端资源。
 
 1. 配置 Zero Trust 登录源及明确的发布者 Allow 策略。同一应用仅保护 `<your-domain>/api/mcp`、`<your-domain>/api/v1/publish`、`<your-domain>/api/auth/*`；阅读页面、图片、健康检查和必要 OAuth 发现元数据保持公开，不保护整个 Viewer 域名。
 2. 启用 Managed OAuth 与实际客户端需要的 localhost/loopback 回调，不添加任意公网回调通配。核对完整 `/api/mcp` resource 和 issuer。Codex 沿用预注册 public client 与精确回调，见 [MCP 指南](../mcp.md#codex)。

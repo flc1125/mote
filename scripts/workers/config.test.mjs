@@ -82,7 +82,7 @@ describe('Worker source configuration allowlist', () => {
 
   it.each(['api', 'viewer'])('keeps the %s probe local-only', (component) => {
     const config = readRaw({
-      config: join(root, `apps/access-oauth-probe/wrangler.${component}.jsonc`),
+      config: join(root, `apps/auth-probe/wrangler.${component}.jsonc`),
     });
     expect(config.redirected).toBeFalsy();
     const raw = config.rawConfig;

@@ -1,5 +1,5 @@
 {
-  "name": "@mote/access-oauth-probe",
+  "name": "@mote/auth-probe",
   "version": "0.0.0",
   "private": true,
   "type": "module",
