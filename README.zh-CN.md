@@ -24,8 +24,10 @@ mote README.md
 ```text
 Published:
 
-https://mote.flc.io/7Vk3mQ9x2NFaP4Ls
+https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
+
+以上为示意输出。可查看真实的[公开文档与图片样本](https://mote.flc.io/1tAPUJjNt67GQ2pS)。
 
 ## 特性
 
@@ -99,6 +101,8 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 不支持 SVG（Active Content 风险）。发布后不可修改——修改内容请重新发布得到新 URL。
 
 ## 文档
+
+生产 Worker 由 Cloudflare Workers Builds 随 `main` 部署。GitHub Actions 负责 CI 和稳定标签的 CLI/GitHub Release 发布，详见[部署操作手册](docs/zh-CN/deployment.md)。
 
 - [CLI 参考](docs/cli.md)
 - [鉴权与迁移](docs/authentication.md)

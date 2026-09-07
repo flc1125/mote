@@ -108,7 +108,7 @@ documents/{document-id}/
 ```json
 {
   "id": "7Vk3mQ9x2NFaP4Ls",
-  "url": "https://mote.flc.io/7Vk3mQ9x2NFaP4Ls"
+  "url": "https://mote.example.com/7Vk3mQ9x2NFaP4Ls"
 }
 ```
 

@@ -161,15 +161,13 @@ For an existing token deployment, use the ordered [migration and rollback steps]
 
 ## Deployment automation
 
-The checked-in workflows target Access deployments, not the token-mode tutorial above. They are restricted to `flc1125/mote` by `scripts/deploy/policy.mjs`; forks must review and adapt that repository guard as well as the target configuration before use.
+Production `mote-api` and `mote-viewer` deploy independently through Cloudflare Workers Builds whenever `main` is pushed. GitHub Actions runs CI on PRs and `main`; stable `vX.Y.Z` tags publish only the CLI package and GitHub Release. There is no GitHub manual Worker deployment workflow.
 
-- **Merge to `main`**: CI checks code; it does not deploy Workers.
-- **Manual deployment**: run the `Deploy` workflow from `main`, select `production` or `access-test`, and supply `main`, a stable `vX.Y.Z` tag, or a full SHA from main history. It deploys Workers without publishing npm or a GitHub Release.
-- **Tag release**: pushing `v*` starts `Release`; validation accepts stable `vX.Y.Z` tags only. Worker deployment and read smoke checks must succeed before npm publication and GitHub Release finalization.
+Connect each production Worker to your repository only after its resources, routes and authentication have been reviewed. Use the [Workers Builds settings](deployment.md#expected-workers-builds-settings): workspace root `/`, an empty build command, and the app-specific filtered Wrangler deploy command. Configure build credentials and build-only variables in Cloudflare; runtime secrets remain separate. The commands in step 5 remain available for initial self-hosting and explicitly approved manual work.
 
-Before enabling either deployment path, review `scripts/deploy/targets.json` and Worker configs, provision the required resources, and configure the target GitHub Environment. Deployment requires `MOTE_DEPLOY_ENABLED=true`, the matching `CLOUDFLARE_ACCOUNT_ID`, a `CLOUDFLARE_API_TOKEN` secret, and the public smoke sample variables `MOTE_SMOKE_DOCUMENT_ID`, `MOTE_SMOKE_ASSET_ID`, and `MOTE_SMOKE_ASSET_SHA256`. Keep the gate disabled until the environment is approved; workflow availability is not production readiness.
+Forks must adapt both Wrangler configs and the configuration checks in `scripts/workers/targets.json` and `scripts/workers/config.mjs` to their own resources and auth mode. These checks intentionally pin this project's production and test configuration; changing only the domain will make `pnpm build` fail the allowlist check. The CLI release code also pins `flc1125/mote` and `mote-cli`; review `scripts/release/` and npm Trusted Publishing before enabling package releases in a fork.
 
-Manual `write_smoke` defaults to false. Enabling it requires dedicated `MOTE_SERVICE_CLIENT_ID` / `MOTE_SERVICE_CLIENT_SECRET` secrets and publishes a permanent public test document. The workflows do not provision R2, DNS or Access policies, or automatically roll back a failed deployment. Review the deployment result before retrying.
+Both Workers must converge on the same expected source SHA. Use backward-compatible changes while they roll out independently, and follow [deployment operations](deployment.md) for verification, failures, retries and rollback. Workers Builds does not provision your DNS, R2 or Access policies. This production setup does not automatically deploy the separate `access-test` environment.
 
 ## Next steps
 
