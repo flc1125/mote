@@ -23,7 +23,7 @@ export const HOME_HTML = `<!doctype html>
 :root { --home-max: 1080px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6px; font-size: 0.85em; }
-::selection { background: var(--mote-accent); color: #ffffff; }
+::selection { background: var(--mote-accent); color: var(--mote-on-accent); }
 
 /* ── Cinematic dark hero (identical in light & dark mode) ─────────── */
 .hero-zone { position: relative; overflow: hidden; background: #0b0e14; color: #e6edf3; }

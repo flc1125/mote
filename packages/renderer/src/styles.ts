@@ -9,7 +9,7 @@ import { BASE_CSS, TOKENS_CSS } from '@mote/theme';
  * no JS.
  */
 const DOCUMENT_CSS = `
-::selection { background: var(--mote-accent); color: #ffffff; }
+::selection { background: var(--mote-accent); color: var(--mote-on-accent); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 .mote-banner {
@@ -168,7 +168,10 @@ article summary { cursor: pointer; font-weight: 600; }
 article summary:hover { color: var(--mote-accent); }
 article details[open] > summary { margin-bottom: 0.6em; }
 
-/* Table of contents: checkbox-driven slide-in drawer, zero layout cost */
+/* Table of contents: :target-driven slide-in drawer, zero layout cost.
+   Opening points :target at #mote-toc; any TOC navigation moves :target
+   to the heading, so the drawer closes itself. While closed it is also
+   visibility:hidden — out of the tab order and the a11y tree. */
 .toc-trigger {
   display: inline-flex;
   align-items: center;
@@ -178,14 +181,10 @@ article details[open] > summary { margin-bottom: 0.6em; }
   border: 1px solid transparent;
   border-radius: 999px;
   color: var(--mote-muted);
-  cursor: pointer;
+  text-decoration: none;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 .toc-trigger:hover { color: var(--mote-accent); border-color: var(--mote-accent); }
-.toc-toggle:focus-visible ~ .mote-banner .toc-trigger {
-  outline: 2px solid var(--mote-accent);
-  outline-offset: 2px;
-}
 
 .toc-scrim {
   position: fixed;
@@ -209,13 +208,16 @@ article details[open] > summary { margin-bottom: 0.6em; }
   background: var(--mote-bg);
   border-left: 1px solid var(--mote-border);
   transform: translateX(105%);
-  transition: transform 0.25s ease;
+  visibility: hidden;
+  transition: transform 0.25s ease, visibility 0s 0.25s;
 }
-.toc-toggle:checked ~ .toc-drawer {
+.toc-drawer:target {
   transform: none;
+  visibility: visible;
   box-shadow: -24px 0 48px -24px rgb(15 17 21 / 0.3);
+  transition: transform 0.25s ease, visibility 0s;
 }
-.toc-toggle:checked ~ .toc-scrim { opacity: 1; pointer-events: auto; }
+.toc-drawer:target + .toc-scrim { opacity: 1; pointer-events: auto; }
 
 .toc-drawer-head {
   display: flex;
@@ -236,7 +238,7 @@ article details[open] > summary { margin-bottom: 0.6em; }
   font-size: 20px;
   line-height: 1;
   color: var(--mote-muted);
-  cursor: pointer;
+  text-decoration: none;
 }
 .toc-close:hover { color: var(--mote-accent); background: var(--mote-tint); }
 

@@ -13,8 +13,10 @@ export interface PageInput {
  * The banner links to `/` so self-hosted instances point at their own home.
  *
  * When the document has headings, the TOC is presented as a slide-in
- * drawer driven by a checkbox hack (`:checked ~`), so it never occupies
- * layout space — a floating trigger opens it and the scrim closes it.
+ * drawer driven by :target (the CSS lightbox pattern): the trigger points
+ * at #mote-toc, so activating any TOC link moves :target to the heading
+ * and the drawer closes itself — no JavaScript, and closed means truly
+ * hidden (visibility) so it leaves the tab order and the a11y tree.
  */
 export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): string {
   const safeTitle = escapeHtml(title);
@@ -23,15 +25,14 @@ export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): stri
   const tocTrigger =
     tocHtml === ''
       ? ''
-      : `<label class="toc-trigger" for="mote-toc" aria-label="Open table of contents">${tocIcon}</label>`;
+      : `<a class="toc-trigger" href="#mote-toc" aria-label="Open table of contents">${tocIcon}</a>`;
   const tocDrawer =
     tocHtml === ''
       ? ''
-      : `<input class="toc-toggle visually-hidden" type="checkbox" id="mote-toc">
-<label class="toc-scrim" for="mote-toc" aria-hidden="true"></label>
-<aside class="toc-drawer">
-<div class="toc-drawer-head"><span class="toc-title">TOC</span><label class="toc-close" for="mote-toc" aria-label="Close table of contents">×</label></div>
+      : `<aside class="toc-drawer" id="mote-toc">
+<div class="toc-drawer-head"><span class="toc-title">TOC</span><a class="toc-close" href="#!" aria-label="Close table of contents">×</a></div>
 ${tocHtml}</aside>
+<a class="toc-scrim" href="#!" aria-hidden="true" tabindex="-1"></a>
 `;
   return `<!doctype html>
 <html lang="en">
