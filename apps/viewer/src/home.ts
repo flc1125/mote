@@ -101,20 +101,20 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .statement-sub { display: grid; gap: 6px; min-width: 0; font-size: 16px; line-height: 1.65; color: #ffffff; }
 .statement-sub p { margin: 0; }
 
-.setup-note { margin: -12px 0 32px; max-width: 76ch; color: var(--mote-muted); }
+.setup-note { margin: -12px 0 32px; color: var(--mote-muted); }
 .method { padding: 28px 0; border-top: 1px solid var(--mote-border); }
 .method-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 18px; }
 .method-num { font-size: 34px; font-weight: 750; letter-spacing: -0.02em; line-height: 1; color: var(--mote-tint-border); }
 .method-head h3 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
 .method-desc { margin: 0; color: var(--mote-muted); font-size: 15px; }
-.command-box { background: #161b22; color: #e6edf3; border: 1px solid rgb(255 255 255 / 0.08); border-radius: 14px; margin: 0 0 12px; overflow: hidden; box-shadow: 0 16px 32px -18px rgb(15 17 21 / 0.35); transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.command-box { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; background: #161b22; color: #e6edf3; border: 1px solid rgb(255 255 255 / 0.08); border-radius: 14px; margin: 0 0 12px; overflow: hidden; box-shadow: 0 16px 32px -18px rgb(15 17 21 / 0.35); transition: border-color 0.15s ease, box-shadow 0.15s ease; }
 .command-box:hover { border-color: rgb(239 85 82 / 0.45); box-shadow: 0 16px 36px -16px rgb(239 85 82 / 0.3); }
-.command-toolbar { display: flex; justify-content: flex-end; padding: 8px 12px 0; }
+.command-toolbar { grid-column: 2; grid-row: 1; display: flex; padding: 16px 12px 0 0; }
 .copy-button { min-width: 72px; padding: 5px 10px; border: 1px solid rgb(255 255 255 / 0.18); border-radius: 6px; background: transparent; color: #c9d1d9; font: inherit; font-size: 12px; line-height: 1.5; cursor: pointer; }
 .copy-button:hover { background: rgb(255 255 255 / 0.08); color: #ffffff; }
 .copy-button:focus-visible { outline: 2px solid #ff8582; outline-offset: 3px; }
 .copy-button:disabled { cursor: wait; }
-.method pre { padding: 8px 20px 18px; font-size: 14.5px; line-height: 1.9; overflow-x: auto; margin: 0; }
+.method pre { grid-column: 1; grid-row: 1; min-width: 0; padding: 18px 20px; font-size: 14.5px; line-height: 1.9; overflow-x: auto; margin: 0; }
 .method pre code { background: transparent; padding: 0; font-size: inherit; }
 .method .prompt { color: #ff8582; font-weight: 600; user-select: none; }
 .method-note { color: var(--mote-muted); font-size: 14px; margin: 0; }
@@ -209,7 +209,8 @@ ${LOGO_BLACK_SVG}
 <section class="section" id="use" aria-labelledby="use-title">
 <h2 class="section-title" id="use-title">Use Mote</h2>
 <p class="section-heading">Choose how you publish.</p>
-<p class="setup-note">You need a Mote instance and permission to publish. The default instance accepts approved publishers only. <a href="${DOCS}/self-hosting.md" target="_blank" rel="noopener noreferrer">Host your own instance</a> or check the <a href="${DOCS}/authentication.md" target="_blank" rel="noopener noreferrer">authentication guide</a> before setup.</p>
+<p class="setup-note">You need a Mote instance and permission to publish. The default instance accepts approved publishers only.<br>
+<a href="${DOCS}/self-hosting.md" target="_blank" rel="noopener noreferrer">Host your own instance</a> or check the <a href="${DOCS}/authentication.md" target="_blank" rel="noopener noreferrer">authentication guide</a> before setup.</p>
 <div class="method">
 <div class="method-head"><span class="method-num">01</span><h3>CLI</h3><p class="method-desc">Publish from your terminal.</p></div>
 <div class="command-box">
