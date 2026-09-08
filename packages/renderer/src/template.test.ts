@@ -28,14 +28,30 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
 
   it('escapes the title wherever it appears', () => {
     expect(page).toContain('<title>Doc &lt;One&gt;</title>');
-    expect(page).toContain('<span class="mote-doc-title">Doc &lt;One&gt;</span>');
     expect(page).not.toContain('Doc <One>');
+  });
+
+  it('keeps the banner brand-only (no document title)', () => {
+    expect(page).not.toContain('mote-doc-title');
   });
 
   it('uses the banner > main > article > colophon structure', () => {
     expect(page).toContain('<header class="mote-banner">');
-    expect(page).toContain('<main>\n<article>\n<nav class="toc">x</nav>\n<h1 id="one">One</h1>');
+    expect(page).toContain('<main>\n<article>\n<h1 id="one">One</h1>');
     expect(page).toContain('<footer class="mote-colophon">');
+  });
+
+  it('wraps the TOC in the :target-driven drawer chrome', () => {
+    expect(page).toContain('<a class="toc-trigger" href="#mote-toc"');
+    expect(page).toContain('<aside class="toc-drawer" id="mote-toc">');
+    expect(page).toContain('<a class="toc-scrim" href="#!"');
+    expect(page).toContain('<nav class="toc">x</nav>');
+  });
+
+  it('omits the drawer entirely when there is no TOC', () => {
+    const bare = renderHtmlPage({ title: 'T', tocHtml: '', contentHtml: '<p>x</p>' });
+    expect(bare).not.toContain('<aside class="toc-drawer"');
+    expect(bare).not.toContain('<a class="toc-trigger"');
   });
 
   it('points the brand links at the same-origin home (self-host friendly)', () => {

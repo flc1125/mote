@@ -23,7 +23,7 @@ export const HOME_HTML = `<!doctype html>
 :root { --home-max: 1080px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6px; font-size: 0.85em; }
-::selection { background: var(--mote-accent); color: #ffffff; }
+::selection { background: var(--mote-accent); color: var(--mote-on-accent); }
 
 /* ── Cinematic dark hero (identical in light & dark mode) ─────────── */
 .hero-zone { position: relative; overflow: hidden; background: #0b0e14; color: #e6edf3; }
@@ -91,7 +91,7 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .section-heading { font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -0.03em; font-weight: 750; margin: 0 0 36px; padding: 0; border: 0; }
 
 /* Full-bleed red statement band */
-.stmt-band { position: relative; overflow: hidden; background: linear-gradient(135deg, #d14340 0%, #a92f2c 75%); color: #ffffff; }
+.stmt-band { position: relative; overflow: hidden; background: linear-gradient(135deg, #ef5552 0%, #d43f3c 75%); color: #ffffff; }
 .stmt-band::before { content: ''; position: absolute; inset: 0; background: radial-gradient(640px 320px at 18% -30%, rgb(255 255 255 / 0.16), transparent 70%); }
 .stmt { position: relative; }
 .statement-line { font-size: clamp(36px, 6vw, 68px); line-height: 1.06; letter-spacing: -0.035em; font-weight: 750; margin: 0 0 22px; color: #ffffff; }

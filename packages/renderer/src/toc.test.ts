@@ -32,11 +32,9 @@ describe('buildTocTree', () => {
 });
 
 describe('renderToc', () => {
-  it('renders a collapsed disclosure with anchor links, so content leads the page', () => {
+  it('renders a nav tree with anchor links for the drawer', () => {
     const html = renderToc(headings);
-    expect(html).toContain('<details class="toc"><summary>Contents</summary>');
-    expect(html).toContain('<nav aria-label="Table of contents">');
-    expect(html).not.toContain(' open>');
+    expect(html).toContain('<nav class="toc-nav" aria-label="Table of contents">');
     expect(html).toContain('<a href="#guide">Guide</a>');
     expect(html).toContain('<ul><li><a href="#install">Install</a><ul>');
     expect(html).not.toContain('too-deep');
