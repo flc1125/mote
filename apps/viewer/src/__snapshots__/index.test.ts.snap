@@ -249,11 +249,11 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 <section class="hero" aria-labelledby="intro">
 <p class="hero-eyebrow">Markdown publishing</p>
 <h1 id="intro">Markdown in.<br><span class="grad">URL out.</span></h1>
-<p class="hero-sub">Publish a local Markdown file as an immutable, browser-readable page. The link is the credential — <a href="https://mote.flc.io/1tAPUJjNt67GQ2pS">see a live demo</a>.</p>
+<p class="hero-sub">Publish a local Markdown file as an immutable, browser-readable page. The link is the credential — <a href="https://mote.flc.io/MxNfTmvTNxMnrbkU">see a live demo</a>.</p>
 <p class="hero-actions"><a class="button button-primary" href="#use">Get started</a><a class="button button-ghost" href="https://github.com/flc1125/mote">GitHub</a></p>
 <div class="terminal">
 <div class="terminal-bar" aria-hidden="true"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span></div>
-<pre tabindex="0" role="region" aria-label="Publishing a document with the Mote CLI"><code><span class="row"><span class="prompt">$</span> <span class="type">mote README.md</span><span class="cursor">▍</span></span><span class="fade l1 dim">Scanning README.md…</span><span class="fade l2 dim">Markdown 47.1 KB · Assets 3 · Total 1.84 MB</span><span class="fade l3">Published:</span><span class="fade l4"><a href="https://mote.flc.io/1tAPUJjNt67GQ2pS">https://mote.flc.io/1tAPUJjNt67GQ2pS</a></span></code></pre>
+<pre tabindex="0" role="region" aria-label="Publishing a document with the Mote CLI"><code><span class="row"><span class="prompt">$</span> <span class="type">mote README.md</span><span class="cursor">▍</span></span><span class="fade l1 dim">Scanning README.md…</span><span class="fade l2 dim">Markdown 47.1 KB · Assets 3 · Total 1.84 MB</span><span class="fade l3">Published:</span><span class="fade l4"><a href="https://mote.flc.io/MxNfTmvTNxMnrbkU">https://mote.flc.io/MxNfTmvTNxMnrbkU</a></span></code></pre>
 </div>
 </section>
 </main>

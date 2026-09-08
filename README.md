@@ -20,7 +20,7 @@
 
 <p align="center">
   <a href="#-quick-start">Quick Start</a> •
-  <a href="https://mote.flc.io/1tAPUJjNt67GQ2pS">Live Demo</a> •
+  <a href="https://mote.flc.io/MxNfTmvTNxMnrbkU">Live Demo</a> •
   <a href="docs/self-hosting.md">Self-hosting</a> •
   <a href="README.zh-CN.md">简体中文</a>
 </p>
@@ -53,7 +53,7 @@ Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
-<sub>Live sample → [a published doc with images](https://mote.flc.io/1tAPUJjNt67GQ2pS)</sub>
+<sub>Live sample → [a project update with images, tables, and code](https://mote.flc.io/MxNfTmvTNxMnrbkU) · [Markdown source](docs/examples/weekly-report.md)</sub>
 
 The default instance, `https://mote.flc.io`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Details: [authentication guide](docs/authentication.md).
 

@@ -20,7 +20,7 @@
 
 <p align="center">
   <a href="#-快速开始">快速开始</a> •
-  <a href="https://mote.flc.io/1tAPUJjNt67GQ2pS">在线示例</a> •
+  <a href="https://mote.flc.io/MxNfTmvTNxMnrbkU">在线示例</a> •
   <a href="docs/self-hosting.md">自托管</a> •
   <a href="README.md">English</a>
 </p>
@@ -53,7 +53,7 @@ Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
-<sub>在线示例 → [公开文档与图片样本](https://mote.flc.io/1tAPUJjNt67GQ2pS)</sub>
+<sub>在线示例 → [包含图片、表格与代码的项目周报](https://mote.flc.io/MxNfTmvTNxMnrbkU) · [Markdown 源文件](docs/examples/weekly-report.md)</sub>
 
 默认实例 `https://mote.flc.io` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。详见[鉴权指南](docs/authentication.md)。
 
