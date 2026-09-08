@@ -116,7 +116,8 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .copy-button:disabled { cursor: wait; }
 .method pre { grid-column: 1; grid-row: 1; min-width: 0; padding: 18px 20px; font-size: 14.5px; line-height: 1.9; overflow-x: auto; margin: 0; }
 .method pre code { background: transparent; padding: 0; font-size: inherit; }
-.method .prompt { color: #ff8582; font-weight: 600; user-select: none; }
+.method .prompt { display: inline-block; width: 1ch; margin-right: 1ch; color: #ff8582; font-weight: 600; -webkit-user-select: none; user-select: none; }
+.method .prompt::before { content: "$"; }
 .method-note { color: var(--mote-muted); font-size: 14px; margin: 0; }
 .method-note a { color: var(--mote-accent); text-decoration: none; border-bottom: 1px solid var(--mote-tint-border); }
 .method-note a:hover { border-bottom-color: var(--mote-accent); }
@@ -215,9 +216,9 @@ ${LOGO_BLACK_SVG}
 <div class="method-head"><span class="method-num">01</span><h3>CLI</h3><p class="method-desc">Publish from your terminal.</p></div>
 <div class="command-box">
 <div class="command-toolbar"><button type="button" class="copy-button" data-copy-command aria-label="Copy CLI commands" hidden>Copy</button><span class="visually-hidden" role="status"></span></div>
-<pre tabindex="0" role="region" aria-label="CLI quick start commands"><code><span class="prompt">$</span> npm install -g mote-cli
-<span class="prompt">$</span> mote login
-<span class="prompt">$</span> mote README.md</code></pre>
+<pre tabindex="0" role="region" aria-label="CLI quick start commands"><code><span class="prompt" aria-hidden="true"></span>npm install -g mote-cli
+<span class="prompt" aria-hidden="true"></span>mote login
+<span class="prompt" aria-hidden="true"></span>mote README.md</code></pre>
 </div>
 <p class="method-note">Log in to your Access-enabled Mote instance — it is remembered for future publishes. For other authentication modes, see the <a href="${DOCS}/authentication.md" target="_blank" rel="noopener noreferrer">authentication guide</a>.</p>
 </div>
@@ -225,8 +226,8 @@ ${LOGO_BLACK_SVG}
 <div class="method-head"><span class="method-num">02</span><h3>MCP</h3><p class="method-desc">Connect your AI assistant. For example, with Codex:</p></div>
 <div class="command-box">
 <div class="command-toolbar"><button type="button" class="copy-button" data-copy-command aria-label="Copy MCP commands" hidden>Copy</button><span class="visually-hidden" role="status"></span></div>
-<pre tabindex="0" role="region" aria-label="Codex MCP setup commands"><code><span class="prompt">$</span> codex mcp add mote --url https://mote.flc.io/api/mcp
-<span class="prompt">$</span> codex mcp login mote</code></pre>
+<pre tabindex="0" role="region" aria-label="Codex MCP setup commands"><code><span class="prompt" aria-hidden="true"></span>codex mcp add mote --url https://mote.flc.io/api/mcp
+<span class="prompt" aria-hidden="true"></span>codex mcp login mote</code></pre>
 </div>
 <p class="method-note">Use your own instance URL. Setup, tools, and verified clients: <a href="${DOCS}/mcp.md" target="_blank" rel="noopener noreferrer">MCP guide</a>.</p>
 </div>
@@ -234,7 +235,7 @@ ${LOGO_BLACK_SVG}
 <div class="method-head"><span class="method-num">03</span><h3>Skill</h3><p class="method-desc">Teach your agent when and how to publish.</p></div>
 <div class="command-box">
 <div class="command-toolbar"><button type="button" class="copy-button" data-copy-command aria-label="Copy Skill command" hidden>Copy</button><span class="visually-hidden" role="status"></span></div>
-<pre tabindex="0" role="region" aria-label="Skill installation command"><code><span class="prompt">$</span> npx skills add flc1125/mote --skill mote</code></pre>
+<pre tabindex="0" role="region" aria-label="Skill installation command"><code><span class="prompt" aria-hidden="true"></span>npx skills add flc1125/mote --skill mote</code></pre>
 </div>
 <p class="method-note">The skill uses your configured CLI or MCP tools; set up one of them first. See the <a href="${DOCS}/skill.md" target="_blank" rel="noopener noreferrer">Skill guide</a>.</p>
 </div>
