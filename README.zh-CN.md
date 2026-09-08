@@ -45,21 +45,29 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 ## ✨ 特性
 
-|                    |                                                                                  |
-| ------------------ | -------------------------------------------------------------------------------- |
-| 🔒 **不可变**      | 每次发布生成全新 URL，旧 URL 永久保持原内容                                       |
-| 🔑 **Capability URL** | URL 即访问凭证——94 bit 随机 ID 不可枚举，不被搜索引擎收录                       |
-| 🖼️ **本地图片**    | 自动上传、按内容去重，公开 URL 不泄露原始文件名                                   |
-| ⚡ **快**          | Cloudflare Workers + R2 + CDN 缓存；无数据库，页面零 JS                           |
-| 🤖 **Agent 友好**  | CLI `--json` 输出，另有远程与本地 MCP server                                      |
+|                       |                                                                  |
+| --------------------- | ---------------------------------------------------------------- |
+| 🔒 **不可变**         | 每次发布生成全新 URL，旧 URL 永久保持原内容                       |
+| 🔑 **Capability URL** | URL 即访问凭证——94 bit 随机 ID 不可枚举，不被搜索引擎收录         |
+| 🖼️ **本地图片**       | 自动上传、按内容去重，公开 URL 不泄露原始文件名                   |
+| ⚡ **快**             | Cloudflare Workers + R2 + CDN 缓存；无数据库，页面零 JS           |
+| 🤖 **Agent 友好**     | CLI `--json` 输出，另有远程与本地 MCP server                      |
 
 ## 🚀 快速开始
 
+可以从终端、AI Agent 或两者同时使用 Mote——选择适合你工作流的方式。
+
+### ⌨️ CLI
+
 ```bash
 npm install -g mote-cli
+mote login
+mote README.md
 ```
 
-> **注意**——浏览器登录和 Service Token 鉴权需要 **mote-cli ≥ 0.2.0**。旧 npm 版本不包含这些命令。
+默认实例 `https://mote.flc.io` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。登录成功后会记住实例；显式环境变量和配置仍优先。
+
+> **注意**——浏览器登录和 Service Token 鉴权需要 **mote-cli ≥ 0.2.0**。旧 npm 版本不包含这些命令。完整参数（`--json`、`--no-assets`、`--api`、`--token` 等）、配置文件与脚本用法见 [docs/cli.md](docs/cli.md)。
 
 <details><summary><strong>从源码构建</strong>（需要 Node.js ≥ 20 与 pnpm）</summary>
 
@@ -73,50 +81,36 @@ cd apps/cli && npm install -g .
 
 </details>
 
-### Access 实例
+### 🔌 MCP
+
+将 Agent 接入远程 MCP endpoint——在 Access 实例上通过 OAuth 鉴权：
+
+```json
+{
+  "mcpServers": {
+    "mote": {
+      "type": "http",
+      "url": "https://mote.flc.io/api/mcp"
+    }
+  }
+}
+```
+
+另有本地 stdio server，额外提供 `publish_markdown_file`（自动上传本地图片）。配置、工具说明与已验证客户端见 [docs/mcp.md](docs/mcp.md)。
+
+### 🎓 Skill
+
+教 Agent 何时、如何用 Mote 发布：
 
 ```bash
-mote login
-mote README.md
+npx skills add flc1125/mote
 ```
 
-默认实例 `https://mote.flc.io` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。登录成功后会记住实例；显式环境变量和配置仍优先。配置、迁移及验证范围见[鉴权指南](docs/authentication.md)。
+Skill 通过驱动 CLI 或 MCP 工具完成发布，并内置了发布安全守则——详见 [docs/skill.md](docs/skill.md)。
 
-### 静态 token 实例
+## 🏠 自托管
 
-配置你自己的 token 模式实例及 token（见[自托管指南](docs/self-hosting.md)），将示例域名替换为实际域名。静态 token 不能用于向生产 `mote.flc.io` 发布：
-
-```bash
-export MOTE_API_URL="https://mote.example.com"
-export MOTE_TOKEN="你的 token"
-export MOTE_AUTH_MODE="token"
-```
-
-发布：
-
-```bash
-mote README.md
-```
-
-```text
-Scanning README.md...
-
-Markdown    47.1 KB
-Assets      3
-Total       1.84 MB
-
-Published:
-https://mote.example.com/7Vk3mQ9x2NFaP4Ls
-```
-
-## 📖 使用
-
-|          |                                                                                                        |
-| -------- | ------------------------------------------------------------------------------------------------------ |
-| **CLI**  | 参数（`--json`、`--no-assets`、`--api`、`--token` 等）、配置文件、脚本用法 → [docs/cli.md](docs/cli.md) |
-| **MCP**  | 远程 OAuth 与本地 stdio 工具，配置及兼容性 → [docs/mcp.md](docs/mcp.md)                                |
-| **Skill** | 教 Agent 何时/如何用 Mote（`npx skills add flc1125/mote`）→ [docs/skill.md](docs/skill.md)             |
-| **自托管** | 在 Cloudflare 免费额度内部署自己的实例 → [docs/self-hosting.md](docs/self-hosting.md)                  |
+在 Cloudflare 免费额度内部署自己的实例：[docs/self-hosting.md](docs/self-hosting.md)。
 
 ## 📏 限制
 

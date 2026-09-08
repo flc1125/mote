@@ -45,21 +45,29 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 ## ✨ Features
 
-|                        |                                                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------------------------------- |
-| 🔒 **Immutable**       | Every publish creates a new URL; old URLs keep their content forever                                     |
-| 🔑 **Capability URL**  | The URL is the only credential — unguessable (94-bit random ID), never indexed                           |
-| 🖼️ **Local images**    | Referenced images are uploaded automatically, deduplicated, and served from opaque URLs                  |
-| ⚡ **Fast**            | Cloudflare Workers + R2 + CDN cache; no database, no JS on pages                                          |
-| 🤖 **Agent-ready**     | CLI `--json` output, plus remote and local MCP servers                                                    |
+|                       |                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------ |
+| 🔒 **Immutable**      | Every publish creates a new URL; old URLs keep their content forever                             |
+| 🔑 **Capability URL** | The URL is the only credential — unguessable (94-bit random ID), never indexed                   |
+| 🖼️ **Local images**   | Referenced images are uploaded automatically, deduplicated, and served from opaque URLs          |
+| ⚡ **Fast**           | Cloudflare Workers + R2 + CDN cache; no database, no JS on pages                                 |
+| 🤖 **Agent-ready**    | CLI `--json` output, plus remote and local MCP servers                                           |
 
 ## 🚀 Quick Start
 
+Use Mote from the terminal, from an AI agent, or both — pick what fits your workflow.
+
+### ⌨️ CLI
+
 ```bash
 npm install -g mote-cli
+mote login
+mote README.md
 ```
 
-> **Note** — Browser login and Service Token authentication require **mote-cli ≥ 0.2.0**. Older npm versions do not include these commands.
+The default instance, `https://mote.flc.io`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Successful login remembers the instance; explicit environment/config overrides still apply.
+
+> **Note** — Browser login and Service Token authentication require **mote-cli ≥ 0.2.0**. Older npm versions do not include these commands. Full options (`--json`, `--no-assets`, `--api`, `--token`, …), config file, and scripting: [docs/cli.md](docs/cli.md).
 
 <details><summary><strong>From source</strong> (requires Node.js ≥ 20 and pnpm)</summary>
 
@@ -73,50 +81,36 @@ cd apps/cli && npm install -g .
 
 </details>
 
-### Access-enabled instance
+### 🔌 MCP
+
+Point your agent at the remote MCP endpoint — on Access-enabled instances it authenticates over OAuth:
+
+```json
+{
+  "mcpServers": {
+    "mote": {
+      "type": "http",
+      "url": "https://mote.flc.io/api/mcp"
+    }
+  }
+}
+```
+
+A local stdio server is also available, adding `publish_markdown_file` with automatic local-image upload. Setup, tools, and verified clients: [docs/mcp.md](docs/mcp.md).
+
+### 🎓 Skill
+
+Teach your agent when and how to publish with Mote:
 
 ```bash
-mote login
-mote README.md
+npx skills add flc1125/mote
 ```
 
-The default instance, `https://mote.flc.io`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Successful login remembers the instance; explicit environment/config overrides still apply. See the [authentication guide](docs/authentication.md) for setup and migration limits.
+The skill drives the CLI or MCP tools and encodes the publishing guardrails — details: [docs/skill.md](docs/skill.md).
 
-### Static-token instance
+## 🏠 Self-hosting
 
-Configure your own token-mode instance and its token (see [Self-hosting](docs/self-hosting.md)); replace the example host with yours. A static token cannot publish to production `mote.flc.io`:
-
-```bash
-export MOTE_API_URL="https://mote.example.com"
-export MOTE_TOKEN="your-token"
-export MOTE_AUTH_MODE="token"
-```
-
-Publish:
-
-```bash
-mote README.md
-```
-
-```text
-Scanning README.md...
-
-Markdown    47.1 KB
-Assets      3
-Total       1.84 MB
-
-Published:
-https://mote.example.com/7Vk3mQ9x2NFaP4Ls
-```
-
-## 📖 Usage
-
-|                |                                                                                                                            |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **CLI**        | Options (`--json`, `--no-assets`, `--api`, `--token`, …), config file, and scripting → [docs/cli.md](docs/cli.md)          |
-| **MCP**        | Remote OAuth and local stdio tools; setup and compatibility → [docs/mcp.md](docs/mcp.md)                                   |
-| **Skill**      | Teach agents when/how to use Mote (`npx skills add flc1125/mote`) → [docs/skill.md](docs/skill.md)                         |
-| **Self-hosting** | Run your own instance on Cloudflare's free tier → [docs/self-hosting.md](docs/self-hosting.md)                           |
+Run your own instance on Cloudflare's free tier: [docs/self-hosting.md](docs/self-hosting.md).
 
 ## 📏 Limits
 
