@@ -5,19 +5,17 @@
   </picture>
 </p>
 
----
-
 <p align="center">
   <strong>Markdown in, URL out.</strong><br>
   Publish local Markdown documents as immutable, unguessable, browser-readable web pages.
 </p>
 
 <p align="center">
-  <a href="https://github.com/flc1125/mote/actions/workflows/ci.yml"><img src="https://github.com/flc1125/mote/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://www.npmjs.com/package/mote-cli"><img src="https://img.shields.io/npm/v/mote-cli" alt="npm"></a>
-  <a href="https://www.npmjs.com/package/mote-cli"><img src="https://img.shields.io/npm/dm/mote-cli" alt="npm downloads"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen" alt="Node ≥ 20"></a>
+  <a href="https://github.com/flc1125/mote/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/flc1125/mote/ci.yml?branch=main&style=flat-square" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/mote-cli"><img src="https://img.shields.io/npm/v/mote-cli?style=flat-square" alt="npm"></a>
+  <a href="https://www.npmjs.com/package/mote-cli"><img src="https://img.shields.io/npm/dm/mote-cli?style=flat-square" alt="npm downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License: MIT"></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen?style=flat-square" alt="Node ≥ 20"></a>
 </p>
 
 <p align="center">
@@ -27,7 +25,25 @@
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+---
+
+## ✨ Features
+
+- 🔒 **Immutable** — every publish creates a new URL; old URLs keep their content forever
+- 🔑 **Capability URL** — the URL is the only credential; unguessable (94-bit random ID), never indexed
+- 🖼️ **Local images** — referenced images are uploaded automatically, deduplicated, and served from opaque URLs
+- ⚡ **Fast** — Cloudflare Workers + R2 + CDN cache; no database, no JS on pages
+- 🤖 **Agent-ready** — CLI `--json` output, plus remote and local MCP servers
+
+## 🚀 Quick Start
+
+Use Mote from the terminal, from an AI agent, or both — pick what fits your workflow.
+
+### CLI
+
 ```bash
+npm install -g mote-cli
+mote login
 mote README.md
 ```
 
@@ -37,31 +53,7 @@ Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
-<p align="center">
-  <sub>The output above is illustrative — see a real <a href="https://mote.flc.io/1tAPUJjNt67GQ2pS">public sample with an image</a>.</sub>
-</p>
-
-## ✨ Features
-
-|                       |                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------ |
-| 🔒 **Immutable**      | Every publish creates a new URL; old URLs keep their content forever                             |
-| 🔑 **Capability URL** | The URL is the only credential — unguessable (94-bit random ID), never indexed                   |
-| 🖼️ **Local images**   | Referenced images are uploaded automatically, deduplicated, and served from opaque URLs          |
-| ⚡ **Fast**           | Cloudflare Workers + R2 + CDN cache; no database, no JS on pages                                 |
-| 🤖 **Agent-ready**    | CLI `--json` output, plus remote and local MCP servers                                           |
-
-## 🚀 Quick Start
-
-Use Mote from the terminal, from an AI agent, or both — pick what fits your workflow.
-
-### ⌨️ CLI
-
-```bash
-npm install -g mote-cli
-mote login
-mote README.md
-```
+<sub>The output above is illustrative — see a real [public sample with an image](https://mote.flc.io/1tAPUJjNt67GQ2pS).</sub>
 
 The default instance, `https://mote.flc.io`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Successful login remembers the instance; explicit environment/config overrides still apply.
 
@@ -79,7 +71,7 @@ cd apps/cli && npm install -g .
 
 </details>
 
-### 🔌 MCP
+### MCP
 
 Point your agent at the remote MCP endpoint — on Access-enabled instances it authenticates over OAuth:
 
@@ -96,7 +88,7 @@ Point your agent at the remote MCP endpoint — on Access-enabled instances it a
 
 A local stdio server is also available, adding `publish_markdown_file` with automatic local-image upload. Setup, tools, and verified clients: [docs/mcp.md](docs/mcp.md).
 
-### 🎓 Skill
+### Skill
 
 Teach your agent when and how to publish with Mote:
 
@@ -106,11 +98,11 @@ npx skills add flc1125/mote
 
 The skill drives the CLI or MCP tools and encodes the publishing guardrails — details: [docs/skill.md](docs/skill.md).
 
-## 🏠 Self-hosting
+## Self-hosting
 
 Run your own instance on Cloudflare's free tier: [docs/self-hosting.md](docs/self-hosting.md).
 
-## 📏 Limits
+## Limits
 
 | Item          | Limit                          |
 | ------------- | ------------------------------ |
@@ -137,6 +129,6 @@ SVG is not supported (active-content risk). Documents are immutable — republis
 
 > Production Workers deploy from `main` through Cloudflare Workers Builds. GitHub Actions handles CI and stable-tag CLI/GitHub releases; see [deployment operations](docs/deployment.md).
 
-## 📄 License
+## License
 
 Mote is released under the [MIT License](LICENSE).
