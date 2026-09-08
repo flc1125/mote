@@ -197,6 +197,11 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .home-footer a { color: var(--mote-muted); text-decoration: none; }
 .home-footer a:hover { color: var(--mote-accent); text-decoration: none; }
 
+/* Scale the title on roomy screens without pushing the terminal below short viewports. */
+@media (min-width: 1280px) and (min-height: 800px) {
+  .hero h1 { font-size: clamp(96px, min(8vw, 13svh), 148px); }
+}
+
 @media (max-width: 640px) {
   .home-header { padding: 18px 20px; }
   .home-header svg { width: 104px; }
