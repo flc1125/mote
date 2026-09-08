@@ -4,8 +4,8 @@ import { renderMarkdown } from './markdown.js';
 
 const NO_ASSETS = new Map<string, string>();
 
-function render(markdown: string): string {
-  return renderMarkdown(markdown, NO_ASSETS).html;
+function render(markdown: string, assets = NO_ASSETS): string {
+  return renderMarkdown(markdown, assets).html;
 }
 
 describe('allowlisted raw HTML (§26)', () => {
@@ -59,7 +59,9 @@ describe('allowlisted raw HTML (§26)', () => {
 
   it('keeps <details> open across Markdown blocks (GitHub-style)', () => {
     const html = render('<details><summary>More</summary>\n\n```sh\nls\n```\n\n</details>');
-    expect(html).toMatch(/<details><summary>More<\/summary>[\s\S]*<pre>[\s\S]*<\/pre>[\s\S]*<\/details>/);
+    expect(html).toMatch(
+      /<details><summary>More<\/summary>[\s\S]*<pre>[\s\S]*<\/pre>[\s\S]*<\/details>/,
+    );
   });
 
   it('closes unclosed allowlisted tags', () => {
@@ -69,6 +71,33 @@ describe('allowlisted raw HTML (§26)', () => {
   it('repairs misnested tags', () => {
     const html = render('<p><sub>hi</p>');
     expect(html).toContain('<p><sub>hi</sub></p>');
+  });
+});
+
+describe('raw HTML asset rewriting (§31)', () => {
+  const assets = new Map([
+    ['docs/assets/logo.png', '/7Vk3mQ9x2NFaP4Ls/a/Aq8K3pLm92Xq'],
+    ['docs/assets/logo-dark.png', '/7Vk3mQ9x2NFaP4Ls/a/Zx9QwEr82Ty1'],
+  ]);
+
+  it('rewrites raw <img src> local references to opaque asset URLs', () => {
+    const html = render('<img src="docs/assets/logo.png" alt="Mote" width="240">', assets);
+    expect(html).toContain('<img src="/7Vk3mQ9x2NFaP4Ls/a/Aq8K3pLm92Xq" alt="Mote" width="240">');
+  });
+
+  it('rewrites <source srcset> candidates to opaque asset URLs', () => {
+    const html = render(
+      '<picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">' +
+        '<img src="docs/assets/logo.png" alt="Mote"></picture>',
+      assets,
+    );
+    expect(html).toContain('srcset="/7Vk3mQ9x2NFaP4Ls/a/Zx9QwEr82Ty1"');
+    expect(html).toContain('src="/7Vk3mQ9x2NFaP4Ls/a/Aq8K3pLm92Xq"');
+  });
+
+  it('keeps unpublished relative references as-is', () => {
+    const html = render('<img src="docs/assets/missing.png">', assets);
+    expect(html).toContain('src="docs/assets/missing.png"');
   });
 });
 

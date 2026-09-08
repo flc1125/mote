@@ -72,6 +72,10 @@ importers:
         version: 4.128.0
 
   apps/cli:
+    dependencies:
+      htmlparser2:
+        specifier: ^12.0.0
+        version: 12.0.0
     devDependencies:
       '@mote/core':
         specifier: workspace:*

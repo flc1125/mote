@@ -4,7 +4,7 @@ import { resolveAssetUrl } from './assets.js';
 import { slugify, type Heading } from './headings.js';
 import { footnote, taskLists } from './plugins.js';
 import { createHtmlSanitizer } from './sanitize.js';
-import { isSafeImageUrl, isSafeLinkUrl } from './urls.js';
+import { safeImageUrl, safeLinkUrl } from './urls.js';
 
 export interface MarkdownRenderResult {
   html: string;
@@ -62,7 +62,9 @@ export function renderMarkdown(
   // plugin-generated tokens (disabled checkboxes, labels, footnote
   // markup) never pass through the sanitizer.
   md.core.ruler.after('inline', 'mote_sanitize_html', (state) => {
-    const stream = createHtmlSanitizer();
+    const stream = createHtmlSanitizer({
+      resolveAsset: (url) => resolveAssetUrl(url, assetUrls),
+    });
     let lastHtmlToken: { content: string } | null = null;
     for (const token of state.tokens) {
       if (token.type === 'html_block') {
@@ -112,11 +114,11 @@ export function renderMarkdown(
     const token = tokens[idx];
     if (token) {
       const src = String(token.attrGet('src') ?? '');
-      const resolved = resolveAssetUrl(src, assetUrls);
-      if (resolved !== null) {
-        token.attrSet('src', resolved);
-      } else if (!isSafeImageUrl(src)) {
+      const resolved = resolveAssetUrl(src, assetUrls) ?? safeImageUrl(src);
+      if (resolved === null) {
         token.attrSet('src', '');
+      } else {
+        token.attrSet('src', resolved);
       }
     }
     return defaultImage
@@ -132,7 +134,10 @@ export function renderMarkdown(
     const token = tokens[idx];
     if (token) {
       const href = String(token.attrGet('href') ?? '');
-      if (href !== '' && !isSafeLinkUrl(href)) token.attrSet('href', '');
+      if (href !== '') {
+        const safe = safeLinkUrl(href);
+        token.attrSet('href', safe ?? '');
+      }
     }
     return defaultLinkOpen
       ? defaultLinkOpen(tokens, idx, options, env, self)

@@ -1,7 +1,7 @@
 import { Parser } from 'htmlparser2';
 
 import { escapeHtml } from './escape.js';
-import { isSafeImageUrl, isSafeLinkUrl } from './urls.js';
+import { safeImageUrl, safeLinkUrl } from './urls.js';
 
 /**
  * Allowlist sanitizer for raw HTML in Markdown documents (baseline §26).
@@ -145,13 +145,28 @@ const OL_TYPE_RE = /^[1aAiI]$/;
 const MIME_RE = /^[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]*\/[a-zA-Z0-9][a-zA-Z0-9!#$&^_.+-]*$/;
 const MEDIA_QUERY_RE = /^[a-zA-Z0-9:(),.\s<>=-]{1,300}$/;
 
-/** Keeps only srcset candidates whose URL passes the image-URL policy. */
-function sanitizeSrcset(value: string): string | null {
+export interface SanitizerOptions {
+  /**
+   * Rewrites a known local asset reference (raw-HTML <img src> /
+   * <source srcset>) to its opaque public URL (baseline §31). Returns
+   * null when the URL is not a published asset — the URL policy then
+   * decides whether the original reference may be emitted.
+   */
+  resolveAsset?: (url: string) => string | null;
+}
+
+/** Keeps only srcset candidates whose URL resolves or passes the policy. */
+function sanitizeSrcset(
+  value: string,
+  resolveAsset: ((url: string) => string | null) | undefined,
+): string | null {
   const kept: string[] = [];
   for (const candidate of value.split(',')) {
     const parts = candidate.trim().split(/\s+/).filter(Boolean);
     const url = parts[0];
-    if (url && isSafeImageUrl(url)) kept.push(parts.join(' '));
+    if (!url) continue;
+    const safe = resolveAsset?.(url) ?? safeImageUrl(url);
+    if (safe !== null && safe !== undefined) kept.push([safe, ...parts.slice(1)].join(' '));
   }
   return kept.length > 0 ? kept.join(', ') : null;
 }
@@ -162,10 +177,15 @@ function isAllowedAttr(tag: string, name: string): boolean {
   return TAG_ATTRS[tag]?.has(name) ?? false;
 }
 
-function sanitizeAttrValue(tag: string, name: string, value: string): string | null {
-  if (name === 'href') return isSafeLinkUrl(value) ? value : null;
-  if (name === 'src') return isSafeImageUrl(value) ? value : null;
-  if (name === 'srcset') return sanitizeSrcset(value);
+function sanitizeAttrValue(
+  tag: string,
+  name: string,
+  value: string,
+  resolveAsset: ((url: string) => string | null) | undefined,
+): string | null {
+  if (name === 'href') return safeLinkUrl(value);
+  if (name === 'src') return resolveAsset?.(value) ?? safeImageUrl(value);
+  if (name === 'srcset') return sanitizeSrcset(value, resolveAsset);
   if (name === 'align') return ALIGN_RE.test(value.toLowerCase()) ? value.toLowerCase() : null;
   if (NUMERIC_ATTRS.has(name)) return /^\d{1,4}$/.test(value) ? value : null;
   if (DIMENSION_ATTRS.has(name)) return /^\d{1,4}%?$/.test(value) ? value : null;
@@ -176,7 +196,11 @@ function sanitizeAttrValue(tag: string, name: string, value: string): string | n
   return value.length <= 1024 ? value : null;
 }
 
-function sanitizeAttrs(tag: string, attribs: Record<string, string>): string {
+function sanitizeAttrs(
+  tag: string,
+  attribs: Record<string, string>,
+  resolveAsset: ((url: string) => string | null) | undefined,
+): string {
   let out = '';
   for (const [rawName, rawValue] of Object.entries(attribs)) {
     const name = rawName.toLowerCase();
@@ -188,7 +212,7 @@ function sanitizeAttrs(tag: string, attribs: Record<string, string>): string {
       out += ` ${name}`;
       continue;
     }
-    const value = sanitizeAttrValue(tag, name, rawValue);
+    const value = sanitizeAttrValue(tag, name, rawValue, resolveAsset);
     if (value === null) continue;
     out += ` ${name}="${escapeHtml(value)}"`;
   }
@@ -207,7 +231,10 @@ function sanitizeAttrs(tag: string, attribs: Record<string, string>): string {
  * survives as inert escaped text. Block-level dangerous HTML is removed
  * entirely (see sanitizeHtml).
  */
-export function createHtmlSanitizer(): { feed: (html: string) => string; flush: () => string } {
+export function createHtmlSanitizer(options: SanitizerOptions = {}): {
+  feed: (html: string) => string;
+  flush: () => string;
+} {
   const openTags: string[] = [];
   const droppedTags: string[] = [];
   let dropDepth = 0;
@@ -230,7 +257,7 @@ export function createHtmlSanitizer(): { feed: (html: string) => string; flush: 
         droppedTags.push(tag);
         return;
       }
-      out += `<${tag}${sanitizeAttrs(tag, attribs)}>`;
+      out += `<${tag}${sanitizeAttrs(tag, attribs, options.resolveAsset)}>`;
       if (!VOID_TAGS.has(tag)) openTags.push(tag);
     },
     ontext(text) {
@@ -282,7 +309,7 @@ export function createHtmlSanitizer(): { feed: (html: string) => string; flush: 
  * kept; DROP_CONTENT_TAGS vanish entirely; the result is always
  * well-nested (unclosed tags are closed, misnesting is repaired).
  */
-export function sanitizeHtml(html: string): string {
-  const sanitizer = createHtmlSanitizer();
+export function sanitizeHtml(html: string, options: SanitizerOptions = {}): string {
+  const sanitizer = createHtmlSanitizer(options);
   return sanitizer.feed(html) + sanitizer.flush();
 }

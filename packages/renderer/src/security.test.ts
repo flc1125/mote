@@ -66,6 +66,15 @@ describe('XSS security tests (§57)', () => {
     expect(article).toContain('<a>x</a>');
   });
 
+  it('entity-encoded control characters cannot smuggle a scheme', () => {
+    // htmlparser2 decodes &#x0A; to a literal newline; browsers strip
+    // TAB/LF/CR from URLs, so this must be judged as javascript:.
+    const article = articleContent(renderAttack('<a href="java&#x0A;script:alert(1)">x</a>'));
+    expect(article.toLowerCase()).not.toContain('javascript');
+    expect(article).not.toContain('href=');
+    expect(article).toContain('<a>x</a>');
+  });
+
   it('style, class and id never survive the sanitizer', () => {
     const article = articleContent(
       renderAttack('<div style="color:red" class="x" id="y">hi</div>'),
