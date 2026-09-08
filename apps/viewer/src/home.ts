@@ -122,7 +122,7 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .word-row:hover { border-bottom-color: rgb(239 85 82 / 0.5); }
 .word { font-size: clamp(28px, 3vw, 38px); line-height: 1; letter-spacing: -0.035em; font-weight: 750; color: #f0f3f6; white-space: nowrap; transition: color 0.2s ease, transform 0.2s ease; }
 .word-row:hover .word { color: #ff6d6a; transform: translateX(6px); }
-.word-note { color: #9aa4b0; font-size: 15px; line-height: 1.6; max-width: 58ch; justify-self: start; text-align: left; }
+.word-note { color: #9aa4b0; font-size: 15px; line-height: 1.6; min-width: 0; justify-self: stretch; text-align: left; }
 .word-note code { background: rgb(255 255 255 / 0.08); color: #e6edf3; }
 
 .home-footer { max-width: var(--home-max); margin: 0 auto; padding: 30px 24px 44px; border-top: 1px solid var(--mote-border); display: flex; flex-wrap: wrap; gap: 10px 20px; justify-content: space-between; align-items: center; font-size: 14px; color: var(--mote-muted); }
