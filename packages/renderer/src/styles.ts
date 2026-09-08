@@ -96,6 +96,8 @@ article a {
   transition: border-color 0.15s ease;
 }
 article a:hover { text-decoration: none; border-bottom-color: var(--mote-accent); }
+/* Linked images (badges, logos): no underline under the picture. */
+article a:has(img) { border-bottom: 0; }
 
 code {
   background: var(--mote-code-bg);
