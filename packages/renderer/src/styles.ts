@@ -118,8 +118,11 @@ pre code {
 blockquote {
   margin-left: 0;
   padding: 0.1em 1.1em;
-  color: var(--mote-muted);
+  color: #6b7280;
   border-left: 3px solid var(--mote-brand);
+}
+@media (prefers-color-scheme: dark) {
+  blockquote { color: var(--mote-muted); }
 }
 blockquote > :first-child { margin-top: 0; }
 blockquote > :last-child { margin-bottom: 0; }
