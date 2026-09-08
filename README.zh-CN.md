@@ -98,11 +98,11 @@ npx skills add flc1125/mote
 
 Skill 通过驱动 CLI 或 MCP 工具完成发布，并内置了发布安全守则——详见 [docs/skill.md](docs/skill.md)。
 
-## 自托管
+## 🏠 自托管
 
 在 Cloudflare 免费额度内部署自己的实例：[docs/self-hosting.md](docs/self-hosting.md)。
 
-## 限制
+## 📏 限制
 
 | 项             | 限制                           |
 | -------------- | ------------------------------ |
@@ -129,6 +129,6 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布，并内置了发布安全守�
 
 > 生产 Worker 由 Cloudflare Workers Builds 随 `main` 部署。GitHub Actions 负责 CI 和稳定标签的 CLI/GitHub Release 发布，详见[部署操作手册](docs/zh-CN/deployment.md)。
 
-## License
+## 📄 License
 
 Mote 基于 [MIT License](LICENSE) 发布。

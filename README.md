@@ -98,11 +98,11 @@ npx skills add flc1125/mote
 
 The skill drives the CLI or MCP tools and encodes the publishing guardrails — details: [docs/skill.md](docs/skill.md).
 
-## Self-hosting
+## 🏠 Self-hosting
 
 Run your own instance on Cloudflare's free tier: [docs/self-hosting.md](docs/self-hosting.md).
 
-## Limits
+## 📏 Limits
 
 | Item          | Limit                          |
 | ------------- | ------------------------------ |
@@ -129,6 +129,6 @@ SVG is not supported (active-content risk). Documents are immutable — republis
 
 > Production Workers deploy from `main` through Cloudflare Workers Builds. GitHub Actions handles CI and stable-tag CLI/GitHub releases; see [deployment operations](docs/deployment.md).
 
-## License
+## 📄 License
 
 Mote is released under the [MIT License](LICENSE).
