@@ -17,8 +17,8 @@ export const TOKENS_CSS = `
   --mote-pre-bg: #f6f8fa;
   --mote-toc-bg: #f6f8fa;
   --mote-brand: #ef5552;
-  --mote-accent: #c23c39;
-  --mote-accent-strong: #a92f2c;
+  --mote-accent: #d43f3c;
+  --mote-accent-strong: #b93331;
   --mote-on-accent: #ffffff;
   --mote-tint: #fef1f0;
   --mote-tint-border: #f3c8c5;
@@ -36,8 +36,8 @@ export const TOKENS_CSS = `
     --mote-pre-bg: #161b22;
     --mote-toc-bg: #161b22;
     --mote-brand: #ff6d6a;
-    --mote-accent: #ff8582;
-    --mote-accent-strong: #ff9d9a;
+    --mote-accent: #ff7a76;
+    --mote-accent-strong: #ff948f;
     --mote-on-accent: #2b0d0c;
     --mote-tint: #2b1617;
     --mote-tint-border: #5a2a29;
