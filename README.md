@@ -1,8 +1,10 @@
 <p align="center">
+  <br>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">
     <img src="docs/assets/logo.png" alt="Mote" width="280">
   </picture>
+  <br><br>
 </p>
 
 <p align="center">
