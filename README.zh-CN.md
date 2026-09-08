@@ -139,9 +139,6 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布，并内置了发布安全守�
 
 > 生产 Worker 由 Cloudflare Workers Builds 随 `main` 部署。GitHub Actions 负责 CI 和稳定标签的 CLI/GitHub Release 发布，详见[部署操作手册](docs/zh-CN/deployment.md)。
 
----
+## 📄 License
 
-<p align="center">
-  基于 <a href="LICENSE">MIT License</a> 发布。<br>
-  <sub>Copyright © flc1125</sub>
-</p>
+Mote 基于 [MIT License](LICENSE) 发布。

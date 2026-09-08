@@ -139,9 +139,6 @@ SVG is not supported (active-content risk). Documents are immutable — republis
 
 > Production Workers deploy from `main` through Cloudflare Workers Builds. GitHub Actions handles CI and stable-tag CLI/GitHub releases; see [deployment operations](docs/deployment.md).
 
----
+## 📄 License
 
-<p align="center">
-  Released under the <a href="LICENSE">MIT License</a>.<br>
-  <sub>Copyright © flc1125</sub>
-</p>
+Mote is released under the [MIT License](LICENSE).
