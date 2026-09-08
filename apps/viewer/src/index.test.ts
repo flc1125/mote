@@ -149,7 +149,7 @@ describe('public homepage and branding', () => {
     expect(html).not.toContain('export MOTE_TOKEN');
     expect(html).toContain('<span class="method-num">01</span><h3>CLI</h3>');
     expect(html).toContain('<span class="method-num">02</span><h3>MCP</h3>');
-    expect(html).toContain('<span class="method-num">03</span><h3>Skill</h3>');
+    expect(html).toContain('<span class="optional-label">Optional</span><h3>Skill</h3>');
     expect(html).toContain(
       'href="https://github.com/flc1125/mote/blob/main/docs/mcp.md">MCP guide</a>',
     );
@@ -157,6 +157,13 @@ describe('public homepage and branding', () => {
       'href="https://github.com/flc1125/mote/blob/main/docs/skill.md">Skill guide</a>',
     );
     expect(html).toContain('The skill uses your configured CLI or MCP tools');
+    expect(html).toMatch(
+      /<a href="https:\/\/mote\.flc\.io\/[^" ]+" target="_blank" rel="noopener noreferrer" aria-label="see a live demo \(opens in a new tab\)">see a live demo<\/a>/,
+    );
+    const setupNoteIndex = html.indexOf('You need a Mote instance and permission to publish.');
+    expect(setupNoteIndex).toBeGreaterThanOrEqual(0);
+    expect(setupNoteIndex).toBeLessThan(html.indexOf('aria-label="CLI quick start commands"'));
+
     expect(html).toContain('href="https://github.com/flc1125/mote/blob/main/docs/cli.md">Docs</a>');
     expect(html).toContain('codex mcp add mote --url https://mote.flc.io/api/mcp');
     expect(html).toContain('codex mcp login mote');
