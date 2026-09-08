@@ -5,17 +5,29 @@
   </picture>
 </p>
 
-[简体中文](README.zh-CN.md)
+<h1 align="center">Mote</h1>
 
-# Mote
+<p align="center">
+  <strong>Markdown in, URL out.</strong><br>
+  Publish local Markdown documents as immutable, unguessable, browser-readable web pages.
+</p>
 
-[![CI](https://github.com/flc1125/mote/actions/workflows/ci.yml/badge.svg)](https://github.com/flc1125/mote/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![npm](https://img.shields.io/npm/v/mote-cli)](https://www.npmjs.com/package/mote-cli)
+<p align="center">
+  <a href="https://github.com/flc1125/mote/actions/workflows/ci.yml"><img src="https://github.com/flc1125/mote/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/mote-cli"><img src="https://img.shields.io/npm/v/mote-cli" alt="npm"></a>
+  <a href="https://www.npmjs.com/package/mote-cli"><img src="https://img.shields.io/npm/dm/mote-cli" alt="npm downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%E2%89%A5%2020-brightgreen" alt="Node ≥ 20"></a>
+</p>
 
-> **Mote = Markdown in, URL out.**
->
-> Publish local Markdown documents as immutable, unguessable, browser-readable web pages.
+<p align="center">
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="https://mote.flc.io/1tAPUJjNt67GQ2pS">Live Demo</a> •
+  <a href="docs/self-hosting.md">Self-hosting</a> •
+  <a href="README.zh-CN.md">简体中文</a>
+</p>
+
+---
 
 ```bash
 mote README.md
@@ -27,25 +39,29 @@ Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
-The output above is illustrative. View a real [public sample with an image](https://mote.flc.io/1tAPUJjNt67GQ2pS).
+<p align="center">
+  <sub>The output above is illustrative — see a real <a href="https://mote.flc.io/1tAPUJjNt67GQ2pS">public sample with an image</a>.</sub>
+</p>
 
-## Features
+## ✨ Features
 
-- **Immutable** — every publish creates a new URL; old URLs keep their content forever
-- **Capability URL** — the URL is the only credential; unguessable (94-bit random ID), never indexed
-- **Local images** — referenced images are uploaded automatically, deduplicated, and served from opaque URLs
-- **Fast** — Cloudflare Workers + R2 + CDN cache; no database, no JS on pages
-- **Agent-ready** — CLI `--json` output, plus remote and local MCP servers
+|                        |                                                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- |
+| 🔒 **Immutable**       | Every publish creates a new URL; old URLs keep their content forever                                     |
+| 🔑 **Capability URL**  | The URL is the only credential — unguessable (94-bit random ID), never indexed                           |
+| 🖼️ **Local images**    | Referenced images are uploaded automatically, deduplicated, and served from opaque URLs                  |
+| ⚡ **Fast**            | Cloudflare Workers + R2 + CDN cache; no database, no JS on pages                                          |
+| 🤖 **Agent-ready**     | CLI `--json` output, plus remote and local MCP servers                                                    |
 
-## Quick Start
-
-Use mote-cli v0.2.0 for browser login and Service Token authentication. Older npm versions do not include these commands.
+## 🚀 Quick Start
 
 ```bash
 npm install -g mote-cli
 ```
 
-<details><summary>From source (requires Node.js ≥ 20 and pnpm)</summary>
+> **Note** — Browser login and Service Token authentication require **mote-cli ≥ 0.2.0**. Older npm versions do not include these commands.
+
+<details><summary><strong>From source</strong> (requires Node.js ≥ 20 and pnpm)</summary>
 
 ```bash
 git clone https://github.com/flc1125/mote.git
@@ -93,14 +109,16 @@ Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
-## Usage
+## 📖 Usage
 
-- **CLI** — options (`--json`, `--no-assets`, `--api`, `--token`, …), config file, and scripting: [docs/cli.md](docs/cli.md)
-- **MCP** — remote OAuth and local stdio tools; setup and compatibility: [docs/mcp.md](docs/mcp.md).
-- **Skill** — teach agents when/how to use Mote (`npx skills add flc1125/mote`): [docs/skill.md](docs/skill.md)
-- **Self-hosting** — run your own instance on Cloudflare's free tier: [docs/self-hosting.md](docs/self-hosting.md)
+|                |                                                                                                                            |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **CLI**        | Options (`--json`, `--no-assets`, `--api`, `--token`, …), config file, and scripting → [docs/cli.md](docs/cli.md)          |
+| **MCP**        | Remote OAuth and local stdio tools; setup and compatibility → [docs/mcp.md](docs/mcp.md)                                   |
+| **Skill**      | Teach agents when/how to use Mote (`npx skills add flc1125/mote`) → [docs/skill.md](docs/skill.md)                         |
+| **Self-hosting** | Run your own instance on Cloudflare's free tier → [docs/self-hosting.md](docs/self-hosting.md)                           |
 
-## Limits
+## 📏 Limits
 
 | Item          | Limit                          |
 | ------------- | ------------------------------ |
@@ -112,9 +130,7 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 SVG is not supported (active-content risk). Documents are immutable — republishing edited content creates a new URL.
 
-## Documentation
-
-Production Workers deploy from `main` through Cloudflare Workers Builds. GitHub Actions handles CI and stable-tag CLI/GitHub releases; see [deployment operations](docs/deployment.md).
+## 📚 Documentation
 
 - [CLI reference](docs/cli.md)
 - [Authentication and migration](docs/authentication.md)
@@ -127,6 +143,11 @@ Production Workers deploy from `main` through Cloudflare Workers Builds. GitHub 
 - [Security model](docs/security.md)
 - [Security policy](SECURITY.md)
 
-## License
+> Production Workers deploy from `main` through Cloudflare Workers Builds. GitHub Actions handles CI and stable-tag CLI/GitHub releases; see [deployment operations](docs/deployment.md).
 
-[MIT](LICENSE)
+---
+
+<p align="center">
+  Released under the <a href="LICENSE">MIT License</a>.<br>
+  <sub>Copyright © flc1125</sub>
+</p>
