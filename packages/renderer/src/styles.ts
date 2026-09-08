@@ -127,6 +127,21 @@ hr {
   margin: 1.5em 0;
 }
 
+/* GFM task lists (markdown-it-task-lists): static disabled checkboxes. */
+.task-list-item { list-style-type: none; }
+.task-list-item .task-list-item-checkbox {
+  margin: 0 0.4em 0.2em -1.3em;
+  vertical-align: middle;
+}
+
+/* Footnotes (markdown-it-footnote). */
+.footnotes {
+  font-size: 0.88em;
+  color: var(--mote-muted);
+}
+.footnotes ol { padding-left: 1.4em; }
+a.footnote-ref, a.footnote-backref { text-decoration: none; }
+
 .toc {
   background: var(--mote-tint);
   border: 1px solid var(--mote-tint-border);

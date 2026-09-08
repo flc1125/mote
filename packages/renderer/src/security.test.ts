@@ -32,7 +32,8 @@ describe('XSS security tests (§57)', () => {
   it('<script>alert(1)</script> must not become an element', () => {
     const html = renderAttack('<script>alert(1)</script>');
     expect(html).not.toContain('<script>');
-    expect(html).toContain('&lt;script&gt;');
+    // The allowlist sanitizer drops the script subtree entirely.
+    expect(html).not.toContain('alert(1)');
   });
 
   it('[click](javascript:alert(1)) must not produce a javascript URL', () => {
@@ -51,10 +52,68 @@ describe('XSS security tests (§57)', () => {
     expect(html).toContain('![xss](javascript:alert(1))');
   });
 
-  it('<img src=x onerror=alert(1)> must not become an element', () => {
+  it('<img src=x onerror=alert(1)> loses the handler, never the policy', () => {
     const html = renderAttack('<img src=x onerror=alert(1)>');
-    expect(html).not.toContain('<img src=x');
-    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(html).not.toContain('onerror');
+    expect(html).not.toContain('alert(1)');
+    // The sanitized img itself is harmless: quoted src, no extra attributes.
+    expect(html).toContain('<img src="x">');
+  });
+
+  it('raw <a> with a javascript: href loses the attribute', () => {
+    const article = articleContent(renderAttack('<a href="javascript:alert(1)">x</a>'));
+    expect(article.toLowerCase()).not.toContain('javascript');
+    expect(article).toContain('<a>x</a>');
+  });
+
+  it('entity-encoded control characters cannot smuggle a scheme', () => {
+    // htmlparser2 decodes &#x0A; to a literal newline; browsers strip
+    // TAB/LF/CR from URLs, so this must be judged as javascript:.
+    const article = articleContent(renderAttack('<a href="java&#x0A;script:alert(1)">x</a>'));
+    expect(article.toLowerCase()).not.toContain('javascript');
+    expect(article).not.toContain('href=');
+    expect(article).toContain('<a>x</a>');
+  });
+
+  it('style, class and id never survive the sanitizer', () => {
+    const article = articleContent(
+      renderAttack('<div style="color:red" class="x" id="y">hi</div>'),
+    );
+    expect(article).not.toContain('style=');
+    expect(article).not.toContain('class=');
+    expect(article).not.toContain('id=');
+    expect(article).toContain('<div>hi</div>');
+  });
+
+  it('block-level iframe and form elements vanish with their content', () => {
+    const article = articleContent(
+      renderAttack(
+        '<iframe src="https://evil.example"></iframe>\n\n' +
+          '<form action="https://evil.example"><input name="q"></form>',
+      ),
+    );
+    expect(article).not.toContain('<iframe');
+    expect(article).not.toContain('<form');
+    expect(article).not.toContain('<input');
+  });
+
+  it('inline svg/script produce no elements (inner text stays inert)', () => {
+    const article = articleContent(renderAttack('<svg><script>alert(1)</script></svg>'));
+    expect(article).not.toContain('<svg');
+    expect(article).not.toContain('<script');
+    // markdown-it keeps the text between split inline tokens; it is
+    // escaped, inert, and never part of an element.
+    expect(article).toContain('alert(1)');
+  });
+
+  it('bad srcset candidates are dropped, good ones kept', () => {
+    const article = articleContent(
+      renderAttack(
+        '<img src="https://x.dev/a.png" srcset="javascript:alert(1) 1x, https://x.dev/b.png 2x">',
+      ),
+    );
+    expect(article.toLowerCase()).not.toContain('javascript');
+    expect(article).toContain('srcset="https://x.dev/b.png 2x"');
   });
 
   it('data:, vbscript: and file: URLs never become href/src attributes', () => {

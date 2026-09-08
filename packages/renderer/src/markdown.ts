@@ -1,44 +1,14 @@
 import MarkdownIt from 'markdown-it';
 
-import { isLocalReference, isRemoteUrl } from '@mote/core';
-
 import { resolveAssetUrl } from './assets.js';
 import { slugify, type Heading } from './headings.js';
+import { footnote, taskLists } from './plugins.js';
+import { createHtmlSanitizer } from './sanitize.js';
+import { safeImageUrl, safeLinkUrl } from './urls.js';
 
 export interface MarkdownRenderResult {
   html: string;
   headings: Heading[];
-}
-
-const SCHEME_RE = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
-
-/**
- * Links may point to http(s), mailto, fragments, or relative references.
- * Everything with another scheme (javascript:, data:, vbscript:, file:, ...),
- * protocol-relative URLs, and absolute paths are stripped (baseline §57).
- * markdown-it already neutralizes bad protocols at parse time; this is a
- * second layer of defense.
- */
-function isSafeLinkUrl(url: string): boolean {
-  if (url.startsWith('#')) return true;
-  if (isRemoteUrl(url)) return true;
-  if (/^mailto:/i.test(url)) return true;
-  if (SCHEME_RE.test(url)) return false;
-  if (url.startsWith('/')) return false;
-  return isLocalReference(url);
-}
-
-/**
- * Images may point to http(s) (remote assets, baseline §32), to public
- * asset URLs (root-absolute, produced by the asset rewrite), or keep an
- * unresolved relative reference. Anything with another scheme (notably
- * javascript: and data:) is stripped.
- */
-function isSafeImageUrl(url: string): boolean {
-  if (url.startsWith('/')) return true;
-  if (isRemoteUrl(url)) return true;
-  if (SCHEME_RE.test(url)) return false;
-  return isLocalReference(url);
 }
 
 interface InlineTokenLike {
@@ -56,18 +26,65 @@ function inlineTextContent(token: InlineTokenLike): string {
 /**
  * Renders Markdown to an HTML fragment and collects headings.
  *
- * Security configuration (baseline §26): raw HTML is disabled, so no
- * Markdown input can become an HTML element.
+ * Security configuration (baseline §26): raw HTML is allowed but every
+ * html_block / html_inline token passes through the allowlist sanitizer
+ * (see sanitize.ts) — only presentational tags with vetted attributes
+ * survive; scriptable vectors are stripped. GFM extensions come from
+ * markdown-it core (tables, strikethrough, linkify) plus the footnote
+ * and task-lists plugins (task lists render as disabled checkboxes,
+ * keeping pages JavaScript-free).
  */
 export function renderMarkdown(
   markdown: string,
   assetUrls: Map<string, string>,
 ): MarkdownRenderResult {
   const md = new MarkdownIt({
-    html: false,
+    html: true,
     linkify: true,
     breaks: false,
     typographer: false,
+  });
+
+  md.use(footnote);
+  md.use(taskLists, { enabled: false, label: true, labelAfter: true });
+
+  // Sanitize raw HTML: every html_block / html_inline token goes through
+  // one document-level streaming sanitizer before it can reach the
+  // output. markdown-it splits HTML at blank lines (blocks) and around
+  // text (inline), so a single stream keeps paired tags nested across
+  // fragments — this is what lets <details> wrap Markdown blocks the way
+  // GitHub renders them.
+  //
+  // Rule placement matters: the task-lists plugin anchors its checkbox
+  // injection right after the 'inline' rule (ruler.after). Registering
+  // this sanitizer with ruler.after('inline', ...) LAST places it between
+  // 'inline' and the plugin rules, so user HTML is sanitized while
+  // plugin-generated tokens (disabled checkboxes, labels, footnote
+  // markup) never pass through the sanitizer.
+  md.core.ruler.after('inline', 'mote_sanitize_html', (state) => {
+    const stream = createHtmlSanitizer({
+      resolveAsset: (url) => resolveAssetUrl(url, assetUrls),
+    });
+    let lastHtmlToken: { content: string } | null = null;
+    for (const token of state.tokens) {
+      if (token.type === 'html_block') {
+        token.content = stream.feed(token.content);
+        lastHtmlToken = token;
+        continue;
+      }
+      if (token.type === 'inline' && token.children) {
+        for (const child of token.children) {
+          if (child.type === 'html_inline') {
+            child.content = stream.feed(child.content);
+            lastHtmlToken = child;
+          }
+        }
+      }
+    }
+    const tail = stream.flush();
+    if (lastHtmlToken && tail !== '') {
+      lastHtmlToken.content += tail;
+    }
   });
 
   // Heading anchors: slugify every heading, set its id, collect for the TOC.
@@ -97,11 +114,11 @@ export function renderMarkdown(
     const token = tokens[idx];
     if (token) {
       const src = String(token.attrGet('src') ?? '');
-      const resolved = resolveAssetUrl(src, assetUrls);
-      if (resolved !== null) {
-        token.attrSet('src', resolved);
-      } else if (!isSafeImageUrl(src)) {
+      const resolved = resolveAssetUrl(src, assetUrls) ?? safeImageUrl(src);
+      if (resolved === null) {
         token.attrSet('src', '');
+      } else {
+        token.attrSet('src', resolved);
       }
     }
     return defaultImage
@@ -117,7 +134,10 @@ export function renderMarkdown(
     const token = tokens[idx];
     if (token) {
       const href = String(token.attrGet('href') ?? '');
-      if (href !== '' && !isSafeLinkUrl(href)) token.attrSet('href', '');
+      if (href !== '') {
+        const safe = safeLinkUrl(href);
+        token.attrSet('href', safe ?? '');
+      }
     }
     return defaultLinkOpen
       ? defaultLinkOpen(tokens, idx, options, env, self)

@@ -89,13 +89,13 @@ documents/
 
 ## 渲染与缓存
 
-- Viewer 在请求时用 markdown-it（`html: false`）把 Markdown 渲染为 HTML，本地图片引用按 manifest 重写为 `/{document-id}/a/{asset-id}`。
+- Viewer 在请求时用 markdown-it 把 Markdown 渲染为 HTML（GFM：表格、删除线、任务列表、脚注；Raw HTML 经白名单净化器处理，见[安全模型](security.md)），本地图片引用按 manifest 重写为 `/{document-id}/a/{asset-id}`。
 - 渲染结果交给 Workers Cache（非 Cache API）：Document 边缘缓存 1 年，Asset `immutable`。
 - 保持 Workers Cache 默认的「Worker Version 纳入 Cache Key」行为：Renderer/Theme 发新版自动使用新缓存，无需 purge。
 
 ## 安全要点
 
-- Raw HTML 关闭、`script-src 'none'` 等严格 CSP、`Referrer-Policy: no-referrer`、noindex。
+- Raw HTML 白名单净化、`script-src 'none'` 等严格 CSP、`Referrer-Policy: no-referrer`、noindex。
 - 图片 MIME 以 Magic Bytes 为准；V1 不支持 SVG（Active Content 风险）。
 - 发布接口：静态 token 或经过 Access 的签名身份；Bundle ≤ 20MB、Asset ≤ 50 个。Access 模式绑定 issuer/AUD/API 主机，不支持从备用 Worker 域名旁路。
 - CLI 与本地 stdio 共享 Mote 凭据存储、刷新锁与发布管线；Codex 独立保存自己的 OAuth 凭据。远程 MCP 保持无状态，无文档所有权或用户配额新增。

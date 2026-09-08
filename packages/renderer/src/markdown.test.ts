@@ -78,10 +78,9 @@ describe('renderMarkdown — asset URLs (§31, §32)', () => {
   });
 });
 
-describe('renderMarkdown — raw HTML disabled (§26)', () => {
-  it('escapes raw HTML instead of emitting elements', () => {
-    const html = render('<div class="x">hello</div>');
-    expect(html).not.toContain('<div');
-    expect(html).toContain('&lt;div class=&quot;x&quot;&gt;');
+describe('renderMarkdown — raw HTML sanitized (§26)', () => {
+  it('keeps allowlisted presentational HTML instead of escaping it', () => {
+    const html = render('<p align="center">hello</p>');
+    expect(html).toContain('<p align="center">hello</p>');
   });
 });
