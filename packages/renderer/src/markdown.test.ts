@@ -25,6 +25,16 @@ describe('renderMarkdown — CommonMark & extensions (§27)', () => {
     expect(html).toContain('<s>gone</s>');
   });
 
+  it('keeps table semantics and column alignment inside a keyboard-scrollable region', () => {
+    const html = render('| 参数 | 数值 |\n|:---|---:|\n| 上下文窗口 | 1,050,000 |\n\nAfter table.');
+    expect(html).toContain(
+      '<div class="table-scroll" role="region" aria-label="表格 / Table" tabindex="0">\n<table>',
+    );
+    expect(html).toContain('<th style="text-align:right">数值</th>');
+    expect(html).toContain('<td style="text-align:right">1,050,000</td>');
+    expect(html).toContain('</table>\n</div>\n<p>After table.</p>');
+  });
+
   it('renders fenced code with language class, without server-side highlighting (§28)', () => {
     const html = render('```go\nfunc main() {}\n```');
     expect(html).toContain('<pre><code class="language-go">');

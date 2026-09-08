@@ -147,7 +147,9 @@ h5, h6 { font-size: 1em; color: var(--mote-muted); }
 
 p, ul, ol, blockquote, table, pre { margin: 0 0 1.15em; }
 ul, ol { padding-left: 1.5em; }
-li { margin: 0.25em 0; }
+li { margin: 0.5em 0; }
+li > ul, li > ol { margin-top: 0.35em; margin-bottom: 0; }
+li > :last-child { margin-bottom: 0; }
 
 article a {
   color: var(--mote-accent);
@@ -186,26 +188,64 @@ pre code {
 blockquote {
   margin-left: 0;
   padding: 0.1em 1.1em;
-  color: var(--mote-muted);
+  color: #6b7280;
   border-left: 3px solid var(--mote-brand);
 }
+@media (prefers-color-scheme: dark) {
+  blockquote { color: var(--mote-muted); }
+}
+blockquote > :first-child { margin-top: 0; }
+blockquote > :last-child { margin-bottom: 0; }
 
-/* Booktabs-style tables: horizontal rules only */
+/* Quiet table chrome. Raw HTML tables retain a compact scroll fallback;
+   Markdown tables fill their separate scroll container below. */
 table {
   display: block;
   width: max-content;
   max-width: 100%;
   overflow-x: auto;
   border-collapse: collapse;
-  border-top: 2px solid var(--mote-border);
-  border-bottom: 2px solid var(--mote-border);
+  border: 1px solid var(--mote-border);
+  border-radius: 8px;
   font-size: 0.95em;
+  font-variant-numeric: tabular-nums;
 }
 
-th, td { padding: 0.5em 0.9em; text-align: left; }
-th { font-weight: 650; border-bottom: 1px solid var(--mote-border); }
-td { border-bottom: 1px solid var(--mote-border); }
+th, td { padding: 12px 16px; text-align: left; vertical-align: top; }
+th { font-weight: 600; background: var(--mote-pre-bg); border-bottom: 1px solid var(--mote-border); }
+td { border-bottom: 1px solid color-mix(in srgb, var(--mote-border) 65%, transparent); }
 tr:last-child td { border-bottom: 0; }
+
+/* Keep native table layout inside a keyboard-scrollable region. Short
+   tables fill the column; wide tables keep readable cells and scroll. */
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 0 1.15em;
+  border: 1px solid var(--mote-border);
+  border-radius: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--mote-muted) var(--mote-pre-bg);
+  /* Local covers hide the edge shadows at each scroll boundary. A short
+     table covers both shadows, so it never suggests hidden columns. */
+  background:
+    linear-gradient(to right, var(--mote-bg) 40%, transparent) left / 32px 100% local no-repeat,
+    linear-gradient(to left, var(--mote-bg) 40%, transparent) right / 32px 100% local no-repeat,
+    linear-gradient(to right, color-mix(in srgb, var(--mote-fg) 14%, transparent), transparent) left / 12px 100% scroll no-repeat,
+    linear-gradient(to left, color-mix(in srgb, var(--mote-fg) 14%, transparent), transparent) right / 12px 100% scroll no-repeat;
+}
+.table-scroll:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
+.table-scroll table {
+  display: table;
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  margin: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+}
+.table-scroll th, .table-scroll td { min-width: 4em; max-width: 24em; overflow-wrap: anywhere; }
 
 img { max-width: 100%; height: auto; box-sizing: border-box; border-radius: 8px; }
 
@@ -247,7 +287,11 @@ article details[open] > summary { margin-bottom: 0.6em; }
   align-items: center;
   justify-content: center;
   margin-left: auto;
-  padding: 6px 8px;
+  gap: 7px;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 13px;
   border: 1px solid transparent;
   border-radius: 999px;
   color: var(--mote-muted);
@@ -267,6 +311,7 @@ article details[open] > summary { margin-bottom: 0.6em; }
 }
 
 .toc-drawer {
+  box-sizing: border-box;
   position: fixed;
   top: 0;
   right: 0;
@@ -303,6 +348,12 @@ article details[open] > summary { margin-bottom: 0.6em; }
   color: var(--mote-muted);
 }
 .toc-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 40px;
+  min-height: 40px;
   padding: 2px 8px;
   border-radius: 6px;
   font-size: 20px;
@@ -317,7 +368,9 @@ article details[open] > summary { margin-bottom: 0.6em; }
 .toc-nav li { margin: 2px 0; }
 .toc-nav a {
   display: block;
-  padding: 5px 8px;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 10px 8px;
   border-radius: 6px;
   border-bottom: 0;
   color: var(--mote-muted);
@@ -375,9 +428,22 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 }
 .mote-colophon a:hover { color: var(--mote-accent); border-bottom-color: var(--mote-accent); }
 
+@media (max-width: 600px) {
+  main { padding-top: 30px; padding-bottom: 48px; }
+  h1 { font-size: 1.7em; letter-spacing: 0; }
+  h2 { font-size: 1.35em; margin-top: 40px; }
+  h3 { font-size: 1.15em; }
+  .mote-banner-inner { padding-top: 6px; padding-bottom: 6px; }
+  .toc-trigger, .toc-close, .toc-nav a { min-height: 44px; }
+  .toc-close { min-width: 44px; }
+  th, td { padding: 10px 12px; }
+}
+
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
   .toc-trigger, .toc-scrim, .toc-drawer { display: none; }
+  .table-scroll { overflow: visible; background: none; border-radius: 0; }
+  .table-scroll table { width: 100%; min-width: 0; table-layout: fixed; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -387,19 +453,20 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 </head>
 <body>
 <aside class="toc-drawer" id="mote-toc">
-<div class="toc-drawer-head"><span class="toc-title">TOC</span><a class="toc-close" href="#!" aria-label="Close table of contents">×</a></div>
+<div class="toc-drawer-head"><span class="toc-title">目录 / Contents</span><a class="toc-close" href="#!" aria-label="关闭目录 / Close table of contents">×</a></div>
 <nav class="toc-nav" aria-label="Table of contents"><ul><li><a href="#mote-设计文档">Mote 设计文档</a><ul><li><a href="#背景">背景</a></li><li><a href="#小结">小结</a></li></ul></li></ul></nav>
 </aside>
 <a class="toc-scrim" href="#!" aria-hidden="true" tabindex="-1"></a>
 <header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-<a class="toc-trigger" href="#mote-toc" aria-label="Open table of contents"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.5 4.5h13M2.5 9h13M2.5 13.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></a></div></header>
+<a class="toc-trigger" href="#mote-toc" aria-label="目录 / Open table of contents"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.5 4.5h13M2.5 9h13M2.5 13.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>目录 / Contents</span></a></div></header>
 <main>
 <article>
 <h1 id="mote-设计文档">Mote 设计文档</h1>
 <h2 id="背景">背景</h2>
 <p>一些 <strong>加粗</strong> 文字与 <code>code</code>，见 <a href="https://example.com">https://example.com</a> 。</p>
 <p><img src="/7Vk3mQ9x2NFaP4Ls/a/Aq8K3pLm92Xq" alt="Architecture"></p>
+<div class="table-scroll" role="region" aria-label="表格 / Table" tabindex="0">
 <table>
 <thead>
 <tr>
@@ -414,6 +481,7 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 </tr>
 </tbody>
 </table>
+</div>
 <pre><code class="language-ts">const x = 1;
 </code></pre>
 <h2 id="小结">小结</h2>

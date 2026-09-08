@@ -48,6 +48,12 @@ export function renderMarkdown(
   md.use(footnote);
   md.use(taskLists, { enabled: false, label: true, labelAfter: true });
 
+  // The focusable wrapper lets keyboard users scroll wide Markdown tables
+  // without compressing columns or widening the whole document.
+  md.renderer.rules.table_open = () =>
+    '<div class="table-scroll" role="region" aria-label="表格 / Table" tabindex="0">\n<table>\n';
+  md.renderer.rules.table_close = () => '</table>\n</div>\n';
+
   // Sanitize raw HTML: every html_block / html_inline token goes through
   // one document-level streaming sanitizer before it can reach the
   // output. markdown-it splits HTML at blank lines (blocks) and around
