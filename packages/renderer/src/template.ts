@@ -36,7 +36,7 @@ export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): stri
 ${tocHtml}${contentHtml}</article>
 </main>
 <footer class="mote-colophon"><div class="mote-colophon-inner">
-<span>Published with <a href="/">Mote</a></span>
+<span class="mote-colophon-mark" aria-hidden="true"></span><span>Published with <a href="/">Mote</a></span>
 </div></footer>
 </body>
 </html>
