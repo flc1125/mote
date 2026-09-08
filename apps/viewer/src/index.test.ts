@@ -142,9 +142,9 @@ describe('public homepage and branding', () => {
     expect(html).toContain('Markdown in.');
     expect(html).toContain('URL out.');
     expect(html).toContain(
-      '$</span> npm install -g mote-cli\n' +
-        '<span class="prompt">$</span> mote login\n' +
-        '<span class="prompt">$</span> mote README.md',
+      '<span class="prompt" aria-hidden="true"></span>npm install -g mote-cli\n' +
+        '<span class="prompt" aria-hidden="true"></span>mote login\n' +
+        '<span class="prompt" aria-hidden="true"></span>mote README.md',
     );
     expect(html).not.toContain('export MOTE_TOKEN');
     expect(html).toContain('<span class="method-num">01</span><h3>CLI</h3>');
@@ -182,6 +182,22 @@ describe('public homepage and branding', () => {
     const withoutCsp = (headers: Headers) =>
       [...headers].filter(([name]) => name !== 'content-security-policy');
     expect(withoutCsp(response.headers)).toEqual(withoutCsp(document.headers));
+  });
+
+  it('keeps selectable command text free of decorative prompts and spacing', async () => {
+    const response = await workerFetch('http://localhost/');
+    const html = await response.text();
+    const section = html.split('id="use"')[1]!.split('</section>')[0]!;
+    const commands = [...section.matchAll(/<pre\b[^>]*><code>([\s\S]*?)<\/code><\/pre>/g)].map(
+      ([, code]) => code!,
+    );
+    expect(commands).toHaveLength(3);
+    const text = commands.map((code) => code.replace(/<[^>]*>/g, ''));
+    expect(text).toEqual([
+      'npm install -g mote-cli\nmote login\nmote README.md',
+      'codex mcp add mote --url https://mote.flc.io/api/mcp\ncodex mcp login mote',
+      'npx skills add flc1125/mote --skill mote',
+    ]);
   });
 
   it('allows only the exact copy script on the homepage and keeps documents script-free', async () => {
