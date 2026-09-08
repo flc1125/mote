@@ -18,6 +18,12 @@ export interface PageInput {
  */
 export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): string {
   const safeTitle = escapeHtml(title);
+  const tocIcon =
+    '<svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.5 4.5h13M2.5 9h13M2.5 13.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  const tocTrigger =
+    tocHtml === ''
+      ? ''
+      : `<label class="toc-trigger" for="mote-toc" aria-label="Open table of contents">${tocIcon}</label>`;
   const tocDrawer =
     tocHtml === ''
       ? ''
@@ -26,7 +32,6 @@ export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): stri
 <aside class="toc-drawer">
 <div class="toc-drawer-head"><span class="toc-title">TOC</span><label class="toc-close" for="mote-toc" aria-label="Close table of contents">×</label></div>
 ${tocHtml}</aside>
-<label class="toc-fab" for="mote-toc" aria-label="Open table of contents"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.5 4.5h13M2.5 9h13M2.5 13.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></label>
 `;
   return `<!doctype html>
 <html lang="en">
@@ -43,7 +48,7 @@ ${tocHtml}</aside>
 <body>
 ${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-</div></header>
+${tocTrigger}</div></header>
 <main>
 <article>
 ${contentHtml}</article>

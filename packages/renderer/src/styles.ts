@@ -169,25 +169,23 @@ article summary:hover { color: var(--mote-accent); }
 article details[open] > summary { margin-bottom: 0.6em; }
 
 /* Table of contents: checkbox-driven slide-in drawer, zero layout cost */
-.toc-fab {
-  position: fixed;
-  left: 22px;
-  bottom: 22px;
-  z-index: 30;
-  display: flex;
+.toc-trigger {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: var(--mote-brand);
-  color: var(--mote-on-accent);
+  margin-left: auto;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--mote-muted);
   cursor: pointer;
-  box-shadow: 0 10px 26px -10px rgb(239 85 82 / 0.55);
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
-.toc-fab:hover { background: var(--mote-accent-strong); transform: translateY(-1px); }
-.toc-toggle:focus-visible ~ .toc-fab { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
+.toc-trigger:hover { color: var(--mote-accent); border-color: var(--mote-accent); }
+.toc-toggle:focus-visible ~ .mote-banner .toc-trigger {
+  outline: 2px solid var(--mote-accent);
+  outline-offset: 2px;
+}
 
 .toc-scrim {
   position: fixed;
@@ -202,20 +200,20 @@ article details[open] > summary { margin-bottom: 0.6em; }
 .toc-drawer {
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
   bottom: 0;
   z-index: 40;
   width: min(300px, 86vw);
   overflow-y: auto;
   padding: 20px 22px 28px;
   background: var(--mote-bg);
-  border-right: 1px solid var(--mote-border);
-  transform: translateX(-105%);
+  border-left: 1px solid var(--mote-border);
+  transform: translateX(105%);
   transition: transform 0.25s ease;
 }
 .toc-toggle:checked ~ .toc-drawer {
   transform: none;
-  box-shadow: 24px 0 48px -24px rgb(15 17 21 / 0.3);
+  box-shadow: -24px 0 48px -24px rgb(15 17 21 / 0.3);
 }
 .toc-toggle:checked ~ .toc-scrim { opacity: 1; pointer-events: auto; }
 
@@ -307,7 +305,7 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
-  .toc-fab, .toc-scrim, .toc-drawer { display: none; }
+  .toc-trigger, .toc-scrim, .toc-drawer { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -46,14 +46,14 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
       '<input class="toc-toggle visually-hidden" type="checkbox" id="mote-toc">',
     );
     expect(page).toContain('<aside class="toc-drawer">');
-    expect(page).toContain('<label class="toc-fab" for="mote-toc"');
+    expect(page).toContain('<label class="toc-trigger" for="mote-toc"');
     expect(page).toContain('<nav class="toc">x</nav>');
   });
 
   it('omits the drawer entirely when there is no TOC', () => {
     const bare = renderHtmlPage({ title: 'T', tocHtml: '', contentHtml: '<p>x</p>' });
     expect(bare).not.toContain('<aside class="toc-drawer">');
-    expect(bare).not.toContain('<label class="toc-fab"');
+    expect(bare).not.toContain('<label class="toc-trigger"');
     expect(bare).not.toContain('type="checkbox"');
   });
 
