@@ -3,7 +3,7 @@ import MarkdownIt from 'markdown-it';
 import { resolveAssetUrl } from './assets.js';
 import { slugify, type Heading } from './headings.js';
 import { footnote, taskLists } from './plugins.js';
-import { sanitizeHtml, createHtmlSanitizer } from './sanitize.js';
+import { createHtmlSanitizer } from './sanitize.js';
 import { isSafeImageUrl, isSafeLinkUrl } from './urls.js';
 
 export interface MarkdownRenderResult {
@@ -49,9 +49,11 @@ export function renderMarkdown(
   md.use(taskLists, { enabled: false, label: true, labelAfter: true });
 
   // Sanitize raw HTML: every html_block / html_inline token goes through
-  // the allowlist sanitizer before it can reach the output. html_block
-  // tokens are self-contained; html_inline fragments share one streaming
-  // sanitizer so paired tags split across tokens stay nested.
+  // one document-level streaming sanitizer before it can reach the
+  // output. markdown-it splits HTML at blank lines (blocks) and around
+  // text (inline), so a single stream keeps paired tags nested across
+  // fragments — this is what lets <details> wrap Markdown blocks the way
+  // GitHub renders them.
   //
   // Rule placement matters: the task-lists plugin anchors its checkbox
   // injection right after the 'inline' rule (ruler.after). Registering
@@ -60,26 +62,26 @@ export function renderMarkdown(
   // plugin-generated tokens (disabled checkboxes, labels, footnote
   // markup) never pass through the sanitizer.
   md.core.ruler.after('inline', 'mote_sanitize_html', (state) => {
-    const inline = createHtmlSanitizer();
-    let lastInlineToken: { content: string } | null = null;
+    const stream = createHtmlSanitizer();
+    let lastHtmlToken: { content: string } | null = null;
     for (const token of state.tokens) {
       if (token.type === 'html_block') {
-        token.content = sanitizeHtml(token.content);
+        token.content = stream.feed(token.content);
+        lastHtmlToken = token;
         continue;
       }
       if (token.type === 'inline' && token.children) {
         for (const child of token.children) {
           if (child.type === 'html_inline') {
-            child.content = inline.feed(child.content);
-            lastInlineToken = child;
+            child.content = stream.feed(child.content);
+            lastHtmlToken = child;
           }
         }
       }
     }
-    if (lastInlineToken) {
-      lastInlineToken.content += inline.flush();
-    } else {
-      inline.flush();
+    const tail = stream.flush();
+    if (lastHtmlToken && tail !== '') {
+      lastHtmlToken.content += tail;
     }
   });
 

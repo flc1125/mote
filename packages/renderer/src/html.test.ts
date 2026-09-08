@@ -57,6 +57,11 @@ describe('allowlisted raw HTML (§26)', () => {
     expect(render('<font color="red">hi</font>')).not.toContain('<font');
   });
 
+  it('keeps <details> open across Markdown blocks (GitHub-style)', () => {
+    const html = render('<details><summary>More</summary>\n\n```sh\nls\n```\n\n</details>');
+    expect(html).toMatch(/<details><summary>More<\/summary>[\s\S]*<pre>[\s\S]*<\/pre>[\s\S]*<\/details>/);
+  });
+
   it('closes unclosed allowlisted tags', () => {
     expect(render('<p align="center">hi')).toContain('<p align="center">hi</p>');
   });
