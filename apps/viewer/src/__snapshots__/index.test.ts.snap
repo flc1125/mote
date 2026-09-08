@@ -183,9 +183,13 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .word-note { color: #9aa4b0; font-size: 15px; line-height: 1.6; max-width: 44ch; justify-self: end; text-align: right; }
 .word-note code { background: rgb(255 255 255 / 0.08); color: #e6edf3; }
 
-.home-footer { max-width: var(--home-max); margin: 0 auto; padding: 30px 24px 44px; border-top: 1px solid var(--mote-border); display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; font-size: 14px; color: var(--mote-muted); }
+.home-footer { max-width: var(--home-max); margin: 0 auto; padding: 30px 24px 44px; border-top: 1px solid var(--mote-border); display: flex; flex-wrap: wrap; gap: 10px 20px; justify-content: space-between; align-items: center; font-size: 14px; color: var(--mote-muted); }
+.footer-group { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; }
 .footer-brand { display: inline-flex; align-items: center; gap: 10px; }
 .footer-mark { display: inline-block; width: 12px; height: 12px; border-radius: 4px; background: var(--mote-brand); }
+.footer-divider { width: 1px; height: 14px; background: var(--mote-border); }
+.footer-by a { color: var(--mote-muted); text-decoration: none; }
+.footer-by a:hover { color: var(--mote-accent); text-decoration: none; }
 .home-footer nav { display: flex; gap: 22px; }
 .home-footer a { color: var(--mote-muted); text-decoration: none; }
 .home-footer a:hover { color: var(--mote-accent); text-decoration: none; }
@@ -293,11 +297,15 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 </section></div>
 <footer class="home-footer">
 <span class="footer-brand"><span class="footer-mark" aria-hidden="true"></span>Mote — Markdown in, URL out.</span>
+<span class="footer-group">
 <nav aria-label="Project links">
 <a href="https://github.com/flc1125/mote">GitHub</a>
 <a href="https://github.com/flc1125/mote/blob/main/docs/cli.md">Docs</a>
 <a href="https://github.com/flc1125/mote/blob/main/LICENSE">MIT License</a>
 </nav>
+<span class="footer-divider" aria-hidden="true"></span>
+<span class="footer-by">Created by <a href="https://flc.io/">Flc</a></span>
+</span>
 </footer>
 </body>
 </html>
