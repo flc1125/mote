@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-08
+
+### Added
+
+- Footnotes and read-only task lists in published Markdown documents.
+- Allowlisted HTML rendering for README-style content, including centered paragraphs, `picture` images, `details` / `summary`, and inline formatting. User HTML passes through a streaming sanitizer that strips unsafe tags and attributes and validates image and link URLs.
+- Local image discovery in HTML `img src`, `img srcset`, and `source srcset`, so the CLI and local MCP publishing pipeline upload images referenced by README HTML.
+- Copy buttons for the homepage's CLI, MCP, and Skill command blocks, plus a readable weekly-report showcase with its Markdown source.
+
+### Changed
+
+- Redesigned the homepage with a dark hero, terminal demo, and clearer publishing setup guidance. Its copy script is authorized by an exact CSP hash; published document pages remain script-free.
+- Refined document typography, spacing, code blocks, and red accents; moved the table of contents into a drawer and made wide Markdown tables keyboard-scrollable without widening the page.
+- Reorganized the English and Chinese READMEs around CLI, MCP, and Skill setup, and added vertical spacing around their logos.
+
+### Fixed
+
+- Manual selection of homepage commands now excludes decorative `$` prompts and leading spaces while preserving multiline commands and line breaks.
+
+### Upgrade notes
+
+- Upgrade to `mote-cli@0.4.0` to upload local images referenced by HTML. Local MCP users should rebuild from the matching source revision; the MCP workspace package remains private.
+- Rendering improvements require the updated Viewer Worker. Existing Markdown containing allowed HTML now renders that markup instead of showing escaped tags; scripts and unsafe attributes remain blocked.
+- Stable tags publish the CLI package and GitHub Release only. API and Viewer deployments continue independently through Workers Builds on `main`; verify both production rollouts separately.
+
 ## [0.3.0] - 2026-09-08
 
 ### Added
@@ -70,7 +95,8 @@ Published manually to npm without a matching Git tag or GitHub Release; v0.1.1 i
 - **Docs** — architecture, publish protocol, security model, self-hosting guide, CLI and MCP references (English + 中文)
 - **Infrastructure** — Cloudflare Workers + R2 only; Workers Cache with per-version cache namespaces; runs on the free tier
 
-[Unreleased]: https://github.com/flc1125/mote/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/flc1125/mote/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/flc1125/mote/releases/tag/v0.4.0
 [0.3.0]: https://github.com/flc1125/mote/releases/tag/v0.3.0
 [0.2.0]: https://github.com/flc1125/mote/releases/tag/v0.2.0
 [0.1.1]: https://github.com/flc1125/mote/releases/tag/v0.1.1
