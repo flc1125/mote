@@ -47,15 +47,13 @@ function renderNodes(nodes: TocNode[]): string {
 }
 
 /**
- * Renders the TOC as a collapsed disclosure so the document content leads
- * the page; <details> gives expand/collapse and keyboard access without JS.
+ * Renders the TOC navigation tree. The page template wraps it in the
+ * drawer chrome (floating trigger + slide-in panel), which keeps the
+ * document content leading the page with no JavaScript.
  * Returns an empty string when there is nothing to show.
  */
 export function renderToc(headings: Heading[]): string {
   const tree = buildTocTree(headings);
   if (tree.length === 0) return '';
-  return (
-    `<details class="toc"><summary>Contents</summary>` +
-    `<nav aria-label="Table of contents">${renderNodes(tree)}</nav></details>\n`
-  );
+  return `<nav class="toc-nav" aria-label="Table of contents">${renderNodes(tree)}</nav>\n`;
 }

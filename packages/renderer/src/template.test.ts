@@ -34,8 +34,24 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
 
   it('uses the banner > main > article > colophon structure', () => {
     expect(page).toContain('<header class="mote-banner">');
-    expect(page).toContain('<main>\n<article>\n<nav class="toc">x</nav>\n<h1 id="one">One</h1>');
+    expect(page).toContain('<main>\n<article>\n<h1 id="one">One</h1>');
     expect(page).toContain('<footer class="mote-colophon">');
+  });
+
+  it('wraps the TOC in the checkbox-driven drawer chrome', () => {
+    expect(page).toContain(
+      '<input class="toc-toggle visually-hidden" type="checkbox" id="mote-toc">',
+    );
+    expect(page).toContain('<aside class="toc-drawer">');
+    expect(page).toContain('<label class="toc-fab" for="mote-toc"');
+    expect(page).toContain('<nav class="toc">x</nav>');
+  });
+
+  it('omits the drawer entirely when there is no TOC', () => {
+    const bare = renderHtmlPage({ title: 'T', tocHtml: '', contentHtml: '<p>x</p>' });
+    expect(bare).not.toContain('<aside class="toc-drawer">');
+    expect(bare).not.toContain('<label class="toc-fab"');
+    expect(bare).not.toContain('type="checkbox"');
   });
 
   it('points the brand links at the same-origin home (self-host friendly)', () => {

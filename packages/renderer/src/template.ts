@@ -11,9 +11,23 @@ export interface PageInput {
  * Wraps rendered Markdown in the page shell (baseline §29): lightweight,
  * static, no JS, CSS inlined so the page completes in a single request.
  * The banner links to `/` so self-hosted instances point at their own home.
+ *
+ * When the document has headings, the TOC is presented as a slide-in
+ * drawer driven by a checkbox hack (`:checked ~`), so it never occupies
+ * layout space — a floating trigger opens it and the scrim closes it.
  */
 export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): string {
   const safeTitle = escapeHtml(title);
+  const tocDrawer =
+    tocHtml === ''
+      ? ''
+      : `<input class="toc-toggle visually-hidden" type="checkbox" id="mote-toc">
+<label class="toc-scrim" for="mote-toc" aria-hidden="true"></label>
+<aside class="toc-drawer">
+<div class="toc-drawer-head"><span class="toc-title">TOC</span><label class="toc-close" for="mote-toc" aria-label="Close table of contents">×</label></div>
+${tocHtml}</aside>
+<label class="toc-fab" for="mote-toc" aria-label="Open table of contents"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.5 4.5h13M2.5 9h13M2.5 13.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></label>
+`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -27,13 +41,13 @@ export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): stri
 <style>${PAGE_CSS}</style>
 </head>
 <body>
-<header class="mote-banner"><div class="mote-banner-inner">
+${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
 <span class="mote-doc-title">${safeTitle}</span>
 </div></header>
 <main>
 <article>
-${tocHtml}${contentHtml}</article>
+${contentHtml}</article>
 </main>
 <footer class="mote-colophon"><div class="mote-colophon-inner">
 <span class="mote-colophon-mark" aria-hidden="true"></span><span>Published with <a href="/">Mote</a></span>
