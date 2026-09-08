@@ -53,11 +53,11 @@ Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
-<sub>The output above is illustrative — see a real [public sample with an image](https://mote.flc.io/1tAPUJjNt67GQ2pS).</sub>
+<sub>Live sample → [a published doc with images](https://mote.flc.io/1tAPUJjNt67GQ2pS)</sub>
 
-The default instance, `https://mote.flc.io`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Successful login remembers the instance; explicit environment/config overrides still apply.
+The default instance, `https://mote.flc.io`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Details: [authentication guide](docs/authentication.md).
 
-> **Note** — Browser login and Service Token authentication require **mote-cli ≥ 0.2.0**. Older npm versions do not include these commands. Full options (`--json`, `--no-assets`, `--api`, `--token`, …), config file, and scripting: [docs/cli.md](docs/cli.md).
+> **Note** — Browser login and Service Token authentication require **mote-cli ≥ 0.2.0**. Full options (`--json`, `--no-assets`, `--api`, `--token`, …), config file, and scripting: [docs/cli.md](docs/cli.md).
 
 <details><summary><strong>From source</strong> (requires Node.js ≥ 20 and pnpm)</summary>
 
@@ -96,7 +96,7 @@ Teach your agent when and how to publish with Mote:
 npx skills add flc1125/mote
 ```
 
-The skill drives the CLI or MCP tools and encodes the publishing guardrails — details: [docs/skill.md](docs/skill.md).
+The skill drives the CLI or MCP tools — details: [docs/skill.md](docs/skill.md).
 
 ## 🏠 Self-hosting
 
@@ -112,7 +112,7 @@ Run your own instance on Cloudflare's free tier: [docs/self-hosting.md](docs/sel
 | Images        | ≤ 50                           |
 | Image formats | png / jpeg / webp / gif / avif |
 
-SVG is not supported (active-content risk). Documents are immutable — republishing edited content creates a new URL.
+SVG is not supported (active-content risk).
 
 ## 📚 Documentation
 

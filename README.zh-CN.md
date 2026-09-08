@@ -53,11 +53,11 @@ Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
-<sub>以上为示意输出——可查看真实的[公开文档与图片样本](https://mote.flc.io/1tAPUJjNt67GQ2pS)。</sub>
+<sub>在线示例 → [公开文档与图片样本](https://mote.flc.io/1tAPUJjNt67GQ2pS)</sub>
 
-默认实例 `https://mote.flc.io` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。登录成功后会记住实例；显式环境变量和配置仍优先。
+默认实例 `https://mote.flc.io` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。详见[鉴权指南](docs/authentication.md)。
 
-> **注意**——浏览器登录和 Service Token 鉴权需要 **mote-cli ≥ 0.2.0**。旧 npm 版本不包含这些命令。完整参数（`--json`、`--no-assets`、`--api`、`--token` 等）、配置文件与脚本用法见 [docs/cli.md](docs/cli.md)。
+> **注意**——浏览器登录和 Service Token 鉴权需要 **mote-cli ≥ 0.2.0**。完整参数（`--json`、`--no-assets`、`--api`、`--token` 等）、配置文件与脚本用法见 [docs/cli.md](docs/cli.md)。
 
 <details><summary><strong>从源码构建</strong>（需要 Node.js ≥ 20 与 pnpm）</summary>
 
@@ -96,7 +96,7 @@ cd apps/cli && npm install -g .
 npx skills add flc1125/mote
 ```
 
-Skill 通过驱动 CLI 或 MCP 工具完成发布，并内置了发布安全守则——详见 [docs/skill.md](docs/skill.md)。
+Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [docs/skill.md](docs/skill.md)。
 
 ## 🏠 自托管
 
@@ -112,7 +112,7 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布，并内置了发布安全守�
 | 图片数量       | ≤ 50                           |
 | 支持的图片格式 | png / jpeg / webp / gif / avif |
 
-不支持 SVG（Active Content 风险）。发布后不可修改——修改内容请重新发布得到新 URL。
+不支持 SVG（Active Content 风险）。
 
 ## 📚 文档
 
