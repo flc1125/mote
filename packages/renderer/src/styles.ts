@@ -77,7 +77,9 @@ h5, h6 { font-size: 1em; color: var(--mote-muted); }
 
 p, ul, ol, blockquote, table, pre { margin: 0 0 1.15em; }
 ul, ol { padding-left: 1.5em; }
-li { margin: 0.25em 0; }
+li { margin: 0.5em 0; }
+li > ul, li > ol { margin-top: 0.35em; margin-bottom: 0; }
+li > :last-child { margin-bottom: 0; }
 
 article a {
   color: var(--mote-accent);
@@ -119,11 +121,13 @@ blockquote {
   color: var(--mote-muted);
   border-left: 3px solid var(--mote-brand);
 }
+blockquote > :first-child { margin-top: 0; }
+blockquote > :last-child { margin-bottom: 0; }
 
 /* Booktabs-style tables: horizontal rules only */
 table {
   display: block;
-  width: max-content;
+  width: 100%;
   max-width: 100%;
   overflow-x: auto;
   border-collapse: collapse;
@@ -132,10 +136,24 @@ table {
   font-size: 0.95em;
 }
 
-th, td { padding: 0.5em 0.9em; text-align: left; }
+th, td { padding: 0.6em 0.75em; text-align: left; vertical-align: top; }
 th { font-weight: 650; border-bottom: 1px solid var(--mote-border); }
 td { border-bottom: 1px solid var(--mote-border); }
 tr:last-child td { border-bottom: 0; }
+
+/* Keep native table layout inside a keyboard-scrollable region. Short
+   tables fill the column; wide tables keep readable cells and scroll. */
+.table-scroll { max-width: 100%; overflow-x: auto; margin: 0 0 1.15em; }
+.table-scroll:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
+.table-scroll table {
+  display: table;
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  margin: 0;
+  overflow: visible;
+}
+.table-scroll th, .table-scroll td { max-width: 24em; overflow-wrap: anywhere; }
 
 img { max-width: 100%; height: auto; box-sizing: border-box; border-radius: 8px; }
 
@@ -177,7 +195,11 @@ article details[open] > summary { margin-bottom: 0.6em; }
   align-items: center;
   justify-content: center;
   margin-left: auto;
-  padding: 6px 8px;
+  gap: 7px;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 13px;
   border: 1px solid transparent;
   border-radius: 999px;
   color: var(--mote-muted);
@@ -197,6 +219,7 @@ article details[open] > summary { margin-bottom: 0.6em; }
 }
 
 .toc-drawer {
+  box-sizing: border-box;
   position: fixed;
   top: 0;
   right: 0;
@@ -233,6 +256,12 @@ article details[open] > summary { margin-bottom: 0.6em; }
   color: var(--mote-muted);
 }
 .toc-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 40px;
+  min-height: 40px;
   padding: 2px 8px;
   border-radius: 6px;
   font-size: 20px;
@@ -247,7 +276,9 @@ article details[open] > summary { margin-bottom: 0.6em; }
 .toc-nav li { margin: 2px 0; }
 .toc-nav a {
   display: block;
-  padding: 5px 8px;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 10px 8px;
   border-radius: 6px;
   border-bottom: 0;
   color: var(--mote-muted);
@@ -305,9 +336,21 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 }
 .mote-colophon a:hover { color: var(--mote-accent); border-bottom-color: var(--mote-accent); }
 
+@media (max-width: 600px) {
+  main { padding-top: 30px; padding-bottom: 48px; }
+  h1 { font-size: 1.7em; letter-spacing: 0; }
+  h2 { font-size: 1.35em; margin-top: 40px; }
+  h3 { font-size: 1.15em; }
+  .mote-banner-inner { padding-top: 6px; padding-bottom: 6px; }
+  .toc-trigger, .toc-close, .toc-nav a { min-height: 44px; }
+  .toc-close { min-width: 44px; }
+}
+
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
   .toc-trigger, .toc-scrim, .toc-drawer { display: none; }
+  .table-scroll { overflow: visible; }
+  .table-scroll table { width: 100%; min-width: 0; table-layout: fixed; }
 }
 
 @media (prefers-reduced-motion: reduce) {

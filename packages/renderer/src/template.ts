@@ -25,12 +25,12 @@ export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): stri
   const tocTrigger =
     tocHtml === ''
       ? ''
-      : `<a class="toc-trigger" href="#mote-toc" aria-label="Open table of contents">${tocIcon}</a>`;
+      : `<a class="toc-trigger" href="#mote-toc" aria-label="目录 / Open table of contents">${tocIcon}<span>目录 / Contents</span></a>`;
   const tocDrawer =
     tocHtml === ''
       ? ''
       : `<aside class="toc-drawer" id="mote-toc">
-<div class="toc-drawer-head"><span class="toc-title">TOC</span><a class="toc-close" href="#!" aria-label="Close table of contents">×</a></div>
+<div class="toc-drawer-head"><span class="toc-title">目录 / Contents</span><a class="toc-close" href="#!" aria-label="关闭目录 / Close table of contents">×</a></div>
 ${tocHtml}</aside>
 <a class="toc-scrim" href="#!" aria-hidden="true" tabindex="-1"></a>
 `;
