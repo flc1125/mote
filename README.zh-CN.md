@@ -5,6 +5,8 @@
   </picture>
 </p>
 
+---
+
 <p align="center">
   <strong>Markdown in, URL out.</strong><br>
   将本地 Markdown 文档发布为不可枚举、永久有效、可直接通过浏览器阅读的在线页面。
@@ -24,8 +26,6 @@
   <a href="docs/self-hosting.md">自托管</a> •
   <a href="README.md">English</a>
 </p>
-
----
 
 ```bash
 mote README.md

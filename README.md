@@ -5,6 +5,8 @@
   </picture>
 </p>
 
+---
+
 <p align="center">
   <strong>Markdown in, URL out.</strong><br>
   Publish local Markdown documents as immutable, unguessable, browser-readable web pages.
@@ -24,8 +26,6 @@
   <a href="docs/self-hosting.md">Self-hosting</a> •
   <a href="README.zh-CN.md">简体中文</a>
 </p>
-
----
 
 ```bash
 mote README.md
