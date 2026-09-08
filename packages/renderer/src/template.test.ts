@@ -28,8 +28,11 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
 
   it('escapes the title wherever it appears', () => {
     expect(page).toContain('<title>Doc &lt;One&gt;</title>');
-    expect(page).toContain('<span class="mote-doc-title">Doc &lt;One&gt;</span>');
     expect(page).not.toContain('Doc <One>');
+  });
+
+  it('keeps the banner brand-only (no document title)', () => {
+    expect(page).not.toContain('mote-doc-title');
   });
 
   it('uses the banner > main > article > colophon structure', () => {

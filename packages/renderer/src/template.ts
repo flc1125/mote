@@ -43,7 +43,6 @@ ${tocHtml}</aside>
 <body>
 ${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-<span class="mote-doc-title">${safeTitle}</span>
 </div></header>
 <main>
 <article>

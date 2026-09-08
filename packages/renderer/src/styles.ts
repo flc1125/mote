@@ -52,16 +52,6 @@ const DOCUMENT_CSS = `
   background: var(--mote-brand);
 }
 
-.mote-doc-title {
-  min-width: 0;
-  margin-left: auto;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-size: 14px;
-  color: var(--mote-muted);
-}
-
 main {
   max-width: 720px;
   margin: 0 auto;
