@@ -4,8 +4,8 @@ import { LOGO_BLACK_SVG } from './brand.generated.js';
 
 const REPO = 'https://github.com/flc1125/mote';
 const DOCS = `${REPO}/blob/main/docs`;
-// A real published sample (see README) — doubles as the live demo link.
-const SAMPLE_URL = 'https://mote.flc.io/1tAPUJjNt67GQ2pS';
+// Published showcase; editable source lives in docs/examples/weekly-report.md.
+const SAMPLE_URL = 'https://mote.flc.io/MxNfTmvTNxMnrbkU';
 
 // Static content only: never interpolate request data or published document IDs.
 export const HOME_HTML = `<!doctype html>
