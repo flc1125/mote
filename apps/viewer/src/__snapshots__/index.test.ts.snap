@@ -247,17 +247,17 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
   </g>
 </svg>
 
-<nav aria-label="Project"><a href="https://github.com/flc1125/mote/blob/main/docs/cli.md">Docs</a><a href="https://github.com/flc1125/mote">GitHub</a></nav>
+<nav aria-label="Project"><a href="https://github.com/flc1125/mote/blob/main/docs/cli.md" target="_blank" rel="noopener noreferrer">Docs</a><a href="https://github.com/flc1125/mote" target="_blank" rel="noopener noreferrer">GitHub</a></nav>
 </header>
 <main>
 <section class="hero" aria-labelledby="intro">
 <p class="hero-eyebrow">Markdown publishing</p>
 <h1 id="intro">Markdown in.<br><span class="grad">URL out.</span></h1>
 <p class="hero-sub">Publish a local Markdown file as an immutable, browser-readable page. The link is the credential — <a href="https://mote.flc.io/MxNfTmvTNxMnrbkU" target="_blank" rel="noopener noreferrer" aria-label="see a live demo (opens in a new tab)">see a live demo</a>.</p>
-<p class="hero-actions"><a class="button button-primary" href="#use">Get started</a><a class="button button-ghost" href="https://github.com/flc1125/mote">GitHub</a></p>
+<p class="hero-actions"><a class="button button-primary" href="#use">Get started</a><a class="button button-ghost" href="https://github.com/flc1125/mote" target="_blank" rel="noopener noreferrer">GitHub</a></p>
 <div class="terminal">
 <div class="terminal-bar" aria-hidden="true"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span></div>
-<pre tabindex="0" role="region" aria-label="Publishing a document with the Mote CLI"><code><span class="row"><span class="prompt">$</span> <span class="type">mote README.md</span><span class="cursor">▍</span></span><span class="fade l1 dim">Scanning README.md…</span><span class="fade l2 dim">Markdown 47.1 KB · Assets 3 · Total 1.84 MB</span><span class="fade l3">Published:</span><span class="fade l4"><a href="https://mote.flc.io/MxNfTmvTNxMnrbkU">https://mote.flc.io/MxNfTmvTNxMnrbkU</a></span></code></pre>
+<pre tabindex="0" role="region" aria-label="Publishing a document with the Mote CLI"><code><span class="row"><span class="prompt">$</span> <span class="type">mote README.md</span><span class="cursor">▍</span></span><span class="fade l1 dim">Scanning README.md…</span><span class="fade l2 dim">Markdown 47.1 KB · Assets 3 · Total 1.84 MB</span><span class="fade l3">Published:</span><span class="fade l4"><a href="https://mote.flc.io/MxNfTmvTNxMnrbkU" target="_blank" rel="noopener noreferrer">https://mote.flc.io/MxNfTmvTNxMnrbkU</a></span></code></pre>
 </div>
 </section>
 </main>
@@ -265,24 +265,24 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 <section class="section" id="use" aria-labelledby="use-title">
 <h2 class="section-title" id="use-title">Use Mote</h2>
 <p class="section-heading">Choose how you publish.</p>
-<p class="setup-note">You need a Mote instance and permission to publish. The default instance accepts approved publishers only. <a href="https://github.com/flc1125/mote/blob/main/docs/self-hosting.md">Host your own instance</a> or check the <a href="https://github.com/flc1125/mote/blob/main/docs/authentication.md">authentication guide</a> before setup.</p>
+<p class="setup-note">You need a Mote instance and permission to publish. The default instance accepts approved publishers only. <a href="https://github.com/flc1125/mote/blob/main/docs/self-hosting.md" target="_blank" rel="noopener noreferrer">Host your own instance</a> or check the <a href="https://github.com/flc1125/mote/blob/main/docs/authentication.md" target="_blank" rel="noopener noreferrer">authentication guide</a> before setup.</p>
 <div class="method">
 <div class="method-head"><span class="method-num">01</span><h3>CLI</h3><p class="method-desc">Publish from your terminal.</p></div>
 <pre tabindex="0" role="region" aria-label="CLI quick start commands"><code><span class="prompt">$</span> npm install -g mote-cli
 <span class="prompt">$</span> mote login
 <span class="prompt">$</span> mote README.md</code></pre>
-<p class="method-note">Log in to your Access-enabled Mote instance — it is remembered for future publishes. For other authentication modes, see the <a href="https://github.com/flc1125/mote/blob/main/docs/authentication.md">authentication guide</a>.</p>
+<p class="method-note">Log in to your Access-enabled Mote instance — it is remembered for future publishes. For other authentication modes, see the <a href="https://github.com/flc1125/mote/blob/main/docs/authentication.md" target="_blank" rel="noopener noreferrer">authentication guide</a>.</p>
 </div>
 <div class="method">
 <div class="method-head"><span class="method-num">02</span><h3>MCP</h3><p class="method-desc">Connect your AI assistant. For example, with Codex:</p></div>
 <pre tabindex="0" role="region" aria-label="Codex MCP setup commands"><code><span class="prompt">$</span> codex mcp add mote --url https://mote.flc.io/api/mcp
 <span class="prompt">$</span> codex mcp login mote</code></pre>
-<p class="method-note">Use your own instance URL. Setup, tools, and verified clients: <a href="https://github.com/flc1125/mote/blob/main/docs/mcp.md">MCP guide</a>.</p>
+<p class="method-note">Use your own instance URL. Setup, tools, and verified clients: <a href="https://github.com/flc1125/mote/blob/main/docs/mcp.md" target="_blank" rel="noopener noreferrer">MCP guide</a>.</p>
 </div>
 <div class="method">
 <div class="method-head"><span class="method-num">03</span><h3>Skill</h3><p class="method-desc">Teach your agent when and how to publish.</p></div>
 <pre tabindex="0" role="region" aria-label="Skill installation command"><code><span class="prompt">$</span> npx skills add flc1125/mote --skill mote</code></pre>
-<p class="method-note">The skill uses your configured CLI or MCP tools; set up one of them first. See the <a href="https://github.com/flc1125/mote/blob/main/docs/skill.md">Skill guide</a>.</p>
+<p class="method-note">The skill uses your configured CLI or MCP tools; set up one of them first. See the <a href="https://github.com/flc1125/mote/blob/main/docs/skill.md" target="_blank" rel="noopener noreferrer">Skill guide</a>.</p>
 </div>
 </section>
 <div class="stmt-band"><section class="section stmt" aria-labelledby="stmt-title">
@@ -303,12 +303,12 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 <span class="footer-brand"><span class="footer-mark" aria-hidden="true"></span>Mote — Markdown in, URL out.</span>
 <span class="footer-group">
 <nav aria-label="Project links">
-<a href="https://github.com/flc1125/mote">GitHub</a>
-<a href="https://github.com/flc1125/mote/blob/main/docs/cli.md">Docs</a>
-<a href="https://github.com/flc1125/mote/blob/main/LICENSE">MIT License</a>
+<a href="https://github.com/flc1125/mote" target="_blank" rel="noopener noreferrer">GitHub</a>
+<a href="https://github.com/flc1125/mote/blob/main/docs/cli.md" target="_blank" rel="noopener noreferrer">Docs</a>
+<a href="https://github.com/flc1125/mote/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
 </nav>
 <span class="footer-divider" aria-hidden="true"></span>
-<span class="footer-by">Created by <a href="https://flc.io/">Flc</a></span>
+<span class="footer-by">Created by <a href="https://flc.io/" target="_blank" rel="noopener noreferrer">Flc</a></span>
 </span>
 </footer>
 </body>

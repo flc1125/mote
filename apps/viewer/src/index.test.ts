@@ -151,10 +151,10 @@ describe('public homepage and branding', () => {
     expect(html).toContain('<span class="method-num">02</span><h3>MCP</h3>');
     expect(html).toContain('<span class="method-num">03</span><h3>Skill</h3>');
     expect(html).toContain(
-      'href="https://github.com/flc1125/mote/blob/main/docs/mcp.md">MCP guide</a>',
+      'href="https://github.com/flc1125/mote/blob/main/docs/mcp.md" target="_blank" rel="noopener noreferrer">MCP guide</a>',
     );
     expect(html).toContain(
-      'href="https://github.com/flc1125/mote/blob/main/docs/skill.md">Skill guide</a>',
+      'href="https://github.com/flc1125/mote/blob/main/docs/skill.md" target="_blank" rel="noopener noreferrer">Skill guide</a>',
     );
     expect(html).toContain('The skill uses your configured CLI or MCP tools');
     expect(html).toMatch(
@@ -164,7 +164,9 @@ describe('public homepage and branding', () => {
     expect(setupNoteIndex).toBeGreaterThanOrEqual(0);
     expect(setupNoteIndex).toBeLessThan(html.indexOf('aria-label="CLI quick start commands"'));
 
-    expect(html).toContain('href="https://github.com/flc1125/mote/blob/main/docs/cli.md">Docs</a>');
+    expect(html).toContain(
+      'href="https://github.com/flc1125/mote/blob/main/docs/cli.md" target="_blank" rel="noopener noreferrer">Docs</a>',
+    );
     expect(html).toContain('codex mcp add mote --url https://mote.flc.io/api/mcp');
     expect(html).toContain('codex mcp login mote');
     expect(html).toContain('npx skills add flc1125/mote --skill mote');
@@ -178,6 +180,21 @@ describe('public homepage and branding', () => {
     expect(html).toMatchSnapshot();
     const document = await workerFetch(`http://localhost/${ID}`, { method: 'HEAD' });
     expect([...response.headers]).toEqual([...document.headers]);
+  });
+
+  it('opens document and external links in new tabs while preserving in-page navigation', async () => {
+    const response = await workerFetch('http://localhost/');
+    const html = await response.text();
+    const links = [...html.matchAll(/<a\b[^>]*>/g)].map(([tag]) => tag);
+    const externalLinks = links.filter((tag) => /href="https:\/\//.test(tag));
+    expect(externalLinks).toHaveLength(14);
+    for (const link of externalLinks) {
+      expect(link).toContain('target="_blank"');
+      expect(link).toContain('rel="noopener noreferrer"');
+    }
+    const inPageLinks = links.filter((tag) => tag.includes('href="#use"'));
+    expect(inPageLinks).toHaveLength(1);
+    expect(inPageLinks[0]).not.toContain('target=');
   });
 
   it.each(['/', '/favicon.ico', '/favicon.svg'])('%s never accesses R2', async (path) => {
