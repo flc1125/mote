@@ -51,7 +51,7 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 渲染管线（`@mote/renderer`）的多层防护：
 
-1. **Raw HTML 关闭**（markdown-it `html: false`）：Markdown 中的任何 HTML 都只作为文本转义输出，永远不会成为 DOM 元素；
+1. **Raw HTML 白名单净化**：Markdown 中的 HTML 经 `packages/renderer/src/sanitize.ts` 的允许名单净化器（基于 htmlparser2 真实词法解析）处理——仅保留展示性标签（`p[align]`、`picture/source/img`、`details/summary`、`sub/sup/kbd` 等）与逐标签审核过的属性；`script/iframe/svg/form/style/on*/class/id` 等一律剥除。未配对标签在 token 流级别保持嵌套正确；
 2. **危险协议拦截**：`javascript:`、`data:`、`vbscript:`、`file:`、协议相对 URL 不会成为链接 `href` 或图片 `src`（markdown-it 解析期拒绝 + 渲染期二次拦截）；
 3. **页面零 JS**：渲染结果不包含任何脚本；
 4. **严格 CSP**：
