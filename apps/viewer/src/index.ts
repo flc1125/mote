@@ -4,6 +4,7 @@ import { documentSecurityHeaders, render } from '@mote/renderer';
 
 import { FAVICON_BASE64, ICON_SVG } from './brand.generated.js';
 import { HOME_HTML } from './home.js';
+import { HOME_SCRIPT } from './home-script.js';
 
 export interface Env {
   DOCUMENTS: R2Bucket;
@@ -47,6 +48,22 @@ function internalError(): Response {
 
 function documentHeaders(): Record<string, string> {
   return { ...documentSecurityHeaders(), ...DOCUMENT_CACHE_HEADERS };
+}
+
+let homeScriptHash: string | undefined;
+
+async function homepageHeaders(): Promise<Record<string, string>> {
+  // Calculate on first request, not during Worker module initialization.
+  if (homeScriptHash === undefined) {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(HOME_SCRIPT));
+    homeScriptHash = `sha256-${btoa(String.fromCharCode(...new Uint8Array(digest)))}`;
+  }
+  const headers = documentHeaders();
+  headers['Content-Security-Policy'] = headers['Content-Security-Policy']!.replace(
+    "script-src 'none'",
+    `script-src '${homeScriptHash}'`,
+  );
+  return headers;
 }
 
 function assetHeaders(contentType: string): Record<string, string> {
@@ -170,7 +187,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 
   if (pathname === '/') {
     return new Response(method === 'HEAD' ? null : HOME_HTML, {
-      headers: documentHeaders(),
+      headers: await homepageHeaders(),
     });
   }
 
