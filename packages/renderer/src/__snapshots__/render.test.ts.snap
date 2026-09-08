@@ -194,26 +194,43 @@ blockquote {
 blockquote > :first-child { margin-top: 0; }
 blockquote > :last-child { margin-bottom: 0; }
 
-/* Booktabs-style tables: horizontal rules only */
+/* Quiet table chrome. Raw HTML tables retain a compact scroll fallback;
+   Markdown tables fill their separate scroll container below. */
 table {
   display: block;
-  width: 100%;
+  width: max-content;
   max-width: 100%;
   overflow-x: auto;
   border-collapse: collapse;
-  border-top: 2px solid var(--mote-border);
-  border-bottom: 2px solid var(--mote-border);
+  border: 1px solid var(--mote-border);
+  border-radius: 8px;
   font-size: 0.95em;
+  font-variant-numeric: tabular-nums;
 }
 
-th, td { padding: 0.6em 0.75em; text-align: left; vertical-align: top; }
-th { font-weight: 650; border-bottom: 1px solid var(--mote-border); }
-td { border-bottom: 1px solid var(--mote-border); }
+th, td { padding: 12px 16px; text-align: left; vertical-align: top; }
+th { font-weight: 600; background: var(--mote-pre-bg); border-bottom: 1px solid var(--mote-border); }
+td { border-bottom: 1px solid color-mix(in srgb, var(--mote-border) 65%, transparent); }
 tr:last-child td { border-bottom: 0; }
 
 /* Keep native table layout inside a keyboard-scrollable region. Short
    tables fill the column; wide tables keep readable cells and scroll. */
-.table-scroll { max-width: 100%; overflow-x: auto; margin: 0 0 1.15em; }
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 0 1.15em;
+  border: 1px solid var(--mote-border);
+  border-radius: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--mote-muted) var(--mote-pre-bg);
+  /* Local covers hide the edge shadows at each scroll boundary. A short
+     table covers both shadows, so it never suggests hidden columns. */
+  background:
+    linear-gradient(to right, var(--mote-bg) 40%, transparent) left / 32px 100% local no-repeat,
+    linear-gradient(to left, var(--mote-bg) 40%, transparent) right / 32px 100% local no-repeat,
+    linear-gradient(to right, color-mix(in srgb, var(--mote-fg) 14%, transparent), transparent) left / 12px 100% scroll no-repeat,
+    linear-gradient(to left, color-mix(in srgb, var(--mote-fg) 14%, transparent), transparent) right / 12px 100% scroll no-repeat;
+}
 .table-scroll:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
 .table-scroll table {
   display: table;
@@ -222,8 +239,10 @@ tr:last-child td { border-bottom: 0; }
   max-width: none;
   margin: 0;
   overflow: visible;
+  border: 0;
+  border-radius: 0;
 }
-.table-scroll th, .table-scroll td { max-width: 24em; overflow-wrap: anywhere; }
+.table-scroll th, .table-scroll td { min-width: 4em; max-width: 24em; overflow-wrap: anywhere; }
 
 img { max-width: 100%; height: auto; box-sizing: border-box; border-radius: 8px; }
 
@@ -414,12 +433,13 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
   .mote-banner-inner { padding-top: 6px; padding-bottom: 6px; }
   .toc-trigger, .toc-close, .toc-nav a { min-height: 44px; }
   .toc-close { min-width: 44px; }
+  th, td { padding: 10px 12px; }
 }
 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
   .toc-trigger, .toc-scrim, .toc-drawer { display: none; }
-  .table-scroll { overflow: visible; }
+  .table-scroll { overflow: visible; background: none; border-radius: 0; }
   .table-scroll table { width: 100%; min-width: 0; table-layout: fixed; }
 }
 
