@@ -134,7 +134,7 @@ describe('utility routes', () => {
 });
 
 describe('public homepage and branding', () => {
-  it('serves a static homepage without published document information or JS', async () => {
+  it('serves the homepage without published document information', async () => {
     const response = await workerFetch('http://localhost/');
     expect(response.status).toBe(200);
     const html = await response.text();
@@ -151,26 +151,75 @@ describe('public homepage and branding', () => {
     expect(html).toContain('<span class="method-num">02</span><h3>MCP</h3>');
     expect(html).toContain('<span class="method-num">03</span><h3>Skill</h3>');
     expect(html).toContain(
-      'href="https://github.com/flc1125/mote/blob/main/docs/mcp.md">MCP guide</a>',
+      'href="https://github.com/flc1125/mote/blob/main/docs/mcp.md" target="_blank" rel="noopener noreferrer">MCP guide</a>',
     );
     expect(html).toContain(
-      'href="https://github.com/flc1125/mote/blob/main/docs/skill.md">Skill guide</a>',
+      'href="https://github.com/flc1125/mote/blob/main/docs/skill.md" target="_blank" rel="noopener noreferrer">Skill guide</a>',
     );
     expect(html).toContain('The skill uses your configured CLI or MCP tools');
-    expect(html).toContain('href="https://github.com/flc1125/mote/blob/main/docs/cli.md">Docs</a>');
+    expect(html).toMatch(
+      /<a href="https:\/\/mote\.flc\.io\/[^" ]+" target="_blank" rel="noopener noreferrer" aria-label="see a live demo \(opens in a new tab\)">see a live demo<\/a>/,
+    );
+    const setupNoteIndex = html.indexOf('You need a Mote instance and permission to publish.');
+    expect(setupNoteIndex).toBeGreaterThanOrEqual(0);
+    expect(setupNoteIndex).toBeLessThan(html.indexOf('aria-label="CLI quick start commands"'));
+
+    expect(html).toContain(
+      'href="https://github.com/flc1125/mote/blob/main/docs/cli.md" target="_blank" rel="noopener noreferrer">Docs</a>',
+    );
     expect(html).toContain('codex mcp add mote --url https://mote.flc.io/api/mcp');
     expect(html).toContain('codex mcp login mote');
     expect(html).toContain('npx skills add flc1125/mote --skill mote');
     expect(html).toContain('#ef5552');
     expect(html).toContain('prefers-color-scheme: dark');
-    expect(html).not.toMatch(/<script|<form/i);
+    expect(html).not.toMatch(/<form/i);
     expect(html.match(/<input\b/g)).toBeNull();
     expect(html).not.toContain(ID);
     expect(html).not.toContain(ASSET_ID);
     expect(html).not.toContain('Hello Mote');
     expect(html).toMatchSnapshot();
     const document = await workerFetch(`http://localhost/${ID}`, { method: 'HEAD' });
-    expect([...response.headers]).toEqual([...document.headers]);
+    const withoutCsp = (headers: Headers) =>
+      [...headers].filter(([name]) => name !== 'content-security-policy');
+    expect(withoutCsp(response.headers)).toEqual(withoutCsp(document.headers));
+  });
+
+  it('allows only the exact copy script on the homepage and keeps documents script-free', async () => {
+    const response = await workerFetch('http://localhost/');
+    const html = await response.text();
+    const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+    expect(scripts).toHaveLength(1);
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(scripts[0]![1]!));
+    const hash = btoa(String.fromCharCode(...new Uint8Array(digest)));
+    const policy = response.headers.get('Content-Security-Policy')!;
+    expect(policy.split('; ').find((directive) => directive.startsWith('script-src '))).toBe(
+      `script-src 'sha256-${hash}'`,
+    );
+    expect(policy).toContain("connect-src 'none'");
+    expect(policy).toContain("form-action 'none'");
+    const buttons = [...html.matchAll(/<button\b[^>]*data-copy-command[^>]*>/g)];
+    expect(buttons).toHaveLength(3);
+    for (const name of ['CLI commands', 'MCP commands', 'Skill command']) {
+      expect(html).toContain(`aria-label="Copy ${name}" hidden`);
+    }
+    const document = await workerFetch(`http://localhost/${ID}`);
+    expect(document.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+    expect(await document.text()).not.toContain('<script');
+  });
+
+  it('opens document and external links in new tabs while preserving in-page navigation', async () => {
+    const response = await workerFetch('http://localhost/');
+    const html = await response.text();
+    const links = [...html.matchAll(/<a\b[^>]*>/g)].map(([tag]) => tag);
+    const externalLinks = links.filter((tag) => /href="https:\/\//.test(tag));
+    expect(externalLinks).toHaveLength(14);
+    for (const link of externalLinks) {
+      expect(link).toContain('target="_blank"');
+      expect(link).toContain('rel="noopener noreferrer"');
+    }
+    const inPageLinks = links.filter((tag) => tag.includes('href="#use"'));
+    expect(inPageLinks).toHaveLength(1);
+    expect(inPageLinks[0]).not.toContain('target=');
   });
 
   it.each(['/', '/favicon.ico', '/favicon.svg'])('%s never accesses R2', async (path) => {

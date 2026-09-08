@@ -1,6 +1,7 @@
 import { BASE_CSS, TOKENS_CSS } from '@mote/theme';
 
 import { LOGO_BLACK_SVG } from './brand.generated.js';
+import { HOME_SCRIPT } from './home-script.js';
 
 const REPO = 'https://github.com/flc1125/mote';
 const DOCS = `${REPO}/blob/main/docs`;
@@ -44,12 +45,12 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .home-header nav a { color: #9aa4b0; text-decoration: none; }
 .home-header nav a:hover { color: #ffffff; text-decoration: none; }
 
-.hero { position: relative; z-index: 2; max-width: var(--home-max); margin: 0 auto; min-height: 82svh; padding: 72px 24px 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #9aa4b0; margin: 0 0 30px; }
+.hero { position: relative; z-index: 2; max-width: var(--home-max); margin: 0 auto; box-sizing: border-box; min-height: calc(100svh - 74px); padding: 28px 24px 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #9aa4b0; margin: 0 0 18px; }
 .hero-eyebrow::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #ef5552; box-shadow: 0 0 12px 2px rgb(239 85 82 / 0.7); }
-.hero h1 { font-size: clamp(56px, 9.5vw, 148px); line-height: 0.95; letter-spacing: -0.04em; font-weight: 750; margin: 0 0 30px; color: #f0f3f6; }
+.hero h1 { font-size: clamp(56px, 7.2vw, 96px); line-height: 0.98; letter-spacing: -0.04em; font-weight: 750; margin: 0 0 18px; color: #f0f3f6; }
 .hero h1 .grad { background: linear-gradient(100deg, #ff6d6a 5%, #ef5552 48%, #ff9d9a 95%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 30px rgb(239 85 82 / 0.35)); }
-.hero-sub { font-size: 19px; line-height: 1.6; color: #9aa4b0; margin: 0 0 42px; max-width: 52ch; }
+.hero-sub { font-size: 19px; line-height: 1.6; color: #9aa4b0; margin: 0 0 22px; max-width: 52ch; }
 .hero-sub a { color: #ff8582; text-decoration: none; border-bottom: 1px solid rgb(255 133 130 / 0.4); }
 .hero-sub a:hover { color: #ffb3b1; border-bottom-color: #ffb3b1; }
 .hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin: 0; }
@@ -61,19 +62,20 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .button-ghost:hover { border-color: rgb(255 255 255 / 0.45); color: #ffffff; text-decoration: none; }
 
 /* Self-typing terminal — pure CSS, no JavaScript */
-.terminal { width: min(660px, 100%); margin-top: 68px; text-align: left; background: rgb(13 17 23 / 0.85); border: 1px solid rgb(255 255 255 / 0.1); border-radius: 14px; box-shadow: 0 40px 90px -30px rgb(239 85 82 / 0.35), 0 20px 40px rgb(0 0 0 / 0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); overflow: hidden; font-size: 15px; }
+.terminal { width: min(660px, 100%); margin-top: 24px; text-align: left; background: rgb(13 17 23 / 0.85); border: 1px solid rgb(255 255 255 / 0.1); border-radius: 14px; box-shadow: 0 40px 90px -30px rgb(239 85 82 / 0.35), 0 20px 40px rgb(0 0 0 / 0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); overflow: hidden; font-size: 14px; }
 .terminal-bar { display: flex; gap: 8px; padding: 13px 16px; border-bottom: 1px solid rgb(255 255 255 / 0.07); }
 .terminal-dot { width: 12px; height: 12px; border-radius: 50%; background: #3d444d; }
 .terminal-dot:nth-child(1) { background: #ef5552; }
 .terminal-dot:nth-child(2) { background: #e3b341; }
 .terminal-dot:nth-child(3) { background: #3fb950; }
-.terminal pre { margin: 0; padding: 20px 22px 24px; color: #e6edf3; line-height: 1.85; overflow-x: auto; }
+.terminal pre { margin: 0; padding: 14px 20px 18px; color: #e6edf3; line-height: 1.65; overflow-x: auto; }
 .terminal pre code { background: transparent; padding: 0; font-size: inherit; }
-.terminal .row, .terminal .fade { display: block; }
-.terminal .prompt { color: #ff8582; font-weight: 600; }
-.terminal .type { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; width: 0; animation: type-in 1.1s steps(14, end) 0.6s forwards; }
+.terminal .row { display: flex; align-items: center; }
+.terminal .fade { display: block; }
+.terminal .prompt { margin-right: 1ch; color: #ff8582; font-weight: 600; }
+.terminal .type { display: inline-block; overflow: hidden; white-space: nowrap; flex: none; width: 0; animation: type-in 1.1s steps(14, end) 0.6s forwards; }
 @keyframes type-in { to { width: 14ch; } }
-.terminal .cursor { color: #ff8582; animation: blink 1.06s steps(1) infinite; }
+.terminal .cursor { display: block; flex: none; width: 2px; height: 1em; margin-left: 0.4em; background: #ff8582; animation: blink 1.06s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 .terminal .fade { opacity: 0; animation: rise 0.5s ease forwards; }
 .terminal .l1 { animation-delay: 1.9s; }
@@ -90,37 +92,46 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .section-title { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mote-accent); margin: 0 0 14px; padding: 0; border: 0; }
 .section-heading { font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -0.03em; font-weight: 750; margin: 0 0 36px; padding: 0; border: 0; }
 
-/* Full-bleed red statement band */
+/* Compact sharing guidance after setup */
 .stmt-band { position: relative; overflow: hidden; background: linear-gradient(135deg, #ef5552 0%, #d43f3c 75%); color: #ffffff; }
 .stmt-band::before { content: ''; position: absolute; inset: 0; background: radial-gradient(640px 320px at 18% -30%, rgb(255 255 255 / 0.16), transparent 70%); }
-.stmt { position: relative; }
-.statement-line { font-size: clamp(36px, 6vw, 68px); line-height: 1.06; letter-spacing: -0.035em; font-weight: 750; margin: 0 0 22px; color: #ffffff; }
+.stmt { position: relative; padding-top: 32px; padding-bottom: 32px; display: grid; grid-template-columns: 1fr 1.2fr; align-items: center; gap: 24px 48px; }
+.statement-line { font-size: clamp(28px, 3vw, 38px); line-height: 1.15; letter-spacing: -0.035em; font-weight: 750; margin: 0; color: #ffffff; }
 .statement-line .accent { color: rgb(255 255 255 / 0.55); }
-.statement-sub { font-size: 18px; line-height: 1.6; color: rgb(255 255 255 / 0.84); margin: 0; max-width: 56ch; }
+.statement-sub { display: grid; gap: 6px; min-width: 0; font-size: 16px; line-height: 1.65; color: #ffffff; }
+.statement-sub p { margin: 0; }
 
-.method { padding: 34px 0; border-top: 1px solid var(--mote-border); }
+.setup-note { margin: -12px 0 32px; color: var(--mote-muted); }
+.method { padding: 28px 0; border-top: 1px solid var(--mote-border); }
 .method-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 18px; }
 .method-num { font-size: 34px; font-weight: 750; letter-spacing: -0.02em; line-height: 1; color: var(--mote-tint-border); }
 .method-head h3 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
 .method-desc { margin: 0; color: var(--mote-muted); font-size: 15px; }
-.method pre { background: #161b22; color: #e6edf3; border: 1px solid rgb(255 255 255 / 0.08); border-radius: 14px; padding: 18px 20px; font-size: 14.5px; line-height: 1.9; overflow-x: auto; margin: 0 0 12px; box-shadow: 0 16px 32px -18px rgb(15 17 21 / 0.35); transition: border-color 0.15s ease, box-shadow 0.15s ease; }
-.method pre:hover { border-color: rgb(239 85 82 / 0.45); box-shadow: 0 16px 36px -16px rgb(239 85 82 / 0.3); }
+.command-box { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; background: #161b22; color: #e6edf3; border: 1px solid rgb(255 255 255 / 0.08); border-radius: 14px; margin: 0 0 12px; overflow: hidden; box-shadow: 0 16px 32px -18px rgb(15 17 21 / 0.35); transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.command-box:hover { border-color: rgb(239 85 82 / 0.45); box-shadow: 0 16px 36px -16px rgb(239 85 82 / 0.3); }
+.command-toolbar { grid-column: 2; grid-row: 1; display: flex; padding: 16px 12px 0 0; }
+.copy-button { min-width: 72px; padding: 5px 10px; border: 1px solid rgb(255 255 255 / 0.18); border-radius: 6px; background: transparent; color: #c9d1d9; font: inherit; font-size: 12px; line-height: 1.5; cursor: pointer; }
+.copy-button:hover { background: rgb(255 255 255 / 0.08); color: #ffffff; }
+.copy-button:focus-visible { outline: 2px solid #ff8582; outline-offset: 3px; }
+.copy-button:disabled { cursor: wait; }
+.method pre { grid-column: 1; grid-row: 1; min-width: 0; padding: 18px 20px; font-size: 14.5px; line-height: 1.9; overflow-x: auto; margin: 0; }
 .method pre code { background: transparent; padding: 0; font-size: inherit; }
 .method .prompt { color: #ff8582; font-weight: 600; user-select: none; }
 .method-note { color: var(--mote-muted); font-size: 14px; margin: 0; }
 .method-note a { color: var(--mote-accent); text-decoration: none; border-bottom: 1px solid var(--mote-tint-border); }
 .method-note a:hover { border-bottom-color: var(--mote-accent); }
 
-/* Why Mote: dark keyword wall, echoing the hero */
+/* Why Mote: compact benefit rows, echoing the hero */
 .why-band { background: #0b0e14; color: #e6edf3; }
 .why-band .section-title { color: #ff8582; }
+.why { padding-top: 48px; padding-bottom: 48px; }
 .words { list-style: none; margin: 0; padding: 0; }
-.word-row { display: grid; grid-template-columns: minmax(0, auto) 1fr; align-items: baseline; gap: 12px 48px; padding: 26px 4px; border-bottom: 1px solid rgb(255 255 255 / 0.08); transition: border-color 0.2s ease; }
+.word-row { display: grid; grid-template-columns: minmax(220px, 0.8fr) 1.6fr; align-items: center; gap: 12px 32px; padding: 20px 4px; border-bottom: 1px solid rgb(255 255 255 / 0.08); transition: border-color 0.2s ease; }
 .word-row:first-child { border-top: 1px solid rgb(255 255 255 / 0.08); }
 .word-row:hover { border-bottom-color: rgb(239 85 82 / 0.5); }
-.word { font-size: clamp(38px, 5.6vw, 72px); line-height: 1; letter-spacing: -0.035em; font-weight: 750; color: #f0f3f6; white-space: nowrap; transition: color 0.2s ease, transform 0.2s ease; }
+.word { font-size: clamp(28px, 3vw, 38px); line-height: 1; letter-spacing: -0.035em; font-weight: 750; color: #f0f3f6; white-space: nowrap; transition: color 0.2s ease, transform 0.2s ease; }
 .word-row:hover .word { color: #ff6d6a; transform: translateX(6px); }
-.word-note { color: #9aa4b0; font-size: 15px; line-height: 1.6; max-width: 44ch; justify-self: end; text-align: right; }
+.word-note { color: #9aa4b0; font-size: 15px; line-height: 1.6; min-width: 0; justify-self: stretch; text-align: left; }
 .word-note code { background: rgb(255 255 255 / 0.08); color: #e6edf3; }
 
 .home-footer { max-width: var(--home-max); margin: 0 auto; padding: 30px 24px 44px; border-top: 1px solid var(--mote-border); display: flex; flex-wrap: wrap; gap: 10px 20px; justify-content: space-between; align-items: center; font-size: 14px; color: var(--mote-muted); }
@@ -134,13 +145,20 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .home-footer a { color: var(--mote-muted); text-decoration: none; }
 .home-footer a:hover { color: var(--mote-accent); text-decoration: none; }
 
+/* Scale the title on roomy screens without pushing the terminal below short viewports. */
+@media (min-width: 1280px) and (min-height: 800px) {
+  .hero h1 { font-size: clamp(96px, min(8vw, 13svh), 148px); }
+}
+
 @media (max-width: 640px) {
   .home-header { padding: 18px 20px; }
   .home-header svg { width: 104px; }
-  .hero { padding: 56px 20px 88px; min-height: 76svh; }
+  .hero { padding: 36px 20px; min-height: 0; }
   .hero-sub { font-size: 17px; }
-  .terminal { margin-top: 48px; font-size: 13.5px; }
-  .section { padding: 56px 20px; }
+  .terminal { margin-top: 24px; font-size: 13px; }
+  .terminal pre { padding: 14px 16px; }
+  .section { padding: 48px 20px; }
+  .stmt { grid-template-columns: 1fr; gap: 14px; padding-top: 28px; padding-bottom: 28px; }
   .word-row { grid-template-columns: 1fr; gap: 10px; }
   .word-note { justify-self: start; text-align: left; }
 }
@@ -151,6 +169,8 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
   .terminal .fade { opacity: 1; }
 }
 @media print {
+  .command-toolbar { display: none; }
+  .command-box { background: #f6f8fa; color: #1f2328; box-shadow: none; }
   .hero-zone { background: #ffffff; color: #1f2328; }
   .home-header [data-wordmark] { fill: #20252b; }
   .home-header nav a, .hero-sub, .hero-eyebrow { color: #59636e; }
@@ -171,70 +191,85 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 <div class="hero-grid" aria-hidden="true"></div>
 <header class="home-header">
 ${LOGO_BLACK_SVG}
-<nav aria-label="Project"><a href="${DOCS}/cli.md">Docs</a><a href="${REPO}">GitHub</a></nav>
+<nav aria-label="Project"><a href="${DOCS}/cli.md" target="_blank" rel="noopener noreferrer">Docs</a><a href="${REPO}" target="_blank" rel="noopener noreferrer">GitHub</a></nav>
 </header>
 <main>
 <section class="hero" aria-labelledby="intro">
 <p class="hero-eyebrow">Markdown publishing</p>
 <h1 id="intro">Markdown in.<br><span class="grad">URL out.</span></h1>
-<p class="hero-sub">Publish a local Markdown file as an immutable, browser-readable page. The link is the credential — <a href="${SAMPLE_URL}">see a live demo</a>.</p>
-<p class="hero-actions"><a class="button button-primary" href="#use">Get started</a><a class="button button-ghost" href="${REPO}">GitHub</a></p>
+<p class="hero-sub">Publish a local Markdown file as an immutable, browser-readable page. The link is the credential — <a href="${SAMPLE_URL}" target="_blank" rel="noopener noreferrer" aria-label="see a live demo (opens in a new tab)">see a live demo</a>.</p>
+<p class="hero-actions"><a class="button button-primary" href="#use">Get started</a><a class="button button-ghost" href="${REPO}" target="_blank" rel="noopener noreferrer">GitHub</a></p>
 <div class="terminal">
 <div class="terminal-bar" aria-hidden="true"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span></div>
-<pre tabindex="0" role="region" aria-label="Publishing a document with the Mote CLI"><code><span class="row"><span class="prompt">$</span> <span class="type">mote README.md</span><span class="cursor">▍</span></span><span class="fade l1 dim">Scanning README.md…</span><span class="fade l2 dim">Markdown 47.1 KB · Assets 3 · Total 1.84 MB</span><span class="fade l3">Published:</span><span class="fade l4"><a href="${SAMPLE_URL}">${SAMPLE_URL}</a></span></code></pre>
+<pre tabindex="0" role="region" aria-label="Publishing a document with the Mote CLI"><code><span class="row"><span class="prompt">$</span> <span class="type">mote README.md</span><span class="cursor" aria-hidden="true"></span></span><span class="fade l1 dim">Scanning README.md…</span><span class="fade l2 dim">Markdown 47.1 KB · Assets 3 · Total 1.84 MB</span><span class="fade l3">Published:</span><span class="fade l4"><a href="${SAMPLE_URL}" target="_blank" rel="noopener noreferrer">${SAMPLE_URL}</a></span></code></pre>
 </div>
 </section>
 </main>
 </div>
-<div class="stmt-band"><section class="section stmt" aria-labelledby="stmt-title">
-<h2 class="visually-hidden" id="stmt-title">Capability URLs</h2>
-<p class="statement-line">The URL is the credential<span class="accent">.</span></p>
-<p class="statement-sub">94-bit unguessable IDs. No accounts, no ACLs — anyone with the link can read, and no one else can find it.</p>
-</section></div>
 <section class="section" id="use" aria-labelledby="use-title">
 <h2 class="section-title" id="use-title">Use Mote</h2>
-<p class="section-heading">Three ways to publish.</p>
+<p class="section-heading">Choose how you publish.</p>
+<p class="setup-note">You need a Mote instance and permission to publish. The default instance accepts approved publishers only.<br>
+<a href="${DOCS}/self-hosting.md" target="_blank" rel="noopener noreferrer">Host your own instance</a> or check the <a href="${DOCS}/authentication.md" target="_blank" rel="noopener noreferrer">authentication guide</a> before setup.</p>
 <div class="method">
 <div class="method-head"><span class="method-num">01</span><h3>CLI</h3><p class="method-desc">Publish from your terminal.</p></div>
+<div class="command-box">
+<div class="command-toolbar"><button type="button" class="copy-button" data-copy-command aria-label="Copy CLI commands" hidden>Copy</button><span class="visually-hidden" role="status"></span></div>
 <pre tabindex="0" role="region" aria-label="CLI quick start commands"><code><span class="prompt">$</span> npm install -g mote-cli
 <span class="prompt">$</span> mote login
 <span class="prompt">$</span> mote README.md</code></pre>
-<p class="method-note">Log in to your Access-enabled Mote instance — it is remembered for future publishes. For other authentication modes, see the <a href="${DOCS}/authentication.md">authentication guide</a>.</p>
+</div>
+<p class="method-note">Log in to your Access-enabled Mote instance — it is remembered for future publishes. For other authentication modes, see the <a href="${DOCS}/authentication.md" target="_blank" rel="noopener noreferrer">authentication guide</a>.</p>
 </div>
 <div class="method">
 <div class="method-head"><span class="method-num">02</span><h3>MCP</h3><p class="method-desc">Connect your AI assistant. For example, with Codex:</p></div>
+<div class="command-box">
+<div class="command-toolbar"><button type="button" class="copy-button" data-copy-command aria-label="Copy MCP commands" hidden>Copy</button><span class="visually-hidden" role="status"></span></div>
 <pre tabindex="0" role="region" aria-label="Codex MCP setup commands"><code><span class="prompt">$</span> codex mcp add mote --url https://mote.flc.io/api/mcp
 <span class="prompt">$</span> codex mcp login mote</code></pre>
-<p class="method-note">Use your own instance URL. Setup, tools, and verified clients: <a href="${DOCS}/mcp.md">MCP guide</a>.</p>
+</div>
+<p class="method-note">Use your own instance URL. Setup, tools, and verified clients: <a href="${DOCS}/mcp.md" target="_blank" rel="noopener noreferrer">MCP guide</a>.</p>
 </div>
 <div class="method">
 <div class="method-head"><span class="method-num">03</span><h3>Skill</h3><p class="method-desc">Teach your agent when and how to publish.</p></div>
+<div class="command-box">
+<div class="command-toolbar"><button type="button" class="copy-button" data-copy-command aria-label="Copy Skill command" hidden>Copy</button><span class="visually-hidden" role="status"></span></div>
 <pre tabindex="0" role="region" aria-label="Skill installation command"><code><span class="prompt">$</span> npx skills add flc1125/mote --skill mote</code></pre>
-<p class="method-note">The skill uses your configured CLI or MCP tools; set up one of them first. See the <a href="${DOCS}/skill.md">Skill guide</a>.</p>
+</div>
+<p class="method-note">The skill uses your configured CLI or MCP tools; set up one of them first. See the <a href="${DOCS}/skill.md" target="_blank" rel="noopener noreferrer">Skill guide</a>.</p>
 </div>
 </section>
+<div class="stmt-band"><section class="section stmt" aria-labelledby="stmt-title">
+<h2 class="statement-line" id="stmt-title">Share a link.<br>Let them read.</h2>
+<div class="statement-sub">
+<p>Readers do not need to sign in.</p>
+<p>Anyone with the link can access the document, so share it only with your intended audience.</p>
+<p>Publishing requires authentication.</p>
+</div>
+</section></div>
 <div class="why-band"><section class="section why" aria-labelledby="why-title">
 <h2 class="section-title" id="why-title">Why Mote</h2>
 <ul class="words">
-<li class="word-row"><span class="word">Immutable</span><span class="word-note">Every publish creates a new URL; old links keep their content forever.</span></li>
-<li class="word-row"><span class="word">Self-contained</span><span class="word-note">Local images upload automatically, deduplicated, served from opaque URLs.</span></li>
-<li class="word-row"><span class="word">Instant</span><span class="word-note">Cloudflare Workers + R2 + CDN cache. No database to slow anything down.</span></li>
-<li class="word-row"><span class="word">Silent</span><span class="word-note">Published pages run zero JavaScript under a maximally strict CSP.</span></li>
-<li class="word-row"><span class="word">Agent-ready</span><span class="word-note">CLI <code>--json</code> output, remote and local MCP servers, and an agent Skill.</span></li>
+<li class="word-row"><span class="word">Immutable</span><span class="word-note">Every publish creates a new URL, so an existing link keeps pointing to the same version.</span></li>
+<li class="word-row"><span class="word">Self-contained</span><span class="word-note">Publish through the CLI or local MCP to upload local images alongside your Markdown.</span></li>
+<li class="word-row"><span class="word">Fast to open</span><span class="word-note">Static pages served through a CDN, ready to read in your browser.</span></li>
+<li class="word-row"><span class="word">No JavaScript</span><span class="word-note">Read the document and navigate its contents without running page scripts.</span></li>
+<li class="word-row"><span class="word">Agent-ready</span><span class="word-note">Publish from your terminal or AI assistant, with an optional Skill to guide your agent.</span></li>
 </ul>
 </section></div>
 <footer class="home-footer">
 <span class="footer-brand"><span class="footer-mark" aria-hidden="true"></span>Mote — Markdown in, URL out.</span>
 <span class="footer-group">
 <nav aria-label="Project links">
-<a href="${REPO}">GitHub</a>
-<a href="${DOCS}/cli.md">Docs</a>
-<a href="${REPO}/blob/main/LICENSE">MIT License</a>
+<a href="${REPO}" target="_blank" rel="noopener noreferrer">GitHub</a>
+<a href="${DOCS}/cli.md" target="_blank" rel="noopener noreferrer">Docs</a>
+<a href="${REPO}/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
 </nav>
 <span class="footer-divider" aria-hidden="true"></span>
-<span class="footer-by">Created by <a href="https://flc.io/">Flc</a></span>
+<span class="footer-by">Created by <a href="https://flc.io/" target="_blank" rel="noopener noreferrer">Flc</a></span>
 </span>
 </footer>
+<script>${HOME_SCRIPT}</script>
 </body>
 </html>
 `;
