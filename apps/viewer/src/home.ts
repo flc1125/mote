@@ -96,7 +96,8 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .stmt { position: relative; padding-top: 32px; padding-bottom: 32px; display: grid; grid-template-columns: 1fr 1.2fr; align-items: center; gap: 24px 48px; }
 .statement-line { font-size: clamp(28px, 3vw, 38px); line-height: 1.15; letter-spacing: -0.035em; font-weight: 750; margin: 0; color: #ffffff; }
 .statement-line .accent { color: rgb(255 255 255 / 0.55); }
-.statement-sub { font-size: 16px; line-height: 1.65; color: #ffffff; margin: 0; max-width: 56ch; }
+.statement-sub { display: grid; gap: 6px; min-width: 0; font-size: 16px; line-height: 1.65; color: #ffffff; }
+.statement-sub p { margin: 0; }
 
 .setup-note { margin: -12px 0 32px; max-width: 76ch; color: var(--mote-muted); }
 .method { padding: 28px 0; border-top: 1px solid var(--mote-border); }
@@ -215,7 +216,11 @@ ${LOGO_BLACK_SVG}
 </section>
 <div class="stmt-band"><section class="section stmt" aria-labelledby="stmt-title">
 <h2 class="statement-line" id="stmt-title">Share a link.<br>Let them read.</h2>
-<p class="statement-sub">Readers do not need to sign in. Anyone with the link can access the document, so share it only with your intended audience. Publishing requires authentication.</p>
+<div class="statement-sub">
+<p>Readers do not need to sign in.</p>
+<p>Anyone with the link can access the document, so share it only with your intended audience.</p>
+<p>Publishing requires authentication.</p>
+</div>
 </section></div>
 <div class="why-band"><section class="section why" aria-labelledby="why-title">
 <h2 class="section-title" id="why-title">Why Mote</h2>
