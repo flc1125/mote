@@ -1,11 +1,9 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">
-    <img src="docs/assets/logo.png" alt="Mote" width="240">
+    <img src="docs/assets/logo.png" alt="Mote" width="280">
   </picture>
 </p>
-
-<h1 align="center">Mote</h1>
 
 <p align="center">
   <strong>Markdown in, URL out.</strong><br>
