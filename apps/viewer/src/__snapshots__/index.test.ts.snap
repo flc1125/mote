@@ -159,9 +159,6 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 .statement-sub { font-size: 16px; line-height: 1.65; color: #ffffff; margin: 0; max-width: 56ch; }
 
 .setup-note { margin: -12px 0 32px; max-width: 76ch; color: var(--mote-muted); }
-.method.skill-addon { margin-top: 24px; padding: 24px; background: var(--mote-code-bg); border: 1px solid var(--mote-border); border-radius: 14px; }
-.skill-addon .method-head { margin-bottom: 12px; }
-.optional-label { color: var(--mote-muted); font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
 .method { padding: 28px 0; border-top: 1px solid var(--mote-border); }
 .method-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 18px; }
 .method-num { font-size: 34px; font-weight: 750; letter-spacing: -0.02em; line-height: 1; color: var(--mote-tint-border); }
@@ -208,7 +205,6 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
   .terminal pre { padding: 14px 16px; }
   .section { padding: 48px 20px; }
   .stmt { grid-template-columns: 1fr; gap: 14px; padding-top: 28px; padding-bottom: 28px; }
-  .method.skill-addon { padding: 20px 16px; }
   .word-row { grid-template-columns: 1fr; gap: 10px; }
   .word-note { justify-self: start; text-align: left; }
 }
@@ -283,8 +279,8 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 <span class="prompt">$</span> codex mcp login mote</code></pre>
 <p class="method-note">Use your own instance URL. Setup, tools, and verified clients: <a href="https://github.com/flc1125/mote/blob/main/docs/mcp.md">MCP guide</a>.</p>
 </div>
-<div class="method skill-addon">
-<div class="method-head"><span class="optional-label">Optional</span><h3>Skill</h3><p class="method-desc">Teach your agent when and how to publish.</p></div>
+<div class="method">
+<div class="method-head"><span class="method-num">03</span><h3>Skill</h3><p class="method-desc">Teach your agent when and how to publish.</p></div>
 <pre tabindex="0" role="region" aria-label="Skill installation command"><code><span class="prompt">$</span> npx skills add flc1125/mote --skill mote</code></pre>
 <p class="method-note">The skill uses your configured CLI or MCP tools; set up one of them first. See the <a href="https://github.com/flc1125/mote/blob/main/docs/skill.md">Skill guide</a>.</p>
 </div>

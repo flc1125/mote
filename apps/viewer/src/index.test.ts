@@ -149,7 +149,7 @@ describe('public homepage and branding', () => {
     expect(html).not.toContain('export MOTE_TOKEN');
     expect(html).toContain('<span class="method-num">01</span><h3>CLI</h3>');
     expect(html).toContain('<span class="method-num">02</span><h3>MCP</h3>');
-    expect(html).toContain('<span class="optional-label">Optional</span><h3>Skill</h3>');
+    expect(html).toContain('<span class="method-num">03</span><h3>Skill</h3>');
     expect(html).toContain(
       'href="https://github.com/flc1125/mote/blob/main/docs/mcp.md">MCP guide</a>',
     );
