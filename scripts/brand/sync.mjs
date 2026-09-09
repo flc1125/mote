@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, URL } from 'node:url';
 import { argv } from 'node:process';
 import { log } from 'node:console';
@@ -42,6 +42,23 @@ for (const output of outputs) {
       );
     }
   } else {
+    await writeFile(target, source);
+    log(`Updated ${fileURLToPath(target)}`);
+  }
+}
+
+// Skills are installed independently of the repository. Bundle their icons
+// locally while keeping docs/assets as the single source of brand artwork.
+for (const name of ['icon.png', 'icon.svg']) {
+  const path = `skills/mote/assets/${name}`;
+  const target = new URL(path, root);
+  const source = await read(name);
+  if (argv.includes('--check')) {
+    if (!(await readFile(target)).equals(source)) {
+      throw new Error(`Brand assets are out of sync: ${path}. Run node scripts/brand/sync.mjs`);
+    }
+  } else {
+    await mkdir(new URL('.', target), { recursive: true });
     await writeFile(target, source);
     log(`Updated ${fileURLToPath(target)}`);
   }

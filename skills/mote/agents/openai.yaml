@@ -1,0 +1,7 @@
+interface:
+  display_name: 'Mote'
+  short_description: 'Publish Markdown as a shareable web page'
+  icon_small: './assets/icon.png'
+  icon_large: './assets/icon.svg'
+  brand_color: '#EF5552'
+  default_prompt: 'Use $mote to publish this Markdown and return its shareable URL.'

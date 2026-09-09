@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 384" role="img" aria-label="Mote">
+  <g fill="#ef5552" transform="translate(-398 -184)">
+    <path fill-rule="evenodd" d="M415 361Q415 348 426 337L508 257Q517 248 530 248H594Q610 248 621 259L704 339Q714 349 714 363V483Q714 504 693 504H652V424C652 382 590 382 590 424V504H547V424C547 382 484 382 484 424V504H437Q415 504 415 482ZM438 351H495Q524 351 524 322V267Z"/>
+    <rect x="702" y="245" width="64" height="65" rx="12"/>
+  </g>
+</svg>
