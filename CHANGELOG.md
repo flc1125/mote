@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-09
+
+### Changed
+
+- Refined all four CLI login callback pages with clearer status messages, typography, and layout, and added navigation to the Mote homepage. ([#33](https://github.com/flc1125/mote/pull/33))
+- **Breaking:** moved the default production instance from `https://mote.flc.io` to `https://mote.pub`, including CLI defaults, callback homepage links, website examples, and remote MCP setup. Production Worker routes and Access hostname configuration use the new domain; the isolated test environment keeps its existing configuration. ([#34](https://github.com/flc1125/mote/pull/34))
+
+### Upgrade notes
+
+- Upgrade to `mote-cli@0.5.0`. Existing users of the default instance must run `mote login --api https://mote.pub --auth-mode oauth` and update any old `MOTE_API_URL` or explicit API configuration. Upgrading the CLI does not overwrite saved instance preferences or configuration; credentials are scoped to the API origin. ([#34](https://github.com/flc1125/mote/pull/34))
+- Set remote MCP clients to `https://mote.pub/api/mcp` and authorize them again. Local stdio MCP users should rebuild from this release, update any explicit API URL, and restart the server; the MCP workspace package remains private. ([#34](https://github.com/flc1125/mote/pull/34))
+- Existing documents remain available under the same IDs on the new domain. Old-domain redirects are temporary convenience for shared links, not a dependency for clients: CLI authentication and publishing do not follow redirects. Self-hosted instances retain their explicitly configured addresses. See the [authentication guide](https://github.com/flc1125/mote/blob/v0.5.0/docs/authentication.md) for migration details. ([#34](https://github.com/flc1125/mote/pull/34))
+- Stable tags publish the CLI package and GitHub Release only. Production API and Viewer deployments remain independent through Workers Builds on `main`. ([#34](https://github.com/flc1125/mote/pull/34))
+
 ## [0.4.0] - 2026-09-08
 
 ### Added
@@ -95,7 +109,8 @@ Published manually to npm without a matching Git tag or GitHub Release; v0.1.1 i
 - **Docs** — architecture, publish protocol, security model, self-hosting guide, CLI and MCP references (English + 中文) ([initial commit](https://github.com/flc1125/mote/commit/214ded08ef6f19483e8cba460ba268e756fe49d5); no PR)
 - **Infrastructure** — Cloudflare Workers + R2 only; Workers Cache with per-version cache namespaces; runs on the free tier ([initial commit](https://github.com/flc1125/mote/commit/214ded08ef6f19483e8cba460ba268e756fe49d5); no PR)
 
-[Unreleased]: https://github.com/flc1125/mote/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/flc1125/mote/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/flc1125/mote/releases/tag/v0.5.0
 [0.4.0]: https://github.com/flc1125/mote/releases/tag/v0.4.0
 [0.3.0]: https://github.com/flc1125/mote/releases/tag/v0.3.0
 [0.2.0]: https://github.com/flc1125/mote/releases/tag/v0.2.0
