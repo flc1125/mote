@@ -285,6 +285,7 @@ mark { background: var(--mote-tint); color: inherit; padding: 0.05em 0.2em; bord
 .diagram-scroll .mote-xychart-color-5 { --chart-color: #36a0b0; }
 .diagram-scroll .mote-xychart-color-6 { --chart-color: #c9759a; }
 .diagram-scroll .mote-xychart-color-7 { --chart-color: var(--mote-muted); }
+.diagram-scroll line[class*="mote-xychart-color-"] { stroke: var(--chart-color); }
 .diagram-scroll .mote-xychart-bar { stroke: var(--chart-color); fill: color-mix(in srgb, var(--mote-bg) 75%, var(--chart-color)); stroke-width: 1.5; }
 .diagram-scroll .mote-xychart-line, .diagram-scroll .mote-xychart-line-shadow { fill: none; stroke: var(--chart-color); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 .diagram-scroll .mote-xychart-line-shadow { stroke-width: 5; opacity: 0.12; }

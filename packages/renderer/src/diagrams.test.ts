@@ -2,6 +2,8 @@ import { Parser } from 'htmlparser2';
 import { describe, expect, it } from 'vitest';
 import { sanitizeDiagramSvg } from './diagram-svg.js';
 import { renderMarkdown } from './markdown.js';
+import { normalizeFlowchart } from './flowchart.js';
+import { parseMermaid } from 'beautiful-mermaid';
 
 const render = (source: string) => renderMarkdown(`~~~mermaid\n${source}\n~~~`, new Map()).html;
 const samples = [
@@ -19,6 +21,35 @@ const samples = [
   ],
 ];
 describe('static Mermaid subset', () => {
+  it.each(['-->', '-.->', '==>', '---', '<-->'])(
+    'keeps compact %s connections and chained nodes',
+    (edge) => {
+      const source = `flowchart LR; A${edge}B; B${edge}C`;
+      const graph = parseMermaid(normalizeFlowchart(source));
+      expect([...graph.nodes.keys()]).toEqual(['A', 'B', 'C']);
+      expect(graph.edges.map(({ source, target }) => [source, target])).toEqual([
+        ['A', 'B'],
+        ['B', 'C'],
+      ]);
+      const html = render(source);
+      expect(html).toContain('<svg');
+      expect(html).toContain('>C</text>');
+      expect(html).not.toContain('>A--</text>');
+    },
+  );
+  it('preserves labels, comments and hyphenated IDs while adapting syntax', () => {
+    const source =
+      'flowchart LR\n A-B["x-->y; z"]-->|pass; a-->b|C[Done]\n %% keep A-->B; unchanged';
+    const normalized = normalizeFlowchart(source);
+    expect(normalized).toContain('["x-->y; z"] -->|pass; a-->b|');
+    expect(normalized).toContain('%% keep A-->B; unchanged');
+    const graph = parseMermaid(normalized);
+    expect([...graph.nodes.keys()]).toEqual(['A-B', 'C']);
+    expect(graph.edges[0]?.label).toBe('pass; a-->b');
+    const html = render(source);
+    expect(html).toContain('x--&gt;y; z');
+    expect(html).toContain('pass; a--&gt;b');
+  });
   it.each(samples)('renders %s without external resources or scripts', (_name, source) => {
     const html = render(source!);
     expect(html).toContain('<svg');
@@ -45,6 +76,7 @@ describe('static Mermaid subset', () => {
     }).end(html);
     expect(ids.length).toBeGreaterThan(0);
     expect(new Set(ids).size).toBe(ids.length);
+    expect(references).toHaveLength(2);
     for (const ref of references) expect(ids).toContain(ref);
   });
   it.each([
@@ -73,6 +105,12 @@ describe('static Mermaid subset', () => {
       new Map(),
     ).html;
     expect(html.match(/<svg/g)).toHaveLength(4);
+  });
+  it('enforces the node limit at exactly 32 nodes, including implicit targets', () => {
+    const graph =
+      'flowchart TD\n' + Array.from({ length: 31 }, (_, i) => `A${i}-->A${i + 1}`).join('\n');
+    expect(render(graph)).toContain('<svg');
+    expect(render(graph + '\nA31-->A32')).not.toContain('<svg');
   });
   it('restores globals and renders a valid diagram after invalid input', () => {
     const globals = ['global', 'self', 'setTimeout'].map((key) =>

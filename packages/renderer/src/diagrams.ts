@@ -3,6 +3,7 @@ import type { MarkdownIt } from 'markdown-it';
 
 import { sanitizeDiagramSvg } from './diagram-svg.js';
 import { escapeHtml } from './escape.js';
+import { normalizeFlowchart } from './flowchart.js';
 
 /** ELK expects a Node-style global and briefly changes self/timers on init. */
 function renderSvg(source: string): string {
@@ -56,6 +57,7 @@ export function diagrams(md: MarkdownIt): void {
         .split('\n')
         .map((line) => line.trim())
         .find((line) => line && !line.startsWith('%%')) ?? '';
+    const layoutSource = /^(graph|flowchart)\s/.test(header) ? normalizeFlowchart(source) : source;
     if (
       !/^(?:graph\s|flowchart\s|stateDiagram(?:-v2)?\b|sequenceDiagram\b|classDiagram\b|erDiagram\b|xychart-beta\b)/.test(
         header,
@@ -78,7 +80,7 @@ export function diagrams(md: MarkdownIt): void {
     }
     try {
       if (/^(graph|flowchart|stateDiagram)/.test(header)) {
-        const graph = parseMermaid(source);
+        const graph = parseMermaid(layoutSource);
         if (
           graph.nodes.size === 0 ||
           graph.nodes.size > 32 ||
@@ -87,7 +89,7 @@ export function diagrams(md: MarkdownIt): void {
         )
           return fallback();
       }
-      const svg = sanitizeDiagramSvg(renderSvg(source), `mote-diagram:${count}:`);
+      const svg = sanitizeDiagramSvg(renderSvg(layoutSource), `mote-diagram:${count}:`);
       if (!svg) return fallback();
       return `<figure class="mermaid-diagram"><div class="diagram-scroll" role="region" aria-label="图表 / Diagram" tabindex="0">${svg}</div><details><summary>查看 Mermaid 源码</summary><pre><code class="language-mermaid">${escapeHtml(source)}</code></pre></details></figure>\n`;
     } catch {
