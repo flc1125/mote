@@ -100,6 +100,13 @@ npx skills add flc1125/mote
 
 Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [docs/skill.md](docs/skill.md)。
 
+## 📝 Markdown 支持
+
+支持表格、任务列表、脚注、GitHub 风格提示块、静态代码高亮、中文加粗兼容、
+数学公式和有明确边界的 Mermaid 图表。文档页面仍不运行 JavaScript。
+
+[兼容性说明与限制](docs/markdown.md) · [可发布的综合案例](docs/examples/markdown-compatibility.md)
+
 ## 🏠 自托管
 
 在 Cloudflare 免费额度内部署自己的实例：[docs/self-hosting.md](docs/self-hosting.md)。
@@ -114,10 +121,11 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [docs/skill.md](do
 | 图片数量       | ≤ 50                           |
 | 支持的图片格式 | png / jpeg / webp / gif / avif |
 
-不支持 SVG（Active Content 风险）。
+不支持上传 SVG 图片或直接嵌入 SVG；Mermaid 图表使用独立净化的静态生成 SVG。
 
 ## 📚 文档
 
+- [Markdown 兼容性](docs/markdown.md)
 - [CLI 参考](docs/cli.md)
 - [鉴权与迁移](docs/authentication.md)
 - [MCP 指南](docs/mcp.md)

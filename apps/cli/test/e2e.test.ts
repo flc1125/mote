@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -129,6 +130,28 @@ function assetPaths(html: string): string[] {
 }
 
 describe('E2E (§59)', () => {
+  it('publishes the committed mixed specimen with one deduplicated image and unchanged source', async () => {
+    const file = fileURLToPath(
+      new URL('../../../docs/examples/markdown-compatibility.md', import.meta.url),
+    );
+    const source = await readFile(file, 'utf8');
+    const { id } = await publishDoc(file);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const page = await view(`/${id}`);
+    expect(page.status).toBe(200);
+    expect(page.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+    const html = await page.text();
+    expect(html.match(/aria-label="Mermaid diagram"/g)).toHaveLength(4);
+    expect(html.match(/<math\b/g)).toHaveLength(6);
+    const paths = assetPaths(html);
+    expect(paths).toHaveLength(2);
+    expect(new Set(paths).size).toBe(1);
+    const image = await view(paths[0]!);
+    expect(image.status).toBe(200);
+    expect(new Uint8Array(await image.arrayBuffer())).toEqual(
+      new Uint8Array(await readFile(new URL('../../../docs/assets/logo.png', import.meta.url))),
+    );
+  });
   it('keeps stored front matter intact while rendering only the body with highlighted code', async () => {
     const source =
       '---\ntitle: Hidden metadata\ndescription: "![hidden](missing.png)"\n---\n# Body title\n\n![image](body.png)\n\n~~~js\nconst message = "<hello>";\n~~~';
