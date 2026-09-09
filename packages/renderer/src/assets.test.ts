@@ -50,6 +50,38 @@ describe('buildAssetUrlMap (§31)', () => {
 });
 
 describe('resolveAssetUrl', () => {
+  it('maps encoded and raw manifest references to the same canonical path', () => {
+    const map = buildAssetUrlMap(
+      {
+        ...manifest,
+        assets: [
+          {
+            ...manifest.assets[0]!,
+            references: ['图片/a (1).png', '%E5%9B%BE%E7%89%87/a%20(1).png'],
+          },
+        ],
+      },
+      DOCUMENT_ID,
+    );
+    for (const src of ['图片/a (1).png', '%E5%9B%BE%E7%89%87/a%20(1).png']) {
+      expect(resolveAssetUrl(src, map)).toBe(`/${DOCUMENT_ID}/a/Aq8K3pLm92Xq`);
+    }
+    expect(resolveAssetUrl('%2Fetc/passwd', map)).toBe(null);
+  });
+
+  it('keeps distinct legacy percent/space filenames mapped to their original assets', () => {
+    const first = { ...manifest.assets[0]!, references: ['a%20b.png'] };
+    const second = { ...manifest.assets[1]!, references: ['a b.png'] };
+    for (const assets of [
+      [first, second],
+      [second, first],
+    ]) {
+      const map = buildAssetUrlMap({ ...manifest, assets }, DOCUMENT_ID);
+      expect(resolveAssetUrl('a%20b.png', map)).toBe(`/${DOCUMENT_ID}/a/Aq8K3pLm92Xq`);
+      expect(resolveAssetUrl('a b.png', map)).toBe(`/${DOCUMENT_ID}/a/X92LmNa81Pq2`);
+    }
+  });
+
   const map = buildAssetUrlMap(manifest, DOCUMENT_ID);
 
   it('resolves local references in any equivalent spelling', () => {

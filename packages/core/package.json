@@ -8,5 +8,9 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "markdown-it": "^15.0.1",
+    "yaml": "^2.9.0"
   }
 }

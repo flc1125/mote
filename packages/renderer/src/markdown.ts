@@ -1,7 +1,14 @@
 import MarkdownIt from 'markdown-it';
 
+import { stripFrontMatter } from '@mote/core';
+
+import { alerts } from './alerts.js';
 import { resolveAssetUrl } from './assets.js';
+import { cjkEmphasis } from './cjk-emphasis.js';
+import { diagrams } from './diagrams.js';
 import { slugify, type Heading } from './headings.js';
+import { createCodeHighlighter } from './highlight.js';
+import { math } from './math.js';
 import { footnote, taskLists } from './plugins.js';
 import { createHtmlSanitizer } from './sanitize.js';
 import { safeImageUrl, safeLinkUrl } from './urls.js';
@@ -19,7 +26,8 @@ interface InlineTokenLike {
 
 /** Plain text of a heading's inline token, used for slugs and the TOC. */
 function inlineTextContent(token: InlineTokenLike): string {
-  if (token.type === 'text' || token.type === 'code_inline') return token.content;
+  if (token.type === 'text' || token.type === 'code_inline' || token.type === 'mote_math_inline')
+    return token.content;
   return (token.children ?? []).map((child) => inlineTextContent(child)).join('');
 }
 
@@ -43,10 +51,17 @@ export function renderMarkdown(
     linkify: true,
     breaks: false,
     typographer: false,
+    highlight: createCodeHighlighter(),
   });
 
+  md.use(cjkEmphasis);
+  md.use(alerts);
+  md.use(math);
+  md.use(diagrams);
   md.use(footnote);
-  md.use(taskLists, { enabled: false, label: true, labelAfter: true });
+  // Wrap the parsed inline tokens instead of labelAfter, which reinserts raw
+  // Markdown as label text and assigns random IDs to otherwise static output.
+  md.use(taskLists, { enabled: false, label: true, labelAfter: false });
 
   // The focusable wrapper lets keyboard users scroll wide Markdown tables
   // without compressing columns or widening the whole document.
@@ -151,6 +166,6 @@ export function renderMarkdown(
   };
 
   const env: { headings?: Heading[] } = {};
-  const html = md.render(markdown, env);
+  const html = md.render(stripFrontMatter(markdown), env);
   return { html, headings: env.headings ?? [] };
 }

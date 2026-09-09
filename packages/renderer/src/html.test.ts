@@ -9,6 +9,33 @@ function render(markdown: string, assets = NO_ASSETS): string {
 }
 
 describe('allowlisted raw HTML (§26)', () => {
+  it('keeps nested details and inline formatting balanced across token boundaries', () => {
+    const html = render(
+      '<details open><summary>Outer</summary>\n\n**说明：**H<sub>2</sub>O，<kbd>Ctrl</kbd>\n\n<details><summary>Inner</summary>\n\n- **项目：**正文\n\n</details>\n\nAfter\n\n</details>\n\nOutside',
+    );
+    expect(html).toMatch(/<details open>[\s\S]*<strong>说明：<\/strong>H<sub>2<\/sub>O/);
+    expect(html).toMatch(
+      /<details><summary>Inner<\/summary>\s*<ul>[\s\S]*<\/ul>\s*<\/details>\s*<p>After<\/p>\s*<\/details>\s*<p>Outside<\/p>/,
+    );
+  });
+
+  it('preserves HTML block boundaries instead of parsing code-like text inside them', () => {
+    const html = render('<div>\n**literal**\n</div>\n\n<div>\n\n**parsed**\n\n</div>');
+    expect(html).toContain('**literal**');
+    expect(html).toContain('<strong>parsed</strong>');
+  });
+
+  it('keeps HTML table spans and alignment while removing arbitrary styling', () => {
+    const html = render(
+      '<table><caption>Results</caption><tr><th align="center" colspan="2">Head</th></tr><tr><td rowspan="2">A</td><td align="right" style="color:red" class="custom">42</td></tr></table>',
+    );
+    expect(html).toContain('<th align="center" colspan="2">');
+    expect(html).toContain('<td rowspan="2">');
+    expect(html).toContain('<td align="right">42</td>');
+    expect(html).not.toContain('style=');
+    expect(html).not.toContain('class=');
+  });
+
   it('renders aligned paragraphs with a vetted align value', () => {
     expect(render('<p align="center">hi</p>')).toContain('<p align="center">hi</p>');
     // Unknown align values drop the attribute, not the tag.

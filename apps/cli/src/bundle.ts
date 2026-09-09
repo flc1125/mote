@@ -4,7 +4,7 @@ import { basename, dirname, resolve } from 'node:path';
 import {
   detectImageMimeType,
   MAX_MARKDOWN_BYTES,
-  normalizeRelativePath,
+  normalizeImageReference,
   sha256Hex,
   validateBundleSize,
 } from '@mote/core';
@@ -92,7 +92,7 @@ export async function buildBundle(
   // names is uploaded once; every reference spelling is recorded (§22).
   const byHash = new Map<string, CollectedAsset>();
   for (const reference of references) {
-    const absoluteAsset = resolve(dirname(absoluteMarkdown), normalizeRelativePath(reference));
+    const absoluteAsset = resolve(dirname(absoluteMarkdown), normalizeImageReference(reference));
 
     const assetStat = await stat(absoluteAsset).catch(() => null);
     if (assetStat === null) {

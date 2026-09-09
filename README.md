@@ -100,6 +100,14 @@ npx skills add flc1125/mote
 
 The skill drives the CLI or MCP tools — details: [docs/skill.md](docs/skill.md).
 
+## 📝 Markdown support
+
+Tables, task lists, footnotes, GitHub-style alerts, static code highlighting,
+Chinese emphasis compatibility, math formulas and a bounded Mermaid subset.
+Document pages remain script-free.
+
+[Compatibility reference and limits](docs/markdown.md) · [Publishable specimen](docs/examples/markdown-compatibility.md)
+
 ## 🏠 Self-hosting
 
 Run your own instance on Cloudflare's free tier: [docs/self-hosting.md](docs/self-hosting.md).
@@ -114,10 +122,12 @@ Run your own instance on Cloudflare's free tier: [docs/self-hosting.md](docs/sel
 | Images        | ≤ 50                           |
 | Image formats | png / jpeg / webp / gif / avif |
 
-SVG is not supported (active-content risk).
+Uploaded SVG images and raw HTML SVG are not supported. Static Mermaid diagrams
+use separately sanitized, generated SVG.
 
 ## 📚 Documentation
 
+- [Markdown compatibility](docs/markdown.md)
 - [CLI reference](docs/cli.md)
 - [Authentication and migration](docs/authentication.md)
 - [MCP guide](docs/mcp.md)

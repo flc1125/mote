@@ -13,7 +13,10 @@
     "@mote/core": "workspace:*",
     "@mote/protocol": "workspace:*",
     "@mote/theme": "workspace:*",
+    "beautiful-mermaid": "^1.1.3",
+    "highlight.js": "^11.12.0",
     "htmlparser2": "^12.0.0",
+    "katex": "^0.18.7",
     "markdown-it": "^15.0.1",
     "markdown-it-footnote": "^4.0.0",
     "markdown-it-task-lists": "^2.1.1"

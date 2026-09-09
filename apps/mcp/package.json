@@ -12,7 +12,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "esbuild src/mcp.ts --bundle --platform=node --format=esm --target=node20 --external:@napi-rs/keyring --outfile=dist/mcp.js",
+    "build": "node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },

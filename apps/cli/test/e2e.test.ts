@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -129,6 +130,71 @@ function assetPaths(html: string): string[] {
 }
 
 describe('E2E (§59)', () => {
+  it('publishes the committed mixed specimen with one deduplicated image and unchanged source', async () => {
+    const file = fileURLToPath(
+      new URL('../../../docs/examples/markdown-compatibility.md', import.meta.url),
+    );
+    const source = await readFile(file, 'utf8');
+    const { id } = await publishDoc(file);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const page = await view(`/${id}`);
+    expect(page.status).toBe(200);
+    expect(page.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+    const html = await page.text();
+    expect(html.match(/aria-label="Mermaid diagram"/g)).toHaveLength(4);
+    expect(html.match(/<math\b/g)).toHaveLength(6);
+    const paths = assetPaths(html);
+    expect(paths).toHaveLength(2);
+    expect(new Set(paths).size).toBe(1);
+    const image = await view(paths[0]!);
+    expect(image.status).toBe(200);
+    expect(new Uint8Array(await image.arrayBuffer())).toEqual(
+      new Uint8Array(await readFile(new URL('../../../docs/assets/logo.png', import.meta.url))),
+    );
+  });
+  it('keeps stored front matter intact while rendering only the body with highlighted code', async () => {
+    const source =
+      '---\ntitle: Hidden metadata\ndescription: "![hidden](missing.png)"\n---\n# Body title\n\n![image](body.png)\n\n~~~js\nconst message = "<hello>";\n~~~';
+    const doc = await makeDoc({ 'README.md': source, 'body.png': PNG });
+    const { id } = await publishDoc(doc);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const response = await view(`/${id}`);
+    expect(response.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+    const html = await response.text();
+    expect(html).toContain('<title>Body title</title>');
+    expect(html).not.toContain('Hidden metadata');
+    expect(html).not.toContain('missing.png');
+    expect(html).toContain('<span class="hljs-keyword">const</span>');
+    expect(html).toContain('&lt;hello&gt;');
+    const paths = assetPaths(html);
+    expect(paths).toHaveLength(1);
+    expect((await view(paths[0]!)).status).toBe(200);
+  });
+
+  it('publishes alert and details images with Unicode/space paths through CLI, API and Viewer', async () => {
+    const doc = await makeDoc({
+      'README.md':
+        '# Compatibility\n\n> [!NOTE]\n> **说明：**[![图][image]](https://example.com)\n\n[image]: <图片/a (1).png>\n\n<details><summary>More</summary>\n\n<p align="center"><picture><source srcset="%E5%9B%BE%E7%89%87/a%20(1).png 1x"><img src="图片/a (1).png" alt="raw"></picture></p>\n\n</details>',
+      '图片/a (1).png': PNG,
+    });
+    const { id } = await publishDoc(doc);
+    const page = await view(`/${id}`);
+    expect(page.status).toBe(200);
+    expect(page.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+    const html = await page.text();
+    expect(html).toContain('class="markdown-alert markdown-alert-note"');
+    expect(html).toContain('<strong>说明：</strong>');
+    const paths = assetPaths(html);
+    expect(paths).toHaveLength(2);
+    expect(new Set(paths).size).toBe(1);
+    expect(html).toContain(`srcset="${paths[0]} 1x"`);
+    expect(html).not.toContain('a%20(1).png');
+    expect(html).not.toContain('a (1).png');
+    const asset = await view(paths[0]!);
+    expect(asset.status).toBe(200);
+    expect(new Uint8Array(await asset.arrayBuffer())).toEqual(PNG);
+  });
+
   it('case 1: plain Markdown publishes and renders', async () => {
     const doc = await makeDoc({ 'README.md': '# Pure Markdown\n\nHello **world**.\n' });
     const { id } = await publishDoc(doc);
@@ -220,16 +286,8 @@ describe('E2E (§59)', () => {
 
 describe('M4 gate: built binary publishes end to end', () => {
   it('node dist/cli.js <file> --json completes publish -> view', async () => {
-    const { build } = await import('esbuild');
-    await build({
-      entryPoints: ['src/cli.ts'],
-      bundle: true,
-      external: ['@napi-rs/keyring'],
-      platform: 'node',
-      format: 'esm',
-      target: 'node20',
-      outfile: 'dist/cli.js',
-    });
+    // Exercise the shipped build configuration, including dependency interop.
+    await execFileAsync(process.execPath, ['scripts/build.mjs']);
 
     const doc = await makeDoc({
       'README.md': '# Binary E2E\n\n![demo](./demo.png)\n',
