@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { extractLocalImageReferences } from '../src/scanner.js';
 
 describe('extractLocalImageReferences (§22)', () => {
+  it('does not upload image-looking TeX or Mermaid source', () => {
+    const source =
+      '$\\text{![hidden](missing.png)}$\n\n\\[\n\\text{![hidden](also-missing.png)}\n\\]\n\n~~~mermaid\nflowchart LR\n A[![hidden](diagram.png)]\n~~~\n\n![visible](body.png)';
+    expect(extractLocalImageReferences(source)).toEqual(['body.png']);
+  });
   it('scans only the body after recognized front matter', () => {
     const source =
       '---\ntitle: Test\ndescription: \'![hidden](missing.png) <img src="also-missing.png">\'\n---\n![visible](body.png)';

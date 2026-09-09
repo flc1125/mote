@@ -42,6 +42,45 @@ async function seedBundle(): Promise<void> {
 beforeAll(seedBundle);
 
 describe('GET /{document-id}', () => {
+  it('renders static math and diagrams in the Worker without enabling scripts', async () => {
+    const id = 'Q9vLm2NkR7xB4PaS';
+    const source =
+      '# Static extensions\n\n$E=mc^2$\n\n~~~mermaid\nflowchart LR\n A-->B\n~~~\n\n~~~mermaid\nsequenceDiagram\n Alice->>Bob: Hello\n~~~';
+    await env.DOCUMENTS.put(`documents/${id}/document.md`, source);
+    await env.DOCUMENTS.put(
+      `documents/${id}/manifest.json`,
+      JSON.stringify({
+        ...MANIFEST,
+        id,
+        source: { ...MANIFEST.source, size: source.length },
+        assets: [],
+      }),
+    );
+    const globals = ['global', 'self', 'setTimeout'].map((key) =>
+      Object.getOwnPropertyDescriptor(globalThis, key),
+    );
+    let previous = '';
+    for (let attempt = 0; attempt < 2; attempt++) {
+      // Call the handler directly to exercise rendering again rather than a cache hit.
+      const response = await viewer.fetch(new Request(`http://localhost/${id}`), env);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+      const html = await response.text();
+      expect(html).toContain('<math');
+      expect(html.match(/aria-label="Mermaid diagram"/g)).toHaveLength(2);
+      expect(html).not.toContain('fonts.googleapis');
+      expect(html).not.toMatch(/<(?:script|foreignObject|image)\b/);
+      if (previous) expect(html).toBe(previous);
+      previous = html;
+    }
+    expect(
+      ['global', 'self', 'setTimeout'].map((key) =>
+        Object.getOwnPropertyDescriptor(globalThis, key),
+      ),
+    ).toEqual(globals);
+    expect(await (await env.DOCUMENTS.get(`documents/${id}/document.md`))?.text()).toBe(source);
+  });
+
   it('renders the document with security and cache headers (§33, §35)', async () => {
     const response = await workerFetch(`http://localhost/${ID}`);
     expect(response.status).toBe(200);

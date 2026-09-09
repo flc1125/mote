@@ -4,6 +4,7 @@ export * from './hash.js';
 export * from './id.js';
 export * from './image-reference.js';
 export * from './limits.js';
+export * from './math-syntax.js';
 export * from './mime.js';
 export * from './path.js';
 export * from './url.js';

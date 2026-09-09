@@ -39,7 +39,7 @@ describe('static code highlighting', () => {
     expect(textContent(highlighted)).toBe(code);
   });
 
-  it.each(['', 'text', 'plaintext', 'unknown', 'mermaid', 'constructor', '__proto__'])(
+  it.each(['', 'text', 'plaintext', 'unknown', 'constructor', '__proto__'])(
     'keeps %s as escaped plain code',
     (language) => {
       const { html } = renderMarkdown(

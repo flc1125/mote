@@ -1,7 +1,7 @@
 import { Parser } from 'htmlparser2';
 import MarkdownIt from 'markdown-it';
 
-import { isLocalReference, stripFrontMatter } from '@mote/core';
+import { isLocalReference, mathSyntax, stripFrontMatter } from '@mote/core';
 
 interface TokenLike {
   type: string;
@@ -13,6 +13,7 @@ interface TokenLike {
 // html: true so raw HTML surfaces as html_block / html_inline tokens
 // (with html: false it degrades to inert text and could not be scanned).
 const md = new MarkdownIt({ html: true, linkify: true, breaks: false, typographer: false });
+md.use(mathSyntax);
 
 function collect(url: string, into: string[], seen: Set<string>): void {
   if (url !== '' && isLocalReference(url) && !seen.has(url)) {

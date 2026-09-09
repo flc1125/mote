@@ -255,6 +255,43 @@ kbd {
 
 mark { background: var(--mote-tint); color: inherit; padding: 0.05em 0.2em; border-radius: 4px; }
 
+/* Static formulas and diagrams */
+.math-inline { display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: middle; }
+.math-display { overflow-x: auto; margin: 1.4em 0; padding: 0.5em 0; }
+.math-display math { min-width: max-content; }
+.mermaid-diagram { margin: 0 0 1.4em; }
+.mermaid-diagram figcaption { margin-bottom: 0.5em; color: var(--mote-muted); font-size: 0.85em; }
+.diagram-scroll { overflow: auto; max-height: 640px; padding: 0.5em; border: 1px solid var(--mote-border); border-radius: 10px; }
+.diagram-scroll svg {
+  display: block; margin: auto; max-width: 100%; height: auto;
+  --bg: var(--mote-bg); --fg: var(--mote-fg);
+  --_text: var(--mote-fg); --_text-sec: var(--mote-muted);
+  --_text-muted: var(--mote-muted); --_text-faint: var(--mote-muted);
+  --_line: var(--mote-muted); --_arrow: var(--mote-fg);
+  --_node-fill: var(--mote-pre-bg); --_node-stroke: var(--mote-border);
+  --_group-fill: var(--mote-bg); --_group-hdr: var(--mote-pre-bg);
+  --_inner-stroke: var(--mote-border); --_key-badge: var(--mote-pre-bg);
+}
+.diagram-scroll text, .diagram-scroll tspan { font-family: inherit; }
+@media (max-width: 600px) { .diagram-scroll svg { max-width: none; } }
+.diagram-scroll .mote-xychart-grid { fill: var(--mote-border); stroke: none; opacity: 0.65; }
+.diagram-scroll .mote-xychart-label, .diagram-scroll .mote-xychart-axis-title { fill: var(--mote-muted); }
+.diagram-scroll .mote-xychart-title { fill: var(--mote-fg); }
+.diagram-scroll .mote-xychart-color-0 { --chart-color: var(--mote-accent); }
+.diagram-scroll .mote-xychart-color-1 { --chart-color: #588ee6; }
+.diagram-scroll .mote-xychart-color-2 { --chart-color: #399e70; }
+.diagram-scroll .mote-xychart-color-3 { --chart-color: #a176ce; }
+.diagram-scroll .mote-xychart-color-4 { --chart-color: #cb9038; }
+.diagram-scroll .mote-xychart-color-5 { --chart-color: #36a0b0; }
+.diagram-scroll .mote-xychart-color-6 { --chart-color: #c9759a; }
+.diagram-scroll .mote-xychart-color-7 { --chart-color: var(--mote-muted); }
+.diagram-scroll .mote-xychart-bar { stroke: var(--chart-color); fill: color-mix(in srgb, var(--mote-bg) 75%, var(--chart-color)); stroke-width: 1.5; }
+.diagram-scroll .mote-xychart-line, .diagram-scroll .mote-xychart-line-shadow { fill: none; stroke: var(--chart-color); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.diagram-scroll .mote-xychart-line-shadow { stroke-width: 5; opacity: 0.12; }
+.diagram-scroll .mote-xychart-dot { fill: var(--chart-color); stroke: var(--mote-bg); stroke-width: 2; }
+.math-display:focus-visible, .diagram-scroll:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
+article .mermaid-diagram details { margin-top: 0.6em; font-size: 0.85em; }
+
 /* Content <details> blocks */
 article details {
   border: 1px solid var(--mote-border);
