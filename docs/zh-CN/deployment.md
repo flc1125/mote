@@ -15,6 +15,14 @@
 
 合并到 `main` 后，生产部署可能早于该提交的 push CI 完成。合并前应要求 PR 检查通过；GitHub 检查成功本身不代表部署成功。标签不部署 Worker，也不等待 Worker 上线。旧 GitHub Deploy 与诊断工作流已移除，不要重跑历史部署 job。
 
+## 生产域名切换
+
+生产使用 `mote.pub`，`access-test` 继续使用 `mote-test.flc.io`。仓库中的目标白名单按环境选择 DNS zone；Worker 名称、生产 R2 数据、Access issuer 和应用 AUD 保持不变。
+
+合并域名迁移前，准备 `mote.pub` 的代理 DNS 和有效边缘证书，确认两个 Workers Builds 凭据具有新 zone 的路由权限。协调合并与现有生产 Access 应用的三个目标替换：`mote.pub/api/mcp`、`mote.pub/api/v1/publish`、`mote.pub/api/auth/*`。保留发布者策略、Managed OAuth 和回环客户端设置。首页、文档和健康检查保持公开。
+
+本次切换接受短暂停机，不实现双域名运行。两个 Worker 部署完成后，验证新域名登录、发布、文档资源和远程 MCP；客户端需[切换地址并重新授权](../authentication.md#moving-to-motepub)，服务端部署不会更新已安装 CLI 的默认值。旧域名跳转如有保留，也只是随时可能取消的临时便利。故障恢复不应依赖旧域名：回退不兼容的业务变更时，保留新路由和 hostname 配置。
+
 ## Workers Builds 预期设置
 
 在每个 Worker 的**设置 → 构建**中核对以下生产设置。fork 必须换成自己的仓库、资源与身份配置。

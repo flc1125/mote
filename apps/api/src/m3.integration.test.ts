@@ -45,7 +45,7 @@ describe('M3 gate: API publish → Viewer render → asset', () => {
     );
     expect(publishResponse.status).toBe(201);
     const { id, url } = (await publishResponse.json()) as PublishResponse;
-    expect(url).toBe(`https://mote.flc.io/${id}`);
+    expect(url).toBe(`https://mote.pub/${id}`);
 
     // 2. Render through the Viewer worker against the same bucket.
     const pageResponse = await viewerWorker.fetch(new Request(`http://localhost/${id}`), env);

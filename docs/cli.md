@@ -43,14 +43,14 @@ Other settings: CLI arguments > environment variables > config file > defaults
 
 | Setting        | CLI argument         | Environment variable         | Config file key             | Default                                     |
 | -------------- | -------------------- | ---------------------------- | --------------------------- | ------------------------------------------- |
-| API URL        | `--api <url>`        | `MOTE_API_URL`               | `apiUrl`                    | `https://mote.flc.io`                       |
+| API URL        | `--api <url>`        | `MOTE_API_URL`               | `apiUrl`                    | `https://mote.pub`                          |
 | Token          | `--token <token>`    | `MOTE_TOKEN`                 | `token`                     | —                                           |
 | Auth mode      | `--auth-mode <mode>` | `MOTE_AUTH_MODE`             | `authMode`                  | OAuth profile if present; otherwise `token` |
 | Service target | —                    | `MOTE_SERVICE_API_URL`       | `serviceToken.apiUrl`       | —                                           |
 | Service ID     | —                    | `MOTE_SERVICE_CLIENT_ID`     | `serviceToken.clientId`     | —                                           |
 | Service secret | —                    | `MOTE_SERVICE_CLIENT_SECRET` | `serviceToken.clientSecret` | —                                           |
 
-Config file location: `$XDG_CONFIG_HOME/mote/config.json` (usually `~/.config/mote/config.json`). This example targets your own token-mode instance; replace the host. Production `mote.flc.io` requires Access authentication:
+Config file location: `$XDG_CONFIG_HOME/mote/config.json` (usually `~/.config/mote/config.json`). This example targets your own token-mode instance; replace the host. Production `mote.pub` requires Access authentication:
 
 ```json
 {

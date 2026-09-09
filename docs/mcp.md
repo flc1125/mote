@@ -4,12 +4,12 @@ Mote offers two MCP integrations with the same goal: publish Markdown → get a 
 
 |          | Remote MCP                                            | Local MCP (stdio)                                            |
 | -------- | ----------------------------------------------------- | ------------------------------------------------------------ |
-| Endpoint | `POST https://mote.flc.io/api/mcp`                    | `mote-mcp` process (stdio)                                   |
+| Endpoint | `POST https://mote.pub/api/mcp`                       | `mote-mcp` process (stdio)                                   |
 | Tool     | `publish_markdown`                                    | `publish_markdown`, `publish_markdown_file`                  |
 | Auth     | OAuth for Access; static Bearer for token deployments | Mote CLI OAuth store, explicit service mode, or static token |
 | Verified | Codex 0.153.4 app-server on macOS                     | Actual stdio process on macOS                                |
 
-OAuth/service support requires the v0.2.0 source revision or later compatible builds; the CLI credential flow requires mote-cli v0.2.0, not v0.1.1. Production `mote.flc.io` uses Access. Compatibility is limited to the verified clients/platforms above; see [authentication and migration](authentication.md) for setup and validation limits.
+OAuth/service support requires the v0.2.0 source revision or later compatible builds; the CLI credential flow requires mote-cli v0.2.0, not v0.1.1. Production `mote.pub` uses Access. Compatibility is limited to the verified clients/platforms above; see [authentication and migration](authentication.md) for setup and validation limits.
 
 ## Remote MCP
 

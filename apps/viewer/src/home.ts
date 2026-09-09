@@ -6,7 +6,7 @@ import { HOME_SCRIPT } from './home-script.js';
 const REPO = 'https://github.com/flc1125/mote';
 const DOCS = `${REPO}/blob/main/docs`;
 // Published showcase; editable source lives in docs/examples/weekly-report.md.
-const SAMPLE_URL = 'https://mote.flc.io/MxNfTmvTNxMnrbkU';
+const SAMPLE_URL = 'https://mote.pub/MxNfTmvTNxMnrbkU';
 
 // Static content only: never interpolate request data or published document IDs.
 export const HOME_HTML = `<!doctype html>
@@ -226,7 +226,7 @@ ${LOGO_BLACK_SVG}
 <div class="method-head"><span class="method-num">02</span><h3>MCP</h3><p class="method-desc">Connect your AI assistant. For example, with Codex:</p></div>
 <div class="command-box">
 <div class="command-toolbar"><button type="button" class="copy-button" data-copy-command aria-label="Copy MCP commands" hidden>Copy</button><span class="visually-hidden" role="status"></span></div>
-<pre tabindex="0" role="region" aria-label="Codex MCP setup commands"><code><span class="prompt" aria-hidden="true"></span>codex mcp add mote --url https://mote.flc.io/api/mcp
+<pre tabindex="0" role="region" aria-label="Codex MCP setup commands"><code><span class="prompt" aria-hidden="true"></span>codex mcp add mote --url https://mote.pub/api/mcp
 <span class="prompt" aria-hidden="true"></span>codex mcp login mote</code></pre>
 </div>
 <p class="method-note">Use your own instance URL. Setup, tools, and verified clients: <a href="${DOCS}/mcp.md" target="_blank" rel="noopener noreferrer">MCP guide</a>.</p>

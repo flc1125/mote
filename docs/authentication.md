@@ -1,6 +1,17 @@
 # Authentication and migration
 
-This guide covers **mote-cli v0.2.0 and the matching server/source revision**; v0.1.1 does not include OAuth/service client commands. Examples use your own Access-enabled instance. Production `mote.flc.io` uses Cloudflare Access and permits only approved publishers.
+This guide covers **mote-cli v0.2.0 and the matching server/source revision**; v0.1.1 does not include OAuth/service client commands. Examples use your own Access-enabled instance. Production `mote.pub` uses Cloudflare Access and permits only approved publishers.
+
+## Moving to mote.pub
+
+The default production origin is now `https://mote.pub`. Existing saved instances and explicit environment/configuration values are not rewritten when upgrading. Update any old `MOTE_API_URL` or `apiUrl` value, then log in to the new origin:
+
+```bash
+mote login --api https://mote.pub --auth-mode oauth
+mote auth status --api https://mote.pub --json
+```
+
+Remote MCP clients must use `https://mote.pub/api/mcp` and authorize that connection separately. Local stdio clients must also update any pinned API origin and restart their process. Service clients must update both their API origin and `MOTE_SERVICE_API_URL` (or `serviceToken.apiUrl`). Do not copy credentials between origins or rely on redirects: OAuth discovery and publication reject redirects. Old-domain availability is not guaranteed; use new-domain document links directly.
 
 ## Choose a mode
 
@@ -44,7 +55,7 @@ Verified compatibility is limited to macOS CLI/stdio and Codex CLI 0.153.4's app
 
 ## Configuration selection
 
-The API URL resolves as flags → environment → config file → remembered instance → `https://mote.flc.io`. Static token and explicit auth mode keep flags → environment → config file precedence. Login stores only the non-secret default origin in `auth/default-api.json`; it does not rewrite `config.json`. A one-off `--api` override does not change this preference, and logout does not clear it. Auth mode is chosen separately from the presence of credentials:
+The API URL resolves as flags → environment → config file → remembered instance → `https://mote.pub`. Static token and explicit auth mode keep flags → environment → config file precedence. Login stores only the non-secret default origin in `auth/default-api.json`; it does not rewrite `config.json`. A one-off `--api` override does not change this preference, and logout does not clear it. Auth mode is chosen separately from the presence of credentials:
 
 1. Explicit `--auth-mode`, `MOTE_AUTH_MODE`, or `authMode` wins.
 2. Otherwise, an existing OAuth profile for this target selects OAuth, including its logged-out marker.

@@ -79,4 +79,4 @@ The source is ordinary Markdown with a small amount of presentational HTML for t
 
 ---
 
-Want to share a document like this? Start with the [Mote documentation](https://github.com/flc1125/mote/blob/main/docs/cli.md), or return to the [homepage](https://mote.flc.io/).
+Want to share a document like this? Start with the [Mote documentation](https://github.com/flc1125/mote/blob/main/docs/cli.md), or return to the [homepage](https://mote.pub/).

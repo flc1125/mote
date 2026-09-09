@@ -21,14 +21,14 @@ describe('publishMarkdown', () => {
       publishBundle: async (options, bundle) => {
         seenOptions = options;
         seenBundle = bundle;
-        return { id: '7Vk3mQ9x2NFaP4Ls', url: 'https://mote.flc.io/7Vk3mQ9x2NFaP4Ls' };
+        return { id: '7Vk3mQ9x2NFaP4Ls', url: 'https://mote.pub/7Vk3mQ9x2NFaP4Ls' };
       },
       resolveConfig: async () => ({ apiUrl: API_URL, token: TOKEN, authMode: 'token' }),
     };
 
     const result = await publishMarkdown('# Hello', 'report.md', deps);
 
-    expect(result).toEqual({ id: '7Vk3mQ9x2NFaP4Ls', url: 'https://mote.flc.io/7Vk3mQ9x2NFaP4Ls' });
+    expect(result).toEqual({ id: '7Vk3mQ9x2NFaP4Ls', url: 'https://mote.pub/7Vk3mQ9x2NFaP4Ls' });
     expect(seenOptions?.apiUrl).toBe(API_URL);
     expect(seenOptions?.headers).toEqual({ Authorization: `Bearer ${TOKEN}` });
     expect(seenOptions?.authMode).toBe('token');
@@ -108,7 +108,7 @@ describe('publishMarkdownFile', () => {
         seenNoAssets = options?.noAssets === true;
         return bundle;
       },
-      publishBundle: async () => ({ id: 'abc123', url: 'https://mote.flc.io/abc123' }),
+      publishBundle: async () => ({ id: 'abc123', url: 'https://mote.pub/abc123' }),
       resolveConfig: async () => ({ apiUrl: API_URL, token: TOKEN, authMode: 'token' }),
     };
 
@@ -118,7 +118,7 @@ describe('publishMarkdownFile', () => {
     expect(seenNoAssets).toBe(true);
     expect(result).toEqual({
       id: 'abc123',
-      url: 'https://mote.flc.io/abc123',
+      url: 'https://mote.pub/abc123',
       markdownBytes: markdownBytes.length,
       assetCount: 1,
       totalBytes: bundle.totalBytes,

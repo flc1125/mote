@@ -7,10 +7,9 @@ main = "src/index.ts"
 compatibility_date = "2026-08-15"
 
 # Path-based routing: the API Worker owns the more specific
-# mote.flc.io/api/* route, everything else on the host lands here.
-# NOTE: must stay a route pattern, NOT a Custom Domain — a Custom Domain on
-# mote.flc.io would shadow the API Worker's route on the same host.
-routes = [{ pattern = "mote.flc.io/*", zone_name = "flc.io" }]
+# mote.pub/api/* route, everything else on the host lands here.
+# Keep both Workers on Routes with proxied DNS for this deployment.
+routes = [{ pattern = "mote.pub/*", zone_name = "mote.pub" }]
 
 # Workers Cache: cache HIT requests are served before the Worker executes
 # (baseline §35, §53). cross_version_cache intentionally NOT set: the Worker

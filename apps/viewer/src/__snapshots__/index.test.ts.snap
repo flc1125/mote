@@ -269,11 +269,11 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 <section class="hero" aria-labelledby="intro">
 <p class="hero-eyebrow">Markdown publishing</p>
 <h1 id="intro">Markdown in.<br><span class="grad">URL out.</span></h1>
-<p class="hero-sub">Publish a local Markdown file as an immutable, browser-readable page. The link is the credential — <a href="https://mote.flc.io/MxNfTmvTNxMnrbkU" target="_blank" rel="noopener noreferrer" aria-label="see a live demo (opens in a new tab)">see a live demo</a>.</p>
+<p class="hero-sub">Publish a local Markdown file as an immutable, browser-readable page. The link is the credential — <a href="https://mote.pub/MxNfTmvTNxMnrbkU" target="_blank" rel="noopener noreferrer" aria-label="see a live demo (opens in a new tab)">see a live demo</a>.</p>
 <p class="hero-actions"><a class="button button-primary" href="#use">Get started</a><a class="button button-ghost" href="https://github.com/flc1125/mote" target="_blank" rel="noopener noreferrer">GitHub</a></p>
 <div class="terminal">
 <div class="terminal-bar" aria-hidden="true"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span></div>
-<pre tabindex="0" role="region" aria-label="Publishing a document with the Mote CLI"><code><span class="row"><span class="prompt">$</span> <span class="type">mote README.md</span><span class="cursor" aria-hidden="true"></span></span><span class="fade l1 dim">Scanning README.md…</span><span class="fade l2 dim">Markdown 47.1 KB · Assets 3 · Total 1.84 MB</span><span class="fade l3">Published:</span><span class="fade l4"><a href="https://mote.flc.io/MxNfTmvTNxMnrbkU" target="_blank" rel="noopener noreferrer">https://mote.flc.io/MxNfTmvTNxMnrbkU</a></span></code></pre>
+<pre tabindex="0" role="region" aria-label="Publishing a document with the Mote CLI"><code><span class="row"><span class="prompt">$</span> <span class="type">mote README.md</span><span class="cursor" aria-hidden="true"></span></span><span class="fade l1 dim">Scanning README.md…</span><span class="fade l2 dim">Markdown 47.1 KB · Assets 3 · Total 1.84 MB</span><span class="fade l3">Published:</span><span class="fade l4"><a href="https://mote.pub/MxNfTmvTNxMnrbkU" target="_blank" rel="noopener noreferrer">https://mote.pub/MxNfTmvTNxMnrbkU</a></span></code></pre>
 </div>
 </section>
 </main>
@@ -297,7 +297,7 @@ code { background: var(--mote-code-bg); padding: 0.15em 0.35em; border-radius: 6
 <div class="method-head"><span class="method-num">02</span><h3>MCP</h3><p class="method-desc">Connect your AI assistant. For example, with Codex:</p></div>
 <div class="command-box">
 <div class="command-toolbar"><button type="button" class="copy-button" data-copy-command aria-label="Copy MCP commands" hidden>Copy</button><span class="visually-hidden" role="status"></span></div>
-<pre tabindex="0" role="region" aria-label="Codex MCP setup commands"><code><span class="prompt" aria-hidden="true"></span>codex mcp add mote --url https://mote.flc.io/api/mcp
+<pre tabindex="0" role="region" aria-label="Codex MCP setup commands"><code><span class="prompt" aria-hidden="true"></span>codex mcp add mote --url https://mote.pub/api/mcp
 <span class="prompt" aria-hidden="true"></span>codex mcp login mote</code></pre>
 </div>
 <p class="method-note">Use your own instance URL. Setup, tools, and verified clients: <a href="https://github.com/flc1125/mote/blob/main/docs/mcp.md" target="_blank" rel="noopener noreferrer">MCP guide</a>.</p>

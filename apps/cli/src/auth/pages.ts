@@ -64,7 +64,7 @@ function callbackPage({ title, heading, detail, lead, hint, tone }: CallbackPage
 ${detail ? `<p class="detail">${detail}</p>` : ''}
 <p class="lead">${lead}</p>
 <p class="hint">${hint}</p>
-<p class="home-link"><a href="https://mote.flc.io/" target="_blank" rel="noopener noreferrer" aria-label="Visit Mote homepage (opens in a new tab)">Visit Mote homepage</a></p>
+<p class="home-link"><a href="https://mote.pub/" target="_blank" rel="noopener noreferrer" aria-label="Visit Mote homepage (opens in a new tab)">Visit Mote homepage</a></p>
 </main>
 </body>
 </html>

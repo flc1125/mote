@@ -18,7 +18,7 @@ Mote 完全运行在 Cloudflare 上，由两个职责分离的 Worker 与一个 
           │                                   │
           ▼                                   ▼
 
-          ┌──────────── https://mote.flc.io ────────────┐
+          ┌──────────── https://mote.pub ────────────┐
           │                                             │
    route: /api/*                                 route: /*
   (最具体优先)                                    (其余全部)
@@ -41,7 +41,7 @@ V1 不引入：数据库、KV、D1、Durable Object、Queue、独立服务器。
 
 Access 发布鉴权链路：CLI/远程 MCP → Cloudflare Access 校验 OAuth 或机器双凭据 → API Worker 校验签名断言 → 发布管线。读取侧不变。未指定模式时保留 `token` 回退，仓库生产部署配置显式选择 Access；客户端版本要求、模式选择与凭据存储见[鉴权指南](authentication.md)。
 
-发布端点：`POST https://mote.flc.io/api/v1/publish`。两个 Worker 通过 Cloudflare Routes 共用同一域名，按路径前缀分流（最具体路由优先）；不使用 Custom Domain 绑定（它会覆盖同主机名的路由）。
+发布端点：`POST https://mote.pub/api/v1/publish`。两个 Worker 通过 Cloudflare Routes 共用同一域名，按路径前缀分流（最具体路由优先）；本部署为两个 Worker 使用 Routes 和代理 DNS。
 
 ## 核心原则
 
@@ -55,10 +55,10 @@ The CDN is the materialized view.  → 渲染结果由 CDN 长缓存
 
 ## Worker 划分
 
-| Worker        | 路由                | 职责                                                                                        | 访问                                                      |
-| ------------- | ------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `mote-viewer` | `mote.flc.io/*`     | `GET/HEAD /{document-id}`、`GET/HEAD /{document-id}/a/{asset-id}`、`/robots.txt`、`/health` | 匿名只读，启用 Workers Cache                              |
-| `mote-api`    | `mote.flc.io/api/*` | REST 发布、远程 MCP、身份查询及健康检查                                                     | 部署选择 token / cloudflare-access；健康检查公开；可写 R2 |
+| Worker        | 路由             | 职责                                                                                        | 访问                                                      |
+| ------------- | ---------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `mote-viewer` | `mote.pub/*`     | `GET/HEAD /{document-id}`、`GET/HEAD /{document-id}/a/{asset-id}`、`/robots.txt`、`/health` | 匿名只读，启用 Workers Cache                              |
+| `mote-api`    | `mote.pub/api/*` | REST 发布、远程 MCP、身份查询及健康检查                                                     | 部署选择 token / cloudflare-access；健康检查公开；可写 R2 |
 
 两者绑定同一个 R2 Bucket `mote-documents`。
 

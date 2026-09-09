@@ -1,22 +1,23 @@
 {
   "accountId": "c585cb4fcca22909dbaae2e3072a7a8b",
-  "zoneName": "flc.io",
   "compatibilityDate": "2026-08-15",
   "issuer": "https://flc1125.cloudflareaccess.com",
   "environments": {
     "production": {
-      "hostname": "mote.flc.io",
+      "hostname": "mote.pub",
       "api": "mote-api",
       "viewer": "mote-viewer",
       "bucket": "mote-documents",
-      "aud": "d3f4ebddb8b5bb4e6c25da00efcfc4c1f33e7055e9454c2a3e39707fef8e131c"
+      "aud": "d3f4ebddb8b5bb4e6c25da00efcfc4c1f33e7055e9454c2a3e39707fef8e131c",
+      "zoneName": "mote.pub"
     },
     "access-test": {
       "hostname": "mote-test.flc.io",
       "api": "mote-test-api",
       "viewer": "mote-test-viewer",
       "bucket": "mote-test-documents",
-      "aud": "d4a8fb385f160677a736f54466c781d99b4806ae6b85d7d752c27ceda51ab859"
+      "aud": "d4a8fb385f160677a736f54466c781d99b4806ae6b85d7d752c27ceda51ab859",
+      "zoneName": "flc.io"
     }
   }
 }

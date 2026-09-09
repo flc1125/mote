@@ -15,6 +15,14 @@ This guide is for maintainers of production Workers connected to Cloudflare Work
 
 Merging to `main` can deploy production before its push CI finishes. Require successful PR checks before merging; a green GitHub check alone does not prove deployment success. Tags do not deploy Workers or wait for a Worker rollout. The old GitHub Deploy and diagnostic workflows have been removed; do not rerun historical deployment jobs.
 
+## Production domain cutover
+
+Production uses `mote.pub`; `access-test` remains on `mote-test.flc.io`. The checked-in target allowlist selects the DNS zone per environment. Worker names, production R2 data, the Access issuer and application AUD stay unchanged.
+
+Before merging the domain migration, prepare proxied DNS and a valid edge certificate for `mote.pub`, and verify that both Workers Builds credentials can manage routes in that zone. Coordinate the merge with replacing the existing production Access application's three public targets: `mote.pub/api/mcp`, `mote.pub/api/v1/publish` and `mote.pub/api/auth/*`. Preserve publisher policies, Managed OAuth and loopback client settings. The homepage, documents and health endpoints remain public.
+
+This cutover accepts a short maintenance window instead of dual-host operation. Verify both Worker deployments and new-origin login, publication, document assets and remote MCP before declaring success. Current clients must [switch origin and reauthorize](authentication.md#moving-to-motepub); server deployment does not update installed CLI defaults. Old-domain redirects, if present, are temporary and may disappear at any time. Recovery must not depend on that host: preserve the new routes and hostname settings when rolling back incompatible application changes.
+
 ## Expected Workers Builds settings
 
 In each Worker's **Settings → Build**, review these production settings. Forks must substitute their own repository, resources and identity configuration.

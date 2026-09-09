@@ -38,7 +38,7 @@ export function expectedConfig(component, environment) {
     routes: [
       {
         pattern: `${target.hostname}/${component === 'api' ? 'api/*' : '*'}`,
-        zone_name: targets.zoneName,
+        zone_name: target.zoneName,
       },
     ],
     ...(component === 'viewer'

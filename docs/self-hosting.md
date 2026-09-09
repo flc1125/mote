@@ -66,7 +66,7 @@ VIEWER_BASE_URL = "https://<your-domain>"
 MOTE_AUTH_MODE = "token"
 ```
 
-`<your-zone>` is the zone name of your domain (e.g. `example.com`). Both Workers share one host: the API owns `/api/*`, everything else goes to the viewer (most specific route wins). Do **not** use a Custom Domain for the viewer — it would shadow the `/api/*` route.
+`<your-zone>` is the zone name of your domain (e.g. `example.com`). Both Workers share one host: the API owns `/api/*`, everything else goes to the viewer (most specific route wins). This deployment uses Routes for both Workers with proxied DNS. Cloudflare Routes take precedence over Custom Domains on the same hostname.
 
 > Token-only staging can use `workers_dev = true` without routes. **Do not do this in Access mode**: use a protected custom hostname and disable both workers.dev and preview URLs. The API rejects alternate hosts in Access mode.
 

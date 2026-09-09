@@ -21,6 +21,7 @@ afterEach(async () => {
 describe('resolveConfig priority (§21)', () => {
   it('falls back to defaults when nothing is configured', async () => {
     const config = await resolveConfig({ env: {}, configPath });
+    expect(DEFAULT_API_URL).toBe('https://mote.pub');
     expect(config.apiUrl).toBe(DEFAULT_API_URL);
     expect(config.token).toBeUndefined();
   });

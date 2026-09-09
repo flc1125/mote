@@ -22,7 +22,7 @@
 
 <p align="center">
   <a href="#-快速开始">快速开始</a> •
-  <a href="https://mote.flc.io/MxNfTmvTNxMnrbkU">在线示例</a> •
+  <a href="https://mote.pub/MxNfTmvTNxMnrbkU">在线示例</a> •
   <a href="docs/self-hosting.md">自托管</a> •
   <a href="README.md">English</a>
 </p>
@@ -55,9 +55,9 @@ Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
-<sub>在线示例 → [包含图片、表格与代码的项目周报](https://mote.flc.io/MxNfTmvTNxMnrbkU) · [Markdown 源文件](docs/examples/weekly-report.md)</sub>
+<sub>在线示例 → [包含图片、表格与代码的项目周报](https://mote.pub/MxNfTmvTNxMnrbkU) · [Markdown 源文件](docs/examples/weekly-report.md)</sub>
 
-默认实例 `https://mote.flc.io` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。详见[鉴权指南](docs/authentication.md)。
+默认实例 `https://mote.pub` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。详见[鉴权指南](docs/authentication.md)。
 
 > **注意**——浏览器登录和 Service Token 鉴权需要 **mote-cli ≥ 0.2.0**。完整参数（`--json`、`--no-assets`、`--api`、`--token` 等）、配置文件与脚本用法见 [docs/cli.md](docs/cli.md)。
 
@@ -82,7 +82,7 @@ cd apps/cli && npm install -g .
   "mcpServers": {
     "mote": {
       "type": "http",
-      "url": "https://mote.flc.io/api/mcp"
+      "url": "https://mote.pub/api/mcp"
     }
   }
 }
