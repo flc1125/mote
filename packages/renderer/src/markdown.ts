@@ -1,6 +1,7 @@
 import MarkdownIt from 'markdown-it';
 
 import { resolveAssetUrl } from './assets.js';
+import { cjkEmphasis } from './cjk-emphasis.js';
 import { slugify, type Heading } from './headings.js';
 import { footnote, taskLists } from './plugins.js';
 import { createHtmlSanitizer } from './sanitize.js';
@@ -45,8 +46,11 @@ export function renderMarkdown(
     typographer: false,
   });
 
+  md.use(cjkEmphasis);
   md.use(footnote);
-  md.use(taskLists, { enabled: false, label: true, labelAfter: true });
+  // Wrap the parsed inline tokens instead of labelAfter, which reinserts raw
+  // Markdown as label text and assigns random IDs to otherwise static output.
+  md.use(taskLists, { enabled: false, label: true, labelAfter: false });
 
   // The focusable wrapper lets keyboard users scroll wide Markdown tables
   // without compressing columns or widening the whole document.

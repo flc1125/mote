@@ -1,0 +1,30 @@
+[
+  { "source": "**解读：**后续正文", "html": "<strong>解读：</strong>后续正文" },
+  {
+    "source": "**阅读提示：**ChatGPT 是产品入口。",
+    "html": "<strong>阅读提示：</strong>ChatGPT 是产品入口。"
+  },
+  { "source": "**一句话。**下一句。", "html": "<strong>一句话。</strong>下一句。" },
+  { "source": "前文**“重点”**后文", "html": "前文<strong>“重点”</strong>后文" },
+  { "source": "前文**（重点）**后文", "html": "前文<strong>（重点）</strong>后文" },
+  { "source": "前文**「重点」**后文", "html": "前文<strong>「重点」</strong>后文" },
+  { "source": "**说明:**中文正文", "html": "<strong>说明:</strong>中文正文" },
+  { "source": "前文**(重点)**后文", "html": "前文<strong>(重点)</strong>后文" },
+  { "source": "**说明:**𠮷", "html": "<strong>说明:</strong>𠮷" },
+  { "source": "𠮷**(重点)**正文", "html": "𠮷<strong>(重点)</strong>正文" },
+  {
+    "source": "**建议：**执行；**注意：**检查。",
+    "html": "<strong>建议：</strong>执行；<strong>注意：</strong>检查。"
+  },
+  {
+    "source": "**建议：**中文 **普通加粗**",
+    "html": "<strong>建议：</strong>中文 <strong>普通加粗</strong>"
+  },
+  { "source": "**包含 *斜体*：**正文", "html": "<strong>包含 <em>斜体</em>：</strong>正文" },
+  { "source": "***重点：***正文", "html": "<em><strong>重点：</strong></em>正文" },
+  { "source": "**使用 `code`：**正文", "html": "<strong>使用 <code>code</code>：</strong>正文" },
+  {
+    "source": "[**说明：**文档](https://example.com)",
+    "html": "<a href=\"https://example.com\"><strong>说明：</strong>文档</a>"
+  }
+]
