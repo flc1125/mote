@@ -337,7 +337,7 @@ describe('OAuth protocol', () => {
       deniedUrl.searchParams.set('error', 'access_denied');
       const response = await fetch(deniedUrl);
       expect(response.status).toBe(400);
-      expect(await response.text()).toContain('Authorization was not completed.');
+      expect(await response.text()).toContain('Authorization not completed.');
       await expect(denied.result).rejects.toThrow(/denied/);
     } finally {
       await denied.close();
@@ -349,7 +349,7 @@ describe('OAuth protocol', () => {
       wrongState.searchParams.set('state', 'wrong');
       const response = await fetch(wrongState);
       expect(response.status).toBe(400);
-      expect(await response.text()).toContain('Invalid callback.');
+      expect(await response.text()).toContain('Unable to verify sign-in.');
 
       const missingCode = new URL(invalid.redirectUri);
       missingCode.searchParams.set('state', 'state');
