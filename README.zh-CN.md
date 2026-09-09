@@ -105,7 +105,7 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [docs/skill.md](do
 支持表格、任务列表、脚注、GitHub 风格提示块、静态代码高亮、中文加粗兼容、
 数学公式和有明确边界的 Mermaid 图表。文档页面仍不运行 JavaScript。
 
-[兼容性说明与限制](docs/markdown.md) · [可发布的综合案例](docs/examples/markdown-compatibility.md)
+[兼容性说明与限制](docs/markdown.md) · [在线兼容性案例](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown 源文件](docs/examples/markdown-compatibility.md)
 
 ## 🏠 自托管
 

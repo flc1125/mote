@@ -106,7 +106,7 @@ Tables, task lists, footnotes, GitHub-style alerts, static code highlighting,
 Chinese emphasis compatibility, math formulas and a bounded Mermaid subset.
 Document pages remain script-free.
 
-[Compatibility reference and limits](docs/markdown.md) · [Publishable specimen](docs/examples/markdown-compatibility.md)
+[Compatibility reference and limits](docs/markdown.md) · [Live compatibility specimen](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown source](docs/examples/markdown-compatibility.md)
 
 ## 🏠 Self-hosting
 
