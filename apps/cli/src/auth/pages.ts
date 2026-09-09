@@ -12,28 +12,40 @@ const CHECK_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path
 const CROSS_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`;
 
 const PAGE_CSS = `
-body { min-height: 100vh; box-sizing: border-box; margin: 0; padding: 24px; display: grid; place-items: center; }
-.card { max-width: 400px; text-align: center; }
-.brand { display: block; width: 44px; margin: 0 auto 30px; }
-.brand svg { display: block; width: 100%; height: auto; }
-.badge { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 22px; border-radius: 50%; }
+body { min-height: 100vh; min-height: 100svh; box-sizing: border-box; margin: 0; padding: 32px 24px calc(32px + 10svh); display: grid; place-items: center; }
+.card { width: min(440px, 100%); min-width: 0; text-align: center; }
+.brand { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 40px; font-size: 18px; font-weight: 650; letter-spacing: -0.02em; }
+.brand svg { display: block; width: 28px; height: auto; }
+.badge { display: grid; place-items: center; box-sizing: border-box; width: 64px; height: 64px; margin: 0 auto 24px; border-radius: 50%; }
 .badge svg { width: 34px; height: 34px; }
-.badge-success { background: var(--mote-accent); color: var(--mote-on-accent); }
+.badge-success { background: #eaf8ef; border: 1px solid #bce3ca; color: #217344; }
 .badge-error { background: var(--mote-tint); border: 1px solid var(--mote-tint-border); color: var(--mote-accent); }
-h1 { font-size: 24px; letter-spacing: -0.02em; margin: 0 0 10px; text-wrap: balance; }
-.lead { font-size: 15px; margin: 0; }
-.hint { color: var(--mote-muted); font-size: 13px; margin: 14px 0 0; }
+h1 { font-size: 28px; line-height: 1.25; letter-spacing: -0.025em; margin: 0 0 16px; text-wrap: balance; }
+.detail { color: var(--mote-muted); font-size: 16px; margin: 0 0 12px; }
+.lead { font-size: 16px; margin: 0; text-wrap: pretty; }
+.lead code { padding: 2px 5px; border-radius: 5px; background: var(--mote-code-bg); font-size: 0.9em; white-space: nowrap; }
+.hint { color: var(--mote-muted); font-size: 14px; margin: 20px 0 0; }
+.home-link { margin: 24px 0 0; font-size: 14px; }
+.home-link a { display: inline-block; padding: 6px 4px; text-decoration: underline; text-underline-offset: 4px; }
+@media (prefers-color-scheme: dark) {
+  .badge-success { background: #122f22; border-color: #28583c; color: #7bdba0; }
+}
+@media (max-height: 500px) {
+  body { padding: 24px; }
+  .brand { margin-bottom: 24px; }
+}
 `;
 
 interface CallbackPageInput {
   title: string;
   heading: string;
+  detail?: string;
   lead: string;
   hint: string;
   tone: 'success' | 'error';
 }
 
-function callbackPage({ title, heading, lead, hint, tone }: CallbackPageInput): string {
+function callbackPage({ title, heading, detail, lead, hint, tone }: CallbackPageInput): string {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -46,11 +58,13 @@ function callbackPage({ title, heading, lead, hint, tone }: CallbackPageInput): 
 </head>
 <body>
 <main class="card">
-<span class="brand">${ICON_SVG}</span>
+<span class="brand"><span aria-hidden="true">${ICON_SVG}</span><span>Mote</span></span>
 <span class="badge badge-${tone}">${tone === 'success' ? CHECK_SVG : CROSS_SVG}</span>
 <h1>${heading}</h1>
+${detail ? `<p class="detail">${detail}</p>` : ''}
 <p class="lead">${lead}</p>
 <p class="hint">${hint}</p>
+<p class="home-link"><a href="https://mote.flc.io/" target="_blank" rel="noopener noreferrer" aria-label="Visit Mote homepage (opens in a new tab)">Visit Mote homepage</a></p>
 </main>
 </body>
 </html>
@@ -67,24 +81,25 @@ export const CALLBACK_SUCCESS_HTML = callbackPage({
 
 export const CALLBACK_DENIED_HTML = callbackPage({
   title: 'Authorization not completed · Mote',
-  heading: 'Authorization was not completed.',
-  lead: 'Return to the terminal to try again.',
+  heading: 'Authorization not completed.',
+  lead: 'Return to the terminal and run <code>mote login</code> again.',
   hint: 'You can close this tab.',
   tone: 'error',
 });
 
 export const CALLBACK_INVALID_HTML = callbackPage({
-  title: 'Invalid callback · Mote',
-  heading: 'Invalid callback.',
-  lead: 'This link does not match an in-progress sign-in.',
-  hint: 'Run mote login again from the terminal.',
+  title: 'Unable to verify sign-in · Mote',
+  heading: 'Unable to verify sign-in.',
+  detail: 'This link does not match an in-progress sign-in.',
+  lead: 'Return to the terminal and run <code>mote login</code> again.',
+  hint: 'You can close this tab.',
   tone: 'error',
 });
 
 export const CALLBACK_MISSING_CODE_HTML = callbackPage({
   title: 'Missing authorization code · Mote',
   heading: 'Missing authorization code.',
-  lead: 'The authorization response carried no code.',
-  hint: 'Return to the terminal and try again.',
+  lead: 'Return to the terminal and run <code>mote login</code> again.',
+  hint: 'You can close this tab.',
   tone: 'error',
 });
