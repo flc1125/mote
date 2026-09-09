@@ -40,7 +40,7 @@ describe('publishBundle', () => {
       seenAuth = new Headers(init?.headers).get('Authorization') ?? '';
       seenForm = init?.body;
       return new Response(
-        JSON.stringify({ id: '7Vk3mQ9x2NFaP4Ls', url: 'https://mote.flc.io/7Vk3mQ9x2NFaP4Ls' }),
+        JSON.stringify({ id: '7Vk3mQ9x2NFaP4Ls', url: 'https://mote.pub/7Vk3mQ9x2NFaP4Ls' }),
         { status: 201 },
       );
     };
@@ -60,7 +60,7 @@ describe('publishBundle', () => {
     for (const value of form.values()) {
       expect(String(value)).not.toContain(TOKEN);
     }
-    expect(result.url).toBe('https://mote.flc.io/7Vk3mQ9x2NFaP4Ls');
+    expect(result.url).toBe('https://mote.pub/7Vk3mQ9x2NFaP4Ls');
   });
 
   it('maps API errors without leaking the token', async () => {

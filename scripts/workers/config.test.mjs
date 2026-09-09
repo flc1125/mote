@@ -40,6 +40,24 @@ describe('Worker source configuration allowlist', () => {
       },
     ],
     [
+      'wrong production zone',
+      (raw) => {
+        raw.routes[0].zone_name = 'flc.io';
+      },
+    ],
+    [
+      'legacy production hostname',
+      (raw) => {
+        raw.vars.MOTE_ACCESS_HOSTNAME = 'mote.flc.io';
+      },
+    ],
+    [
+      'wrong test zone',
+      (raw) => {
+        raw.env['access-test'].routes[0].zone_name = 'mote.pub';
+      },
+    ],
+    [
       'legacy token mode',
       (raw) => {
         raw.vars.MOTE_AUTH_MODE = 'token';
@@ -72,6 +90,7 @@ describe('Worker source configuration allowlist', () => {
   it('pins isolated test resources and a distinct Access audience', () => {
     expect(targetFor('access-test')).toEqual({
       hostname: 'mote-test.flc.io',
+      zoneName: 'flc.io',
       api: 'mote-test-api',
       viewer: 'mote-test-viewer',
       bucket: 'mote-test-documents',

@@ -180,6 +180,7 @@ describe('Phase 0 boundaries and reused pipeline', () => {
     'http://localhost',
     'https://other.workers.dev',
     'https://mote.flc.io',
+    'https://mote.pub',
     'https://mote-test.flc.io',
     'https://mote-oauth-test.flc.io',
   ])('rejects alternate origin %s regardless of forwarded headers', async (origin) => {

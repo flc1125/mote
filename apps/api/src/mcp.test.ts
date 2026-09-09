@@ -77,7 +77,7 @@ describe('POST /api/mcp — tools/call publish_markdown', () => {
     const result = await resultOf(response);
     const structured = result.structuredContent as { id: string; url: string };
     expect(isDocumentId(structured.id)).toBe(true);
-    expect(structured.url).toBe(`https://mote.flc.io/${structured.id}`);
+    expect(structured.url).toBe(`https://mote.pub/${structured.id}`);
 
     const content = result.content as { type: string; text: string }[];
     expect(content[0]?.text).toBe(structured.url);

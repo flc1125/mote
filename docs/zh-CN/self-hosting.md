@@ -66,7 +66,7 @@ VIEWER_BASE_URL = "https://<your-domain>"
 MOTE_AUTH_MODE = "token"
 ```
 
-`<your-zone>` 是域名的 zone 名（如 `example.com`）。两个 Worker 共用一个域名：API 占有 `/api/*`，其余全部走 Viewer（最具体路由优先）。**不要**给 Viewer 用 Custom Domain——它会覆盖同主机名的 `/api/*` 路由。
+`<your-zone>` 是域名的 zone 名（如 `example.com`）。两个 Worker 共用一个域名：API 占有 `/api/*`，其余全部走 Viewer（最具体路由优先）。此部署为两个 Worker 配置 Routes，并使用代理 DNS。同主机名下，Cloudflare Routes 优先于 Custom Domains。
 
 > 仅 token 模式的 staging 可删掉 `routes` 并启用 `workers_dev`。Access 模式必须使用受保护的域名，关闭 workers.dev 和 preview URLs；API 会拒绝其他主机入口。
 

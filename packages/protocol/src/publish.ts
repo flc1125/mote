@@ -1,8 +1,8 @@
 /** Publish endpoint contract (baseline §15–§17). */
 
 /**
- * The API Worker is attached to the route mote.flc.io/api/* (most specific
- * route wins over the Viewer's mote.flc.io/*), so the publish path carries
+ * The API Worker is attached to the route mote.pub/api/* (most specific
+ * route wins over the Viewer's mote.pub/*), so the publish path carries
  * the /api prefix. There is no api subdomain.
  */
 export const PUBLISH_PATH = '/api/v1/publish';

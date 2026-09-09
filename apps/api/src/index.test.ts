@@ -145,7 +145,7 @@ describe('successful publish (§17)', () => {
 
     const body = (await response.json()) as PublishResponse;
     expect(isDocumentId(body.id)).toBe(true);
-    expect(body.url).toBe(`https://mote.flc.io/${body.id}`);
+    expect(body.url).toBe(`https://mote.pub/${body.id}`);
 
     // R2 bundle: manifest (commit marker) + document + asset
     const manifestObject = await env.DOCUMENTS.get(`documents/${body.id}/manifest.json`);

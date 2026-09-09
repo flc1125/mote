@@ -9,7 +9,7 @@ import { realDeps, type McpDeps } from '../src/tools.js';
 
 const TOKEN = 'server-test-token';
 const DOC_ID = '7Vk3mQ9x2NFaP4Ls';
-const DOC_URL = `https://mote.flc.io/${DOC_ID}`;
+const DOC_URL = `https://mote.pub/${DOC_ID}`;
 
 // The SDK's callTool resolves content through a loose index-signature type,
 // so narrow it to the shape our server actually returns.

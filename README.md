@@ -22,7 +22,7 @@
 
 <p align="center">
   <a href="#-quick-start">Quick Start</a> •
-  <a href="https://mote.flc.io/MxNfTmvTNxMnrbkU">Live Demo</a> •
+  <a href="https://mote.pub/MxNfTmvTNxMnrbkU">Live Demo</a> •
   <a href="docs/self-hosting.md">Self-hosting</a> •
   <a href="README.zh-CN.md">简体中文</a>
 </p>
@@ -55,9 +55,9 @@ Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
-<sub>Live sample → [a project update with images, tables, and code](https://mote.flc.io/MxNfTmvTNxMnrbkU) · [Markdown source](docs/examples/weekly-report.md)</sub>
+<sub>Live sample → [a project update with images, tables, and code](https://mote.pub/MxNfTmvTNxMnrbkU) · [Markdown source](docs/examples/weekly-report.md)</sub>
 
-The default instance, `https://mote.flc.io`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Details: [authentication guide](docs/authentication.md).
+The default instance, `https://mote.pub`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Details: [authentication guide](docs/authentication.md).
 
 > **Note** — Browser login and Service Token authentication require **mote-cli ≥ 0.2.0**. Full options (`--json`, `--no-assets`, `--api`, `--token`, …), config file, and scripting: [docs/cli.md](docs/cli.md).
 
@@ -82,7 +82,7 @@ Point your agent at the remote MCP endpoint — on Access-enabled instances it a
   "mcpServers": {
     "mote": {
       "type": "http",
-      "url": "https://mote.flc.io/api/mcp"
+      "url": "https://mote.pub/api/mcp"
     }
   }
 }

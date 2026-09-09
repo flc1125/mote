@@ -5,7 +5,7 @@ import { dirname, join } from 'node:path';
 import { CliError } from './errors.js';
 import { CredentialStore } from './auth/store.js';
 
-export const DEFAULT_API_URL = 'https://mote.flc.io';
+export const DEFAULT_API_URL = 'https://mote.pub';
 
 export interface CliConfig {
   apiUrl: string;

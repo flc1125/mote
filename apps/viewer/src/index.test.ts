@@ -158,7 +158,7 @@ describe('public homepage and branding', () => {
     );
     expect(html).toContain('The skill uses your configured CLI or MCP tools');
     expect(html).toMatch(
-      /<a href="https:\/\/mote\.flc\.io\/[^" ]+" target="_blank" rel="noopener noreferrer" aria-label="see a live demo \(opens in a new tab\)">see a live demo<\/a>/,
+      /<a href="https:\/\/mote\.pub\/[^" ]+" target="_blank" rel="noopener noreferrer" aria-label="see a live demo \(opens in a new tab\)">see a live demo<\/a>/,
     );
     const setupNoteIndex = html.indexOf('You need a Mote instance and permission to publish.');
     expect(setupNoteIndex).toBeGreaterThanOrEqual(0);
@@ -167,7 +167,7 @@ describe('public homepage and branding', () => {
     expect(html).toContain(
       'href="https://github.com/flc1125/mote/blob/main/docs/cli.md" target="_blank" rel="noopener noreferrer">Docs</a>',
     );
-    expect(html).toContain('codex mcp add mote --url https://mote.flc.io/api/mcp');
+    expect(html).toContain('codex mcp add mote --url https://mote.pub/api/mcp');
     expect(html).toContain('codex mcp login mote');
     expect(html).toContain('npx skills add flc1125/mote --skill mote');
     expect(html).toContain('#ef5552');
@@ -195,7 +195,7 @@ describe('public homepage and branding', () => {
     const text = commands.map((code) => code.replace(/<[^>]*>/g, ''));
     expect(text).toEqual([
       'npm install -g mote-cli\nmote login\nmote README.md',
-      'codex mcp add mote --url https://mote.flc.io/api/mcp\ncodex mcp login mote',
+      'codex mcp add mote --url https://mote.pub/api/mcp\ncodex mcp login mote',
       'npx skills add flc1125/mote --skill mote',
     ]);
   });

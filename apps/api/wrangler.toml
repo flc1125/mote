@@ -6,19 +6,19 @@ workers_dev = false
 preview_urls = false
 
 # Path-based routing: most specific route wins over the Viewer's
-# mote.flc.io/*, so /api/* requests execute only this Worker.
-routes = [{ pattern = "mote.flc.io/api/*", zone_name = "flc.io" }]
+# mote.pub/*, so /api/* requests execute only this Worker.
+routes = [{ pattern = "mote.pub/api/*", zone_name = "mote.pub" }]
 
 # No [cache] here: the API must never be cached (baseline §8.2).
 
 # Public base URL used to build document URLs in publish responses.
 [vars]
-VIEWER_BASE_URL = "https://mote.flc.io"
+VIEWER_BASE_URL = "https://mote.pub"
 MOTE_AUTH_MODE = "cloudflare-access"
 # Production Access application; these identifiers are not credentials.
 MOTE_ACCESS_ISSUER = "https://flc1125.cloudflareaccess.com"
 MOTE_ACCESS_AUD = "d3f4ebddb8b5bb4e6c25da00efcfc4c1f33e7055e9454c2a3e39707fef8e131c"
-MOTE_ACCESS_HOSTNAME = "mote.flc.io"
+MOTE_ACCESS_HOSTNAME = "mote.pub"
 
 # MOTE_TOKEN is a secret, set via `wrangler secret put` (baseline §38),
 # never in this file.

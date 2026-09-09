@@ -56,7 +56,7 @@ Options:
   -v, --version     Show version
 
 Login opens your browser and remembers the instance after credentials are saved.
-API priority: --api > MOTE_API_URL > config apiUrl > remembered instance > https://mote.flc.io.
+API priority: --api > MOTE_API_URL > config apiUrl > remembered instance > https://mote.pub.
 Explicit auth-mode settings still apply. Use --auth-mode oauth for OAuth login.
 `;
 
