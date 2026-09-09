@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it';
 
+import { alerts } from './alerts.js';
 import { resolveAssetUrl } from './assets.js';
 import { cjkEmphasis } from './cjk-emphasis.js';
 import { slugify, type Heading } from './headings.js';
@@ -47,6 +48,7 @@ export function renderMarkdown(
   });
 
   md.use(cjkEmphasis);
+  md.use(alerts);
   md.use(footnote);
   // Wrap the parsed inline tokens instead of labelAfter, which reinserts raw
   // Markdown as label text and assigns random IDs to otherwise static output.

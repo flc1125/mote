@@ -1,6 +1,7 @@
 export * from './base58.js';
 export * from './hash.js';
 export * from './id.js';
+export * from './image-reference.js';
 export * from './limits.js';
 export * from './mime.js';
 export * from './path.js';

@@ -37,6 +37,31 @@ async function setup(): Promise<string> {
 }
 
 describe('buildBundle (§22, §23)', () => {
+  it('reads URL-encoded image paths once and deduplicates Markdown/HTML spellings', async () => {
+    await mkdir(join(dir, '图片'));
+    await writeFile(join(dir, '图片', 'a (1).png'), PNG);
+    await writeFile(join(dir, 'literal%20.png'), WEBP);
+    const markdownPath = join(dir, 'README.md');
+    await writeFile(
+      markdownPath,
+      '![图](<图片/a (1).png>)\n\n<img src="图片/a (1).png">\n\n![percent](literal%2520.png)',
+    );
+    const bundle = await buildBundle(markdownPath);
+    expect(bundle.assets).toHaveLength(2);
+    expect(bundle.assets[0]?.path).toBe(join(dir, '图片', 'a (1).png'));
+    expect(bundle.assets[0]?.references).toEqual([
+      '%E5%9B%BE%E7%89%87/a%20(1).png',
+      '图片/a (1).png',
+    ]);
+    expect(bundle.assets[1]?.path).toBe(join(dir, 'literal%20.png'));
+  });
+
+  it('rejects encoded absolute references before reading assets', async () => {
+    const markdownPath = join(dir, 'README.md');
+    await writeFile(markdownPath, '<img src="%2Fetc/passwd">');
+    await expect(buildBundle(markdownPath)).rejects.toThrow(/Not a local relative reference/);
+  });
+
   it('builds a bundle with deduped assets and a client manifest', async () => {
     const bundle = await buildBundle(await setup());
 

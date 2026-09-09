@@ -129,6 +129,30 @@ function assetPaths(html: string): string[] {
 }
 
 describe('E2E (§59)', () => {
+  it('publishes alert and details images with Unicode/space paths through CLI, API and Viewer', async () => {
+    const doc = await makeDoc({
+      'README.md':
+        '# Compatibility\n\n> [!NOTE]\n> **说明：**[![图][image]](https://example.com)\n\n[image]: <图片/a (1).png>\n\n<details><summary>More</summary>\n\n<p align="center"><picture><source srcset="%E5%9B%BE%E7%89%87/a%20(1).png 1x"><img src="图片/a (1).png" alt="raw"></picture></p>\n\n</details>',
+      '图片/a (1).png': PNG,
+    });
+    const { id } = await publishDoc(doc);
+    const page = await view(`/${id}`);
+    expect(page.status).toBe(200);
+    expect(page.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+    const html = await page.text();
+    expect(html).toContain('class="markdown-alert markdown-alert-note"');
+    expect(html).toContain('<strong>说明：</strong>');
+    const paths = assetPaths(html);
+    expect(paths).toHaveLength(2);
+    expect(new Set(paths).size).toBe(1);
+    expect(html).toContain(`srcset="${paths[0]} 1x"`);
+    expect(html).not.toContain('a%20(1).png');
+    expect(html).not.toContain('a (1).png');
+    const asset = await view(paths[0]!);
+    expect(asset.status).toBe(200);
+    expect(new Uint8Array(await asset.arrayBuffer())).toEqual(PNG);
+  });
+
   it('case 1: plain Markdown publishes and renders', async () => {
     const doc = await makeDoc({ 'README.md': '# Pure Markdown\n\nHello **world**.\n' });
     const { id } = await publishDoc(doc);

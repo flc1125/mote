@@ -163,7 +163,7 @@ describe('common document combinations', () => {
     expect(html).toContain('<code class="language-js">');
   });
 
-  it.fails('known gap: mixed Markdown/HTML image paths containing Unicode and spaces', () => {
+  it('resolves mixed Markdown/HTML image paths containing Unicode and spaces', () => {
     const result = renderMarkdown(
       '<details><summary>More</summary>\n\n**说明：**图片\n\n[![图][img]](https://example.com)\n\n[img]: <图片/a (1).png>\n\n<img src="图片/a (1).png" alt="raw">\n\n</details>',
       new Map([['图片/a (1).png', '/doc/a/image']]),
