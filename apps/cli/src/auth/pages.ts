@@ -25,6 +25,8 @@ h1 { font-size: 28px; line-height: 1.25; letter-spacing: -0.025em; margin: 0 0 1
 .lead { font-size: 16px; margin: 0; text-wrap: pretty; }
 .lead code { padding: 2px 5px; border-radius: 5px; background: var(--mote-code-bg); font-size: 0.9em; white-space: nowrap; }
 .hint { color: var(--mote-muted); font-size: 14px; margin: 20px 0 0; }
+.home-link { margin: 24px 0 0; font-size: 14px; }
+.home-link a { display: inline-block; padding: 6px 4px; text-decoration: underline; text-underline-offset: 4px; }
 @media (prefers-color-scheme: dark) {
   .badge-success { background: #122f22; border-color: #28583c; color: #7bdba0; }
 }
@@ -62,6 +64,7 @@ function callbackPage({ title, heading, detail, lead, hint, tone }: CallbackPage
 ${detail ? `<p class="detail">${detail}</p>` : ''}
 <p class="lead">${lead}</p>
 <p class="hint">${hint}</p>
+<p class="home-link"><a href="https://mote.flc.io/" target="_blank" rel="noopener noreferrer" aria-label="Visit Mote homepage (opens in a new tab)">Visit Mote homepage</a></p>
 </main>
 </body>
 </html>
