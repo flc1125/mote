@@ -35,9 +35,10 @@ describe('renderMarkdown — CommonMark & extensions (§27)', () => {
     expect(html).toContain('</table>\n</div>\n<p>After table.</p>');
   });
 
-  it('renders fenced code with language class, without server-side highlighting (§28)', () => {
+  it('renders fenced code with language class and static highlighting', () => {
     const html = render('```go\nfunc main() {}\n```');
     expect(html).toContain('<pre><code class="language-go">');
+    expect(html).toContain('<span class="hljs-keyword">func</span>');
   });
 
   it('linkifies bare URLs', () => {

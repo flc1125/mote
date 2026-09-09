@@ -46,6 +46,25 @@ const markdown = [
 ].join('\n');
 
 describe('render (§42)', () => {
+  it('hides recognized metadata without overriding the body title or TOC', () => {
+    const html = render(
+      '---\ntitle: Metadata title\ndescription: "![hidden](missing.png)"\n---\n# Body title\n\n~~~ts\nconst n = 1;\n~~~',
+      manifest,
+      DOCUMENT_ID,
+    );
+    expect(html).toContain('<title>Body title</title>');
+    expect(html).toContain('<h1 id="body-title">Body title</h1>');
+    expect(html).not.toContain('Metadata title');
+    expect(html).not.toContain('missing.png');
+    expect(html).toContain('<span class="hljs-keyword">const</span>');
+    const withoutHeading = render(
+      '---\ntitle: Metadata title\n---\nBody only',
+      manifest,
+      DOCUMENT_ID,
+    );
+    expect(withoutHeading).toContain('<title>README.md</title>');
+  });
+
   it('renders a complete page (snapshot)', () => {
     expect(render(markdown, manifest, DOCUMENT_ID)).toMatchSnapshot();
   });

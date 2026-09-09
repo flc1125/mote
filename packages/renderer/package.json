@@ -13,6 +13,7 @@
     "@mote/core": "workspace:*",
     "@mote/protocol": "workspace:*",
     "@mote/theme": "workspace:*",
+    "highlight.js": "^11.12.0",
     "htmlparser2": "^12.0.0",
     "markdown-it": "^15.0.1",
     "markdown-it-footnote": "^4.0.0",

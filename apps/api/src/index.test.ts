@@ -28,10 +28,14 @@ function buildForm(options?: {
   const assets = options?.assets ?? [{ field: 'asset_0', bytes: PNG_BYTES }];
 
   const form = new FormData();
-  form.append('document', new File([markdown], 'README.md', { type: 'text/markdown' }));
+  const documentPart = typeof markdown === 'string' ? markdown : new Uint8Array(markdown);
+  form.append('document', new File([documentPart], 'README.md', { type: 'text/markdown' }));
   form.append('manifest', JSON.stringify(manifest));
   for (const asset of assets) {
-    form.append(asset.field, new File([asset.bytes], 'a.png', { type: 'image/png' }));
+    form.append(
+      asset.field,
+      new File([new Uint8Array(asset.bytes)], 'a.png', { type: 'image/png' }),
+    );
   }
   return form;
 }

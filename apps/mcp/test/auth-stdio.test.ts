@@ -75,6 +75,10 @@ beforeAll(async () => {
       bundle: true,
       platform: 'node',
       format: 'esm',
+      // Match the production CLI/MCP CommonJS dependency interop.
+      banner: {
+        js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
+      },
       target: 'node20',
       external: ['@napi-rs/keyring'],
     });

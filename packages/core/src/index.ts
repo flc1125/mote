@@ -1,4 +1,5 @@
 export * from './base58.js';
+export * from './front-matter.js';
 export * from './hash.js';
 export * from './id.js';
 export * from './image-reference.js';

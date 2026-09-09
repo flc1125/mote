@@ -3,6 +3,7 @@ import { Parser } from 'htmlparser2';
 import { describe, expect, it } from 'vitest';
 
 import cases from './fixtures/emphasis.json';
+import { cjkEmphasis } from './cjk-emphasis.js';
 import { renderMarkdown } from './markdown.js';
 import { renderHtmlPage } from './template.js';
 import { renderToc } from './toc.js';
@@ -36,7 +37,10 @@ describe('CJK strong emphasis compatibility', () => {
     '**重点：**\u00a0正文',
   ])('preserves standard parsing: %s', (source) => {
     const standard = new MarkdownIt({ html: true, linkify: true }).render(source);
-    expect(render(source).html).toBe(standard);
+    // Compare emphasis parsing independently of static code highlighting.
+    expect(new MarkdownIt({ html: true, linkify: true }).use(cjkEmphasis).render(source)).toBe(
+      standard,
+    );
   });
 
   it('works inside headings, quotes, lists, tables and image alt text', () => {

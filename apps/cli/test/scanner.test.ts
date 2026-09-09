@@ -3,6 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { extractLocalImageReferences } from '../src/scanner.js';
 
 describe('extractLocalImageReferences (§22)', () => {
+  it('scans only the body after recognized front matter', () => {
+    const source =
+      '---\ntitle: Test\ndescription: \'![hidden](missing.png) <img src="also-missing.png">\'\n---\n![visible](body.png)';
+    expect(extractLocalImageReferences(source)).toEqual(['body.png']);
+  });
+
+  it('still scans images in ambiguous blocks that the viewer will display', () => {
+    const source = "---\nstatus: '![visible](body.png)'\n---";
+    expect(extractLocalImageReferences(source)).toEqual(['body.png']);
+  });
+
   it('finds inline images', () => {
     expect(extractLocalImageReferences('![foo](./foo.png)\n\n![bar](images/bar.png)')).toEqual([
       './foo.png',

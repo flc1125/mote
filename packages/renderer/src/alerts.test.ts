@@ -25,7 +25,9 @@ describe('GitHub-style alerts', () => {
       '> [!TIP]\n>\n> - [x] Done\n>\n> ```sh\n> echo "<hello>"\n> ```\n>\n> | a |\n> |---|\n> | b |\n>\n> > A quote\n>\n> Last[^1]\n\nOutside\n\n[^1]: Footnote',
     );
     expect(html).toContain('disabled');
-    expect(html).toContain('<code class="language-sh">echo &quot;&lt;hello&gt;&quot;');
+    expect(html).toContain('<code class="language-sh">');
+    expect(html).toContain('<span class="hljs-built_in">echo</span>');
+    expect(html).toContain('<span class="hljs-string">&quot;&lt;hello&gt;&quot;</span>');
     expect(html).toContain('<table>');
     expect(html).toContain('<blockquote>\n<p>A quote</p>\n</blockquote>');
     expect(html).toContain('</div>\n<p>Outside</p>');

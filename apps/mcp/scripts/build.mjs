@@ -1,24 +1,20 @@
-import { rm } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { build } from 'esbuild';
 
-const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-
-await rm(resolve(packageDir, 'dist'), { recursive: true, force: true });
 await build({
-  absWorkingDir: packageDir,
-  entryPoints: ['src/cli.ts', 'src/index.ts'],
+  absWorkingDir: resolve(dirname(fileURLToPath(import.meta.url)), '..'),
+  entryPoints: ['src/mcp.ts'],
   bundle: true,
   external: ['@napi-rs/keyring'],
   platform: 'node',
   format: 'esm',
+  target: 'node20',
   // Bundled CommonJS dependencies (YAML) still require Node built-ins.
   banner: {
     js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
   },
-  target: 'node20',
-  outdir: 'dist',
+  outfile: 'dist/mcp.js',
   logLevel: 'info',
 });

@@ -129,6 +129,25 @@ function assetPaths(html: string): string[] {
 }
 
 describe('E2E (§59)', () => {
+  it('keeps stored front matter intact while rendering only the body with highlighted code', async () => {
+    const source =
+      '---\ntitle: Hidden metadata\ndescription: "![hidden](missing.png)"\n---\n# Body title\n\n![image](body.png)\n\n~~~js\nconst message = "<hello>";\n~~~';
+    const doc = await makeDoc({ 'README.md': source, 'body.png': PNG });
+    const { id } = await publishDoc(doc);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const response = await view(`/${id}`);
+    expect(response.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+    const html = await response.text();
+    expect(html).toContain('<title>Body title</title>');
+    expect(html).not.toContain('Hidden metadata');
+    expect(html).not.toContain('missing.png');
+    expect(html).toContain('<span class="hljs-keyword">const</span>');
+    expect(html).toContain('&lt;hello&gt;');
+    const paths = assetPaths(html);
+    expect(paths).toHaveLength(1);
+    expect((await view(paths[0]!)).status).toBe(200);
+  });
+
   it('publishes alert and details images with Unicode/space paths through CLI, API and Viewer', async () => {
     const doc = await makeDoc({
       'README.md':
@@ -244,16 +263,8 @@ describe('E2E (§59)', () => {
 
 describe('M4 gate: built binary publishes end to end', () => {
   it('node dist/cli.js <file> --json completes publish -> view', async () => {
-    const { build } = await import('esbuild');
-    await build({
-      entryPoints: ['src/cli.ts'],
-      bundle: true,
-      external: ['@napi-rs/keyring'],
-      platform: 'node',
-      format: 'esm',
-      target: 'node20',
-      outfile: 'dist/cli.js',
-    });
+    // Exercise the shipped build configuration, including dependency interop.
+    await execFileAsync(process.execPath, ['scripts/build.mjs']);
 
     const doc = await makeDoc({
       'README.md': '# Binary E2E\n\n![demo](./demo.png)\n',

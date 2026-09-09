@@ -1,7 +1,7 @@
 import { Parser } from 'htmlparser2';
 import MarkdownIt from 'markdown-it';
 
-import { isLocalReference } from '@mote/core';
+import { isLocalReference, stripFrontMatter } from '@mote/core';
 
 interface TokenLike {
   type: string;
@@ -68,7 +68,7 @@ function collectImages(tokens: TokenLike[], into: string[], seen: Set<string>): 
  * distinct spelling is returned once, in order of first appearance.
  */
 export function extractLocalImageReferences(markdown: string): string[] {
-  const tokens = md.parse(markdown, {}) as unknown as TokenLike[];
+  const tokens = md.parse(stripFrontMatter(markdown), {}) as unknown as TokenLike[];
   const references: string[] = [];
   collectImages(tokens, references, new Set());
   return references;

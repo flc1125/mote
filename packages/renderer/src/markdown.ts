@@ -1,9 +1,12 @@
 import MarkdownIt from 'markdown-it';
 
+import { stripFrontMatter } from '@mote/core';
+
 import { alerts } from './alerts.js';
 import { resolveAssetUrl } from './assets.js';
 import { cjkEmphasis } from './cjk-emphasis.js';
 import { slugify, type Heading } from './headings.js';
+import { createCodeHighlighter } from './highlight.js';
 import { footnote, taskLists } from './plugins.js';
 import { createHtmlSanitizer } from './sanitize.js';
 import { safeImageUrl, safeLinkUrl } from './urls.js';
@@ -45,6 +48,7 @@ export function renderMarkdown(
     linkify: true,
     breaks: false,
     typographer: false,
+    highlight: createCodeHighlighter(),
   });
 
   md.use(cjkEmphasis);
@@ -157,6 +161,6 @@ export function renderMarkdown(
   };
 
   const env: { headings?: Heading[] } = {};
-  const html = md.render(markdown, env);
+  const html = md.render(stripFrontMatter(markdown), env);
   return { html, headings: env.headings ?? [] };
 }
