@@ -46,7 +46,7 @@ ${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
 <div class="history-panel">
 <ul aria-label="Recently visited documents"></ul>
 <p role="status">Enable JavaScript to view history.</p>
-<div class="history-footer"><button type="button" disabled>Clear</button></div>
+<div class="history-footer"><label class="history-recording"><input type="checkbox" role="switch" checked disabled><span>Record history</span></label><button type="button" disabled>Clear</button></div>
 </div></details>
 ${tocTrigger}</div></header>
 <main>

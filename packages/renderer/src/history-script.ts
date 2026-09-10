@@ -6,7 +6,10 @@ export const HISTORY_SCRIPT = String.raw`(() => {
   const list = menu.querySelector('ul');
   const status = menu.querySelector('[role="status"]');
   const clear = menu.querySelector('button');
+  const recording = menu.querySelector('[role="switch"]');
   const key = 'mote:recent:v1';
+  const preferenceKey = 'mote:recent:enabled';
+  const isRecording = () => localStorage.getItem(preferenceKey) !== 'off';
   const validId = id => typeof id === 'string' && /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{16}$/.test(id);
   const segments = location.pathname.split('/').filter(Boolean);
   const currentId = segments.length === 1 && validId(segments[0]) ? segments[0] : null;
@@ -28,6 +31,7 @@ export const HISTORY_SCRIPT = String.raw`(() => {
   function unavailable() {
     list.replaceChildren();
     clear.disabled = true;
+    recording.disabled = true;
     status.hidden = false;
     status.textContent = 'History is unavailable in this browser.';
   }
@@ -35,9 +39,11 @@ export const HISTORY_SCRIPT = String.raw`(() => {
   function show() {
     try {
       const entries = read();
+      recording.checked = isRecording();
+      recording.disabled = false;
       list.replaceChildren();
       status.hidden = entries.length > 0;
-      status.textContent = 'No recent documents.';
+      status.textContent = recording.checked ? 'No recent documents.' : 'History recording is off.';
       clear.disabled = entries.length === 0;
       for (const entry of entries) {
         const item = document.createElement('li');
@@ -55,6 +61,7 @@ export const HISTORY_SCRIPT = String.raw`(() => {
   function record() {
     if (!currentId || document.visibilityState !== 'visible') return;
     try {
+      if (!isRecording()) return;
       const entries = [{ id: currentId, title: document.title.slice(0, 300) },
         ...read().filter(entry => entry.id !== currentId)].slice(0, 20);
       localStorage.setItem(key, JSON.stringify(entries));
@@ -71,6 +78,13 @@ export const HISTORY_SCRIPT = String.raw`(() => {
   document.addEventListener('keydown', event => {
     if (menu.open && event.key === 'Escape') { event.preventDefault(); close(true); }
   });
+  recording.addEventListener('change', () => {
+    try {
+      localStorage.setItem(preferenceKey, recording.checked ? 'on' : 'off');
+      if (recording.checked) record();
+      show();
+    } catch { unavailable(); }
+  });
   clear.addEventListener('click', () => {
     try {
       localStorage.removeItem(key);
@@ -79,10 +93,11 @@ export const HISTORY_SCRIPT = String.raw`(() => {
     } catch { unavailable(); }
   });
   window.addEventListener('storage', event => {
-    if (menu.open && (event.key === key || event.key === null)) show();
+    if (menu.open && (event.key === key || event.key === preferenceKey || event.key === null)) show();
   });
-  window.addEventListener('pageshow', event => { if (event.persisted) record(); });
+  window.addEventListener('pageshow', event => { if (event.persisted) { record(); show(); } });
   record();
+  show();
   // Record a background tab on its first view, without recreating cleared
   // entries when an already-read tab merely regains focus.
   if (document.visibilityState !== 'visible') {

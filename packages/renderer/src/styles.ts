@@ -328,10 +328,26 @@ article details[open] > summary { margin-bottom: 0.6em; }
 .history-panel a:focus-visible { outline-offset: -2px; }
 .history-panel [role="status"] { margin: 8px; color: var(--mote-muted); font-size: 12px; }
 .history-footer {
-  display: flex; align-items: center; justify-content: flex-end;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
   margin-top: 4px; padding: 6px 0 0; border-top: 1px solid var(--mote-border);
   font-size: 11px; color: var(--mote-muted);
 }
+.history-recording { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding-left: 6px; cursor: pointer; }
+.history-recording input {
+  appearance: none; -webkit-appearance: none; position: relative; flex-shrink: 0;
+  width: 32px; height: 20px; margin: 0; padding: 0; border: 0; border-radius: 999px;
+  background: var(--mote-border); cursor: pointer; transition: background-color 0.18s ease;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06);
+}
+.history-recording input::before {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.22);
+  transition: transform 0.18s ease;
+}
+.history-recording input:checked { background: var(--mote-accent); }
+.history-recording input:checked::before { transform: translateX(12px); background: var(--mote-on-accent); }
+.history-recording input:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
+.history-recording input:disabled { opacity: 0.45; cursor: default; }
 .history-footer button {
   min-height: 28px; padding: 4px 6px; border: 0; background: transparent; color: var(--mote-muted);
   font: inherit; font-size: 11px; cursor: pointer; border-radius: 4px;
@@ -526,7 +542,7 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
 }
 @media (max-width: 767px) {
   .history-panel a { padding-top: 10px; padding-bottom: 10px; }
-  .history-footer button { min-height: 36px; }
+  .history-recording, .history-footer button { min-height: 36px; }
   .toc-drawer {
     top: auto; left: 0; right: 0; bottom: 0;
     width: 100%; height: min(80vh, 680px); height: min(80dvh, 680px);
@@ -611,7 +627,7 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .toc-drawer, .toc-scrim { transition: none; }
+  .toc-drawer, .toc-scrim, .history-recording input, .history-recording input::before { transition: none; }
 }
 `;
 

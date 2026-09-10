@@ -5,6 +5,7 @@ import { HISTORY_SCRIPT } from './history-script.js';
 const ID = '7Vk3mQ9x2NFaP4Ls';
 const OTHER = 'Q9vLm2NkR7xB4PaS';
 const KEY = 'mote:recent:v1';
+const PREFERENCE_KEY = 'mote:recent:enabled';
 type Entry = { id: string; title: string };
 
 class Element {
@@ -12,6 +13,7 @@ class Element {
   events = new Map<string, (event: Record<string, unknown>) => void>();
   attributes = new Map<string, string>();
   open = false;
+  checked = true;
   hidden = false;
   disabled = true;
   textContent = '';
@@ -43,6 +45,7 @@ class Element {
 function harness(
   options: {
     data?: string;
+    preference?: string;
     path?: string;
     title?: string;
     hidden?: boolean;
@@ -53,15 +56,18 @@ function harness(
 ) {
   const store = new Map<string, string>();
   if (options.data !== undefined) store.set(KEY, options.data);
+  if (options.preference !== undefined) store.set(PREFERENCE_KEY, options.preference);
   const trigger = new Element(),
     list = new Element(),
     status = new Element(),
-    clear = new Element();
+    clear = new Element(),
+    recording = new Element();
   const elements = new Map([
     ['summary', trigger],
     ['ul', list],
     ['[role="status"]', status],
     ['button', clear],
+    ['[role="switch"]', recording],
   ]);
   const menu = Object.assign(new Element(), {
     querySelector: (selector: string) => elements.get(selector),
@@ -102,6 +108,7 @@ function harness(
     trigger,
     status,
     clear,
+    recording,
     document,
     window,
     fetch,
@@ -231,5 +238,71 @@ describe('document history', () => {
     expect(page.status.textContent).toContain('unavailable');
     expect(page.clear.disabled).toBe(true);
     expect(() => harness({ quota: true })).not.toThrow();
+  });
+});
+
+describe('history recording preference', () => {
+  it('defaults to on and restores an off preference without modifying history', () => {
+    const fresh = harness();
+    expect(fresh.recording.checked).toBe(true);
+    expect(fresh.recording.disabled).toBe(false);
+    const data = JSON.stringify([{ id: OTHER, title: 'Earlier' }]);
+    const page = harness({ preference: 'off', data });
+    expect(page.recording.checked).toBe(false);
+    expect(page.store.get(KEY)).toBe(data);
+    page.window.fire('pageshow', { persisted: true });
+    expect(page.store.get(KEY)).toBe(data);
+    page.open();
+    expect(page.list.children).toHaveLength(1);
+    expect(page.list.children[0]?.children[0]?.href).toBe('/' + OTHER);
+  });
+
+  it('turns off future recording, preserves existing visits, and records the current document when re-enabled', () => {
+    const page = harness();
+    page.recording.checked = false;
+    page.recording.fire('change');
+    expect(page.store.get(PREFERENCE_KEY)).toBe('off');
+    expect(page.entries()).toHaveLength(1);
+    page.store.set(KEY, JSON.stringify([{ id: OTHER, title: 'Earlier' }]));
+    page.window.fire('pageshow', { persisted: true });
+    expect(page.entries().map((entry) => entry.id)).toEqual([OTHER]);
+    page.recording.checked = true;
+    page.recording.fire('change');
+    expect(page.store.get(PREFERENCE_KEY)).toBe('on');
+    expect(page.entries().map((entry) => entry.id)).toEqual([ID, OTHER]);
+    expect(page.recording.checked).toBe(true);
+  });
+
+  it.each(['on', 'off'])('clears history without changing the %s preference', (preference) => {
+    const page = harness({ preference, data: JSON.stringify([{ id: OTHER, title: 'Earlier' }]) });
+    page.clear.fire('click');
+    expect(page.store.get(PREFERENCE_KEY)).toBe(preference);
+    expect(page.entries()).toEqual([]);
+    expect(page.recording.checked).toBe(preference === 'on');
+    if (preference === 'off') expect(page.status.textContent).toBe('History recording is off.');
+  });
+
+  it('honors changes from other tabs before recording, including initially hidden tabs', () => {
+    const page = harness({ hidden: true });
+    page.open();
+    page.store.set(PREFERENCE_KEY, 'off');
+    page.window.fire('storage', { key: PREFERENCE_KEY });
+    expect(page.recording.checked).toBe(false);
+    page.document.visibilityState = 'visible';
+    page.document.fire('visibilitychange');
+    expect(page.entries()).toEqual([]);
+    page.store.set(PREFERENCE_KEY, 'on');
+    page.window.fire('storage', { key: PREFERENCE_KEY });
+    expect(page.recording.checked).toBe(true);
+    expect(page.entries()).toEqual([]);
+  });
+
+  it('does not present a failed preference change as successful', () => {
+    const page = harness({ quota: true, preference: 'on' });
+    page.recording.checked = false;
+    page.recording.fire('change');
+    expect(page.store.get(PREFERENCE_KEY)).toBe('on');
+    expect(page.recording.disabled).toBe(true);
+    expect(page.status.textContent).toContain('unavailable');
   });
 });

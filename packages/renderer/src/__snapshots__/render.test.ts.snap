@@ -398,10 +398,26 @@ article details[open] > summary { margin-bottom: 0.6em; }
 .history-panel a:focus-visible { outline-offset: -2px; }
 .history-panel [role="status"] { margin: 8px; color: var(--mote-muted); font-size: 12px; }
 .history-footer {
-  display: flex; align-items: center; justify-content: flex-end;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
   margin-top: 4px; padding: 6px 0 0; border-top: 1px solid var(--mote-border);
   font-size: 11px; color: var(--mote-muted);
 }
+.history-recording { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding-left: 6px; cursor: pointer; }
+.history-recording input {
+  appearance: none; -webkit-appearance: none; position: relative; flex-shrink: 0;
+  width: 32px; height: 20px; margin: 0; padding: 0; border: 0; border-radius: 999px;
+  background: var(--mote-border); cursor: pointer; transition: background-color 0.18s ease;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06);
+}
+.history-recording input::before {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.22);
+  transition: transform 0.18s ease;
+}
+.history-recording input:checked { background: var(--mote-accent); }
+.history-recording input:checked::before { transform: translateX(12px); background: var(--mote-on-accent); }
+.history-recording input:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
+.history-recording input:disabled { opacity: 0.45; cursor: default; }
 .history-footer button {
   min-height: 28px; padding: 4px 6px; border: 0; background: transparent; color: var(--mote-muted);
   font: inherit; font-size: 11px; cursor: pointer; border-radius: 4px;
@@ -596,7 +612,7 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
 }
 @media (max-width: 767px) {
   .history-panel a { padding-top: 10px; padding-bottom: 10px; }
-  .history-footer button { min-height: 36px; }
+  .history-recording, .history-footer button { min-height: 36px; }
   .toc-drawer {
     top: auto; left: 0; right: 0; bottom: 0;
     width: 100%; height: min(80vh, 680px); height: min(80dvh, 680px);
@@ -681,7 +697,7 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .toc-drawer, .toc-scrim { transition: none; }
+  .toc-drawer, .toc-scrim, .history-recording input, .history-recording input::before { transition: none; }
 }
 </style>
 </head>
@@ -698,7 +714,7 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 <div class="history-panel">
 <ul aria-label="Recently visited documents"></ul>
 <p role="status">Enable JavaScript to view history.</p>
-<div class="history-footer"><button type="button" disabled>Clear</button></div>
+<div class="history-footer"><label class="history-recording"><input type="checkbox" role="switch" checked disabled><span>Record history</span></label><button type="button" disabled>Clear</button></div>
 </div></details>
 <a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="Open table of contents" title="Show contents"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 4.5h8M7 9h8M7 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><g fill="currentColor"><circle cx="3" cy="4.5" r="1"/><circle cx="3" cy="9" r="1"/><circle cx="3" cy="13.5" r="1"/></g></svg></a></div></header>
 <main>
@@ -1022,7 +1038,10 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
   const list = menu.querySelector('ul');
   const status = menu.querySelector('[role="status"]');
   const clear = menu.querySelector('button');
+  const recording = menu.querySelector('[role="switch"]');
   const key = 'mote:recent:v1';
+  const preferenceKey = 'mote:recent:enabled';
+  const isRecording = () => localStorage.getItem(preferenceKey) !== 'off';
   const validId = id => typeof id === 'string' && /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{16}$/.test(id);
   const segments = location.pathname.split('/').filter(Boolean);
   const currentId = segments.length === 1 && validId(segments[0]) ? segments[0] : null;
@@ -1044,6 +1063,7 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
   function unavailable() {
     list.replaceChildren();
     clear.disabled = true;
+    recording.disabled = true;
     status.hidden = false;
     status.textContent = 'History is unavailable in this browser.';
   }
@@ -1051,9 +1071,11 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
   function show() {
     try {
       const entries = read();
+      recording.checked = isRecording();
+      recording.disabled = false;
       list.replaceChildren();
       status.hidden = entries.length > 0;
-      status.textContent = 'No recent documents.';
+      status.textContent = recording.checked ? 'No recent documents.' : 'History recording is off.';
       clear.disabled = entries.length === 0;
       for (const entry of entries) {
         const item = document.createElement('li');
@@ -1071,6 +1093,7 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
   function record() {
     if (!currentId || document.visibilityState !== 'visible') return;
     try {
+      if (!isRecording()) return;
       const entries = [{ id: currentId, title: document.title.slice(0, 300) },
         ...read().filter(entry => entry.id !== currentId)].slice(0, 20);
       localStorage.setItem(key, JSON.stringify(entries));
@@ -1087,6 +1110,13 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
   document.addEventListener('keydown', event => {
     if (menu.open && event.key === 'Escape') { event.preventDefault(); close(true); }
   });
+  recording.addEventListener('change', () => {
+    try {
+      localStorage.setItem(preferenceKey, recording.checked ? 'on' : 'off');
+      if (recording.checked) record();
+      show();
+    } catch { unavailable(); }
+  });
   clear.addEventListener('click', () => {
     try {
       localStorage.removeItem(key);
@@ -1095,10 +1125,11 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
     } catch { unavailable(); }
   });
   window.addEventListener('storage', event => {
-    if (menu.open && (event.key === key || event.key === null)) show();
+    if (menu.open && (event.key === key || event.key === preferenceKey || event.key === null)) show();
   });
-  window.addEventListener('pageshow', event => { if (event.persisted) record(); });
+  window.addEventListener('pageshow', event => { if (event.persisted) { record(); show(); } });
   record();
+  show();
   // Record a background tab on its first view, without recreating cleared
   // entries when an already-read tab merely regains focus.
   if (document.visibilityState !== 'visible') {
