@@ -521,12 +521,16 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
     width: 260px;
     padding: 0;
     border: 0;
+    background: transparent;
     transform: none;
     visibility: visible;
     z-index: 9;
     transition: none;
   }
   .toc-drawer-head { padding: 0 8px; border-bottom: 0; margin-bottom: 4px; }
+  /* Native momentum scrolling can paint before the scroll handler runs.
+     Keep the footer above the rail and links during that transient overlap. */
+  .has-toc .mote-colophon { position: relative; z-index: 10; background: var(--mote-bg); }
   /* Keep both lines inside the scrollable area so the active marker can
      cover the rail without being clipped. Preserve the text indentation. */
   .toc-nav {
