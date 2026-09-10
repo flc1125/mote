@@ -57,7 +57,7 @@ Options:
   --auth-mode <mode>          token | oauth | service (env: MOTE_AUTH_MODE)
   --json                      Machine-readable output (publish: {"id","url"})
   --no-assets                 Do not upload local images
-  --verbose                   Verbose progress on stderr
+  --verbose                   Show progress even when stderr is redirected
   -h, --help                  Show this help
   -v, --version               Show version
 
@@ -289,19 +289,25 @@ export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promis
     const file = extractMarkdownFile(positionals);
     const auth = await prepareAuth(config, store, deps.fetchImpl);
 
+    const showProgress = !json && (Boolean(io.stderrIsTTY) || verbose);
     const progress = (text: string): void => {
-      if (verbose) io.stderr(text);
+      if (showProgress) io.stderr(text);
     };
 
-    progress(`Scanning ${file}...`);
+    progress(`Scanning ${terminalText(file)}…`);
     const bundle = await buildBundle(file, { noAssets: values['no-assets'] });
 
-    if (json === false) {
+    if (showProgress) {
       progress('');
-      progress(`Markdown    ${formatBytes(bundle.markdownBytes.length)}`);
-      progress(`Assets      ${bundle.assets.length}`);
-      progress(`Total       ${formatBytes(bundle.totalBytes)}`);
+      progress(
+        terminalFields([
+          ['Markdown', formatBytes(bundle.markdownBytes.length)],
+          ['Assets', values['no-assets'] ? '0 (skipped)' : String(bundle.assets.length)],
+          ['Total', formatBytes(bundle.totalBytes)],
+        ]),
+      );
       progress('');
+      progress('Publishing…');
     }
 
     const result = await publishBundle(

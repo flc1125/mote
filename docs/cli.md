@@ -111,29 +111,40 @@ Online status verifies identity and may refresh; offline status reports cache on
 
 ## Options
 
-| Option          | Description                                                      |
-| --------------- | ---------------------------------------------------------------- |
-| `--json`        | Print only `{"id","url"}` on stdout — for agents, CI and scripts |
-| `--token`       | Publish token (overrides `MOTE_TOKEN`)                           |
-| `--auth-mode`   | Select `token`, `oauth` or `service`; no implicit fallback       |
-| `--api`         | API base URL (overrides `MOTE_API_URL`)                          |
-| `--no-assets`   | Publish Markdown only; skip local images                         |
-| `--verbose`     | Verbose progress on stderr                                       |
-| `-h, --help`    | Show help                                                        |
-| `-v, --version` | Show version                                                     |
+| Option          | Description                                                         |
+| --------------- | ------------------------------------------------------------------- |
+| `--json`        | Print only `{"id","url"}` on stdout — for agents, CI and scripts    |
+| `--token`       | Publish token (overrides `MOTE_TOKEN`)                              |
+| `--auth-mode`   | Select `token`, `oauth` or `service`; no implicit fallback          |
+| `--api`         | API base URL (overrides `MOTE_API_URL`)                             |
+| `--no-assets`   | Publish Markdown only; skip local images                            |
+| `--verbose`     | Show progress even when stderr is redirected; ignored with `--json` |
+| `-h, --help`    | Show help                                                           |
+| `-v, --version` | Show version                                                        |
 
-Human output with `--verbose` (progress goes to stderr; without it only the final result is printed):
+Human output in a terminal (progress and the summary go to stderr; the final result goes to stdout):
 
 ```text
-Scanning README.md...
+Scanning README.md…
 
-Markdown    47.1 KB
-Assets      3
-Total       1.84 MB
+Markdown  47.1 KB
+Assets    3
+Total     1.8 MB
 
+Publishing…
 Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
+
+The summary appears after scanning and validation, before the upload starts.
+`Assets` counts local images after content deduplication; remote images are not
+included. `Total` is the Markdown plus those image bytes, excluding multipart and
+manifest overhead. `--no-assets` shows `0 (skipped)` and a Markdown-only total.
+
+When stderr is not a terminal, progress is hidden by default; use `--verbose` to
+include it in logs. Redirecting stdout alone does not hide progress on a terminal's
+stderr. `--json` suppresses all progress, including with `--verbose`. Failed scans
+print an error without a content summary; failed uploads never print `Published`.
 
 Machine output (`--json`, only content on stdout):
 
