@@ -1,5 +1,6 @@
 import { escapeHtml } from './escape.js';
 import { PAGE_CSS } from './styles.js';
+import { TOC_SCRIPT } from './toc-script.js';
 
 export interface PageInput {
   title: string;
@@ -7,30 +8,20 @@ export interface PageInput {
   contentHtml: string;
 }
 
-/**
- * Wraps rendered Markdown in the page shell (baseline §29): lightweight,
- * static, no JS, CSS inlined so the page completes in a single request.
- * The banner links to `/` so self-hosted instances point at their own home.
- *
- * When the document has headings, the TOC is presented as a slide-in
- * drawer driven by :target (the CSS lightbox pattern): the trigger points
- * at #mote-toc, so activating any TOC link moves :target to the heading
- * and the drawer closes itself — no JavaScript, and closed means truly
- * hidden (visibility) so it leaves the tab order and the a11y tree.
- */
+/** Static document content with a responsive, progressively enhanced outline. */
 export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): string {
   const safeTitle = escapeHtml(title);
   const tocIcon =
-    '<svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.5 4.5h13M2.5 9h13M2.5 13.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 4.5h8M7 9h8M7 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><g fill="currentColor"><circle cx="3" cy="4.5" r="1"/><circle cx="3" cy="9" r="1"/><circle cx="3" cy="13.5" r="1"/></g></svg>';
   const tocTrigger =
     tocHtml === ''
       ? ''
-      : `<a class="toc-trigger" href="#mote-toc" aria-label="目录 / Open table of contents">${tocIcon}<span>目录 / Contents</span></a>`;
+      : `<a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="Open table of contents" title="Show contents">${tocIcon}</a>`;
   const tocDrawer =
     tocHtml === ''
       ? ''
-      : `<aside class="toc-drawer" id="mote-toc">
-<div class="toc-drawer-head"><span class="toc-title">目录 / Contents</span><a class="toc-close" href="#!" aria-label="关闭目录 / Close table of contents">×</a></div>
+      : `<aside class="toc-drawer" id="mote-toc" aria-label="Table of contents" tabindex="-1">
+<div class="toc-drawer-head"><span class="toc-title">Contents</span><a class="toc-close" href="#!" tabindex="0" aria-label="Close table of contents" title="Hide contents">×</a></div>
 ${tocHtml}</aside>
 <a class="toc-scrim" href="#!" aria-hidden="true" tabindex="-1"></a>
 `;
@@ -46,7 +37,7 @@ ${tocHtml}</aside>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>${PAGE_CSS}</style>
 </head>
-<body>
+<body${tocHtml === '' ? '' : ' class="has-toc"'}>
 ${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
 ${tocTrigger}</div></header>
@@ -57,6 +48,7 @@ ${contentHtml}</article>
 <footer class="mote-colophon"><div class="mote-colophon-inner">
 <span class="mote-colophon-mark" aria-hidden="true"></span><span>Published with <a href="/">Mote</a></span>
 </div></footer>
+${tocHtml === '' ? '' : `<script>${TOC_SCRIPT}</script>`}
 </body>
 </html>
 `;

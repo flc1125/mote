@@ -22,6 +22,7 @@ export function slugify(text: string, used: Map<string, number>): string {
   while (
     used.has(slug) ||
     slug === 'mote-toc' ||
+    /^mote-toc-group-\d+$/.test(slug) ||
     /^(?:fn(?:ref)?\d+|task-item--?\d+)$/.test(slug)
   ) {
     count++;

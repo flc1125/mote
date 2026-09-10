@@ -2,6 +2,7 @@ import { env, exports } from 'cloudflare:workers';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { DocumentManifest } from '@mote/protocol';
+import { tocDocumentSecurityHeaders, TOC_SCRIPT } from '@mote/renderer';
 import { HOME_HTML } from './home.js';
 import { FAVICON_BASE64, ICON_SVG } from './brand.generated.js';
 import viewer from './index.js';
@@ -42,7 +43,7 @@ async function seedBundle(): Promise<void> {
 beforeAll(seedBundle);
 
 describe('GET /{document-id}', () => {
-  it('renders static math and diagrams in the Worker without enabling scripts', async () => {
+  it('renders static math and diagrams with only the trusted TOC script', async () => {
     const id = 'Q9vLm2NkR7xB4PaS';
     const source =
       '# Static extensions\n\n$E=mc^2$\n\n~~~mermaid\nflowchart LR\n A-->B\n~~~\n\n~~~mermaid\nsequenceDiagram\n Alice->>Bob: Hello\n~~~';
@@ -64,12 +65,19 @@ describe('GET /{document-id}', () => {
       // Call the handler directly to exercise rendering again rather than a cache hit.
       const response = await viewer.fetch(new Request(`http://localhost/${id}`), env);
       expect(response.status).toBe(200);
-      expect(response.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+      expect(response.headers.get('Content-Security-Policy')).toBe(
+        (await tocDocumentSecurityHeaders())['Content-Security-Policy'],
+      );
       const html = await response.text();
       expect(html).toContain('<math');
       expect(html.match(/aria-label="Mermaid diagram"/g)).toHaveLength(2);
       expect(html).not.toContain('fonts.googleapis');
-      expect(html).not.toMatch(/<(?:script|foreignObject|image)\b/);
+      expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
+        TOC_SCRIPT,
+      ]);
+      expect(html.replace(`<script>${TOC_SCRIPT}</script>`, '')).not.toMatch(
+        /<(?:script|foreignObject|image)\b/,
+      );
       if (previous) expect(html).toBe(previous);
       previous = html;
     }
@@ -91,7 +99,9 @@ describe('GET /{document-id}', () => {
     expect(html).toContain(`src="/${ID}/a/${ASSET_ID}"`);
 
     expect(response.headers.get('Content-Type')).toBe('text/html; charset=utf-8');
-    expect(response.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
+    expect(response.headers.get('Content-Security-Policy')).toBe(
+      (await tocDocumentSecurityHeaders())['Content-Security-Policy'],
+    );
     expect(response.headers.get('Referrer-Policy')).toBe('no-referrer');
     expect(response.headers.get('X-Robots-Tag')).toBe('noindex, nofollow, noarchive');
     expect(response.headers.get('Cache-Control')).toBe('public, max-age=300');
@@ -103,6 +113,10 @@ describe('GET /{document-id}', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('Content-Type')).toBe('text/html; charset=utf-8');
     expect(await response.text()).toBe('');
+    const get = await workerFetch(`http://localhost/${ID}`);
+    expect(response.headers.get('Content-Security-Policy')).toBe(
+      get.headers.get('Content-Security-Policy'),
+    );
   });
 });
 
@@ -239,7 +253,7 @@ describe('public homepage and branding', () => {
     ]);
   });
 
-  it('allows only the exact copy script on the homepage and keeps documents script-free', async () => {
+  it('isolates the homepage copy script from the document TOC script', async () => {
     const response = await workerFetch('http://localhost/');
     const html = await response.text();
     const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
@@ -258,8 +272,20 @@ describe('public homepage and branding', () => {
       expect(html).toContain(`aria-label="Copy ${name}" hidden`);
     }
     const document = await workerFetch(`http://localhost/${ID}`);
-    expect(document.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
-    expect(await document.text()).not.toContain('<script');
+    const documentHtml = await document.text();
+    const tocScript = [...documentHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+    expect(tocScript.map((match) => match[1])).toEqual([TOC_SCRIPT]);
+    const tocDigest = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(tocScript[0]![1]!),
+    );
+    const tocHash = btoa(String.fromCharCode(...new Uint8Array(tocDigest)));
+    const documentPolicy = document.headers.get('Content-Security-Policy')!;
+    expect(
+      documentPolicy.split('; ').find((directive) => directive.startsWith('script-src ')),
+    ).toBe(`script-src 'sha256-${tocHash}'`);
+    expect(documentPolicy).not.toContain(hash);
+    expect(policy).not.toContain(tocHash);
   });
 
   it('opens document and external links in new tabs while preserving in-page navigation', async () => {

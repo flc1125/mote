@@ -1,6 +1,6 @@
 import { isAssetId, isDocumentId } from '@mote/core';
 import { isDocumentManifest, type DocumentManifest } from '@mote/protocol';
-import { documentSecurityHeaders, render } from '@mote/renderer';
+import { documentSecurityHeaders, tocDocumentSecurityHeaders, render } from '@mote/renderer';
 
 import { FAVICON_BASE64, ICON_SVG } from './brand.generated.js';
 import { HOME_HTML } from './home.js';
@@ -46,8 +46,8 @@ function internalError(): Response {
   });
 }
 
-function documentHeaders(): Record<string, string> {
-  return { ...documentSecurityHeaders(), ...DOCUMENT_CACHE_HEADERS };
+async function documentHeaders(): Promise<Record<string, string>> {
+  return { ...(await tocDocumentSecurityHeaders()), ...DOCUMENT_CACHE_HEADERS };
 }
 
 let homeScriptHash: string | undefined;
@@ -58,7 +58,7 @@ async function homepageHeaders(): Promise<Record<string, string>> {
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(HOME_SCRIPT));
     homeScriptHash = `sha256-${btoa(String.fromCharCode(...new Uint8Array(digest)))}`;
   }
-  const headers = documentHeaders();
+  const headers = { ...documentSecurityHeaders(), ...DOCUMENT_CACHE_HEADERS };
   headers['Content-Security-Policy'] = headers['Content-Security-Policy']!.replace(
     "script-src 'none'",
     `script-src '${homeScriptHash}'`,
@@ -109,7 +109,7 @@ async function handleDocument(env: Env, id: string, method: string): Promise<Res
 
   // HEAD answers with the document headers only; no render, no R2 re-read.
   if (method === 'HEAD') {
-    return new Response(null, { status: 200, headers: documentHeaders() });
+    return new Response(null, { status: 200, headers: await documentHeaders() });
   }
 
   const object = await env.DOCUMENTS.get(DOCUMENT_KEY(id));
@@ -131,7 +131,7 @@ async function handleDocument(env: Env, id: string, method: string): Promise<Res
     }),
   );
 
-  return new Response(html, { status: 200, headers: documentHeaders() });
+  return new Response(html, { status: 200, headers: await documentHeaders() });
 }
 
 async function handleAsset(

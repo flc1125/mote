@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { TOC_SCRIPT } from '../../../packages/renderer/src/toc-script.js';
 import { execFile } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -129,6 +131,17 @@ function assetPaths(html: string): string[] {
   );
 }
 
+function expectTocPolicy(response: Response, html: string): void {
+  const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
+  expect(scripts).toEqual([TOC_SCRIPT]);
+  const hash = createHash('sha256').update(scripts[0]!).digest('base64');
+  const policy = response.headers.get('Content-Security-Policy')!;
+  expect(policy.split('; ').find((directive) => directive.startsWith('script-src '))).toBe(
+    `script-src 'sha256-${hash}'`,
+  );
+  expect(policy).toContain("connect-src 'none'");
+}
+
 describe('E2E (§59)', () => {
   it('publishes the committed mixed specimen with one deduplicated image and unchanged source', async () => {
     const file = fileURLToPath(
@@ -139,8 +152,8 @@ describe('E2E (§59)', () => {
     expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
     const page = await view(`/${id}`);
     expect(page.status).toBe(200);
-    expect(page.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
     const html = await page.text();
+    expectTocPolicy(page, html);
     expect(html.match(/aria-label="Mermaid diagram"/g)).toHaveLength(4);
     expect(html.match(/<math\b/g)).toHaveLength(6);
     const paths = assetPaths(html);
@@ -159,8 +172,8 @@ describe('E2E (§59)', () => {
     const { id } = await publishDoc(doc);
     expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
     const response = await view(`/${id}`);
-    expect(response.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
     const html = await response.text();
+    expectTocPolicy(response, html);
     expect(html).toContain('<title>Body title</title>');
     expect(html).not.toContain('Hidden metadata');
     expect(html).not.toContain('missing.png');
@@ -180,8 +193,8 @@ describe('E2E (§59)', () => {
     const { id } = await publishDoc(doc);
     const page = await view(`/${id}`);
     expect(page.status).toBe(200);
-    expect(page.headers.get('Content-Security-Policy')).toContain("script-src 'none'");
     const html = await page.text();
+    expectTocPolicy(page, html);
     expect(html).toContain('class="markdown-alert markdown-alert-note"');
     expect(html).toContain('<strong>说明：</strong>');
     const paths = assetPaths(html);

@@ -1,8 +1,8 @@
 import { escapeHtml } from './escape.js';
 import type { Heading } from './headings.js';
 
-/** Only h1–h3 appear in the table of contents. */
-const MAX_TOC_LEVEL = 3;
+/** Preserve all Markdown heading levels; visual indentation is capped in CSS. */
+const MAX_TOC_LEVEL = 6;
 
 interface TocNode {
   heading: Heading;
@@ -38,22 +38,25 @@ export function buildTocTree(headings: Heading[]): TocNode[] {
   return roots;
 }
 
-function renderNodes(nodes: TocNode[]): string {
+function renderNodes(nodes: TocNode[], depth = 0, counter = { value: 0 }): string {
   const items = nodes.map((node) => {
-    const children = node.children.length > 0 ? renderNodes(node.children) : '';
-    return `<li><a href="#${node.heading.slug}">${escapeHtml(node.heading.text)}</a>${children}</li>`;
+    const text = escapeHtml(node.heading.text);
+    const slug = escapeHtml(node.heading.slug);
+    const groupId = `mote-toc-group-${counter.value++}`;
+    const toggle = node.children.length
+      ? `<button class="toc-toggle" type="button" aria-expanded="true" aria-controls="${groupId}" aria-label="Toggle subheadings: ${text}" hidden><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`
+      : '';
+    const children = node.children.length
+      ? `<ul class="toc-branch" id="${groupId}">${renderNodes(node.children, depth + 1, counter)}</ul>`
+      : '';
+    return `<li><div class="toc-row" title="${text}" style="--toc-depth:${Math.min(depth, 3)}">${toggle}<a href="#${slug}">${text}</a></div>${children}</li>`;
   });
-  return `<ul>${items.join('')}</ul>`;
+  return items.join('');
 }
 
-/**
- * Renders the TOC navigation tree. The page template wraps it in the
- * drawer chrome (floating trigger + slide-in panel), which keeps the
- * document content leading the page with no JavaScript.
- * Returns an empty string when there is nothing to show.
- */
+/** Static links remain usable without the optional trusted enhancement. */
 export function renderToc(headings: Heading[]): string {
   const tree = buildTocTree(headings);
   if (tree.length === 0) return '';
-  return `<nav class="toc-nav" aria-label="Table of contents">${renderNodes(tree)}</nav>\n`;
+  return `<nav class="toc-nav" aria-label="Table of contents"><ul>${renderNodes(tree)}</ul></nav>\n`;
 }

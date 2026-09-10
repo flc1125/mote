@@ -34,7 +34,7 @@
 - 🔒 **不可变**：每次发布生成全新 URL，旧 URL 永久保持原内容
 - 🔑 **Capability URL**：URL 即访问凭证，94 bit 随机 ID 不可枚举，不被搜索引擎收录
 - 🖼️ **本地图片**：自动上传、按内容去重，公开 URL 不泄露原始文件名
-- ⚡ **快**：Cloudflare Workers + R2 + CDN 缓存；无数据库，页面零 JS
+- ⚡ **快**：Cloudflare Workers + R2 + CDN 缓存；无数据库，文档内容在服务端渲染
 - 🤖 **Agent 友好**：CLI `--json` 输出，另有远程与本地 MCP server
 
 ## 🚀 快速开始
@@ -103,7 +103,8 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [docs/skill.md](do
 ## 📝 Markdown 支持
 
 支持表格、任务列表、脚注、GitHub 风格提示块、静态代码高亮、中文加粗兼容、
-数学公式和有明确边界的 Mermaid 图表。文档页面仍不运行 JavaScript。
+数学公式和有明确边界的 Mermaid 图表。文档内容在服务端渲染，响应式目录由一小段
+受 CSP 限制的自有脚本增强；文档内容不能执行脚本。
 
 [兼容性说明与限制](docs/markdown.md) · [在线兼容性案例](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown 源文件](docs/examples/markdown-compatibility.md)
 
