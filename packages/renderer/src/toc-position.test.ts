@@ -12,17 +12,32 @@ interface PositionHarness {
   reflow(): void;
   bottom(): string | null;
   resize(height: number, desktop?: boolean): void;
+  visible(): boolean;
+  toggle(): void;
+  dismiss(): void;
+  scrollPosition(): number;
 }
 
 /** Minimal layout/event boundary; runs the actual shipped script, not a copy of its selector. */
 function harness(
-  options: { hash?: string; scroll?: number; tops?: number[]; footerTop?: number } = {},
+  options: {
+    hash?: string;
+    scroll?: number;
+    tops?: number[];
+    footerTop?: number;
+    desktop?: boolean;
+    storage?: Record<string, string>;
+    blockedStorage?: boolean;
+  } = {},
 ): PositionHarness {
   const context = {
     initialHash: options.hash ?? '',
     initialScroll: options.scroll ?? 0,
     tops: options.tops ?? [100, 600, 900],
     footerTop: options.footerTop ?? 1200,
+    initialDesktop: options.desktop ?? true,
+    stored: options.storage ?? {},
+    blockedStorage: options.blockedStorage ?? false,
   };
   return runInNewContext(
     String.raw`
@@ -54,6 +69,11 @@ function harness(
       scrollTo: (_x, y) => { window.scrollY = y; }
     };
     const location = { hash: initialHash, pathname: '/doc', search: '' };
+    const history = { replaceState() {} };
+    const localStorage = {
+      getItem(key) { if (blockedStorage) throw new Error('Storage unavailable'); return stored[key] ?? null; },
+      setItem(key, value) { if (blockedStorage) throw new Error('Storage unavailable'); stored[key] = value; }
+    };
     const body = element(), trigger = element(), close = element(), scrim = element();
     const article = element(), panel = element(), nav = element(), banner = element();
     const footer = element();
@@ -68,7 +88,7 @@ function harness(
       heading.id = id;
       heading.parentElement = article;
       heading.getBoundingClientRect = () => ({ top: tops[i] - window.scrollY });
-      heading.scrollIntoView = () => {};
+      heading.scrollIntoView = () => { window.scrollY = Math.max(0, tops[i] - 76); };
       links.push(link); headings.push(heading); items.push(item);
     }
     article.contains = target => headings.includes(target);
@@ -83,7 +103,7 @@ function harness(
       querySelector: selector => ({ '.toc-trigger': trigger, 'article': article, '.toc-scrim': scrim, '.mote-banner': banner, '.mote-colophon': footer })[selector],
       querySelectorAll: () => [], addEventListener() {}
     };
-    const media = { matches: true, addEventListener() {} };
+    const media = { matches: initialDesktop, addEventListener: (_name, fn) => callbacks.set('mediachange', fn) };
     const matchMedia = () => media;
     const requestAnimationFrame = fn => { queued.push(fn); return ++nextFrame; };
     const getComputedStyle = () => ({ scrollMarginTop: '76px' });
@@ -107,7 +127,17 @@ function harness(
       hash(id, landing) { location.hash = '#' + id; window.scrollY = landing; callbacks.get('hashchange')(); flush(); },
       reflow() { callbacks.get('resize')(); flush(); },
       bottom: () => panel.style.getPropertyValue('--toc-bottom'),
-      resize(height, desktop = true) { window.innerHeight = height; media.matches = desktop; callbacks.get('resize')(); flush(); }
+      resize(height, desktop = true) {
+        window.innerHeight = height;
+        const changed = media.matches !== desktop;
+        media.matches = desktop;
+        if (changed) callbacks.get('mediachange')();
+        callbacks.get('resize')(); flush();
+      },
+      visible: () => trigger.getAttribute('aria-expanded') === 'true',
+      scrollPosition: () => window.scrollY,
+      toggle() { trigger.handlers.get('click')({ button: 0, preventDefault() {} }); flush(); },
+      dismiss() { close.handlers.get('click')({ preventDefault() {} }); flush(); }
     });`,
     context,
   ) as PositionHarness;
@@ -199,5 +229,70 @@ describe('TOC footer clearance', () => {
     expect(page.bottom()).toBeNull();
     page.resize(800);
     expect(page.bottom()).toBe('96px');
+  });
+});
+
+describe('TOC visibility preference', () => {
+  it('restores both closed and open desktop preferences after a reload', () => {
+    const storage = {};
+    const first = harness({ storage });
+    expect(first.visible()).toBe(true);
+    first.dismiss();
+    const second = harness({ storage });
+    expect(second.visible()).toBe(false);
+    second.toggle();
+    expect(harness({ storage }).visible()).toBe(true);
+  });
+
+  it('remembers mobile visibility independently and saves automatic closing after navigation', () => {
+    const storage = {};
+    harness({ storage }).dismiss();
+    const mobile = harness({ storage, desktop: false });
+    expect(mobile.visible()).toBe(false);
+    mobile.toggle();
+    const reloaded = harness({ storage, desktop: false });
+    expect(reloaded.visible()).toBe(true);
+    expect(harness({ storage }).visible()).toBe(false);
+    reloaded.click('b', 400);
+    expect(harness({ storage, desktop: false }).visible()).toBe(false);
+  });
+
+  it('does not overwrite the saved preference merely when crossing a breakpoint', () => {
+    const storage = {};
+    const page = harness({ storage, desktop: false });
+    page.toggle();
+    page.resize(800, true);
+    expect(harness({ storage, desktop: false }).visible()).toBe(true);
+  });
+
+  it('positions a deep link before locking the restored mobile dialog', () => {
+    const page = harness({
+      desktop: false,
+      hash: '#b',
+      storage: { 'mote:toc:mobile': 'open' },
+    });
+    expect(page.visible()).toBe(true);
+    expect(page.current()).toBe('#b');
+    page.dismiss();
+    expect(page.scrollPosition()).toBe(524);
+  });
+
+  it('lets an explicit contents fragment reopen a previously closed directory', () => {
+    const storage = { 'mote:toc:desktop': 'closed' };
+    expect(harness({ storage, hash: '#mote-toc' }).visible()).toBe(true);
+    expect(harness({ storage }).visible()).toBe(true);
+  });
+
+  it('falls back to the normal defaults for unavailable or invalid storage', () => {
+    const page = harness({ blockedStorage: true });
+    expect(page.visible()).toBe(true);
+    page.toggle();
+    expect(page.visible()).toBe(false);
+    page.toggle();
+    expect(page.visible()).toBe(true);
+    expect(harness({ blockedStorage: true, desktop: false }).visible()).toBe(false);
+    const storage = { 'mote:toc:desktop': 'invalid', 'mote:toc:mobile': 'invalid' };
+    expect(harness({ storage }).visible()).toBe(true);
+    expect(harness({ storage, desktop: false }).visible()).toBe(false);
   });
 });

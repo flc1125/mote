@@ -9,12 +9,19 @@ export const TOC_SCRIPT = String.raw`(() => {
   const close = panel.querySelector('.toc-close');
   const footer = document.querySelector('.mote-colophon');
   const desktop = matchMedia('(min-width: 1100px)');
+  // Save only a display preference, never document identifiers or headings.
+  function savedVisibility(mode) {
+    try { return localStorage.getItem('mote:toc:' + mode); } catch { return null; }
+  }
+  function saveVisibility(open) {
+    try { localStorage.setItem('mote:toc:' + (desktop.matches ? 'desktop' : 'mobile'), open ? 'open' : 'closed'); } catch {}
+  }
   const background = [...document.querySelectorAll('.mote-banner, main, .mote-colophon')];
   const entries = [...nav.querySelectorAll('a[href^="#"]')].map(link => ({
     link, heading: document.getElementById(link.getAttribute('href').slice(1))
   })).filter(entry => entry.heading && article.contains(entry.heading));
   let mobileOpen = false;
-  let desktopCollapsed = false;
+  let desktopCollapsed = savedVisibility('desktop') === 'closed';
   let lockedScroll = null;
   let current = null;
   let navigationEntry = null;
@@ -142,7 +149,9 @@ export const TOC_SCRIPT = String.raw`(() => {
   function openPanel() {
     if (desktop.matches) desktopCollapsed = false;
     else mobileOpen = true;
+    saveVisibility(true);
     syncPanel();
+    schedule(true);
     revealCurrent();
     // Let the responsive panel become focusable before moving keyboard focus.
     requestAnimationFrame(() => { if (visible()) close.focus({ preventScroll: true }); });
@@ -151,6 +160,7 @@ export const TOC_SCRIPT = String.raw`(() => {
   function closePanel(returnFocus = true) {
     mobileOpen = false;
     if (desktop.matches) desktopCollapsed = true;
+    saveVisibility(false);
     syncPanel();
     if (location.hash === '#mote-toc') history.replaceState(null, '', location.pathname + location.search);
     if (returnFocus) trigger.focus({ preventScroll: true });
@@ -229,6 +239,7 @@ export const TOC_SCRIPT = String.raw`(() => {
       if (unfolded) target.scrollIntoView();
     }
     schedule(true);
+    return target;
   }
 
   desktop.addEventListener('change', () => {
@@ -260,6 +271,11 @@ export const TOC_SCRIPT = String.raw`(() => {
   }
   body.setAttribute('data-toc-enhanced', '');
   syncPanel();
-  onHashChange();
+  const initialTarget = onHashChange();
+  if (!desktop.matches && location.hash !== '#mote-toc' && savedVisibility('mobile') === 'open') {
+    // Complete deep-link positioning before the restored modal locks scrolling.
+    if (initialTarget && article.contains(initialTarget)) initialTarget.scrollIntoView();
+    openPanel();
+  }
   schedule(true);
 })();`;
