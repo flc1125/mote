@@ -16,6 +16,9 @@ export const TOC_SCRIPT = String.raw`(() => {
   let desktopCollapsed = false;
   let lockedScroll = null;
   let current = null;
+  let navigationEntry = null;
+  let navigationScroll = null;
+  let userScrollPending = false;
   let positions = [];
   let frame = 0;
   let layoutDirty = true;
@@ -76,6 +79,13 @@ export const TOC_SCRIPT = String.raw`(() => {
     if (desktop.matches && !navHovered && !nav.contains(document.activeElement)) revealCurrent();
   }
 
+  function selectNavigation(entry) {
+    navigationEntry = entry;
+    navigationScroll = null;
+    userScrollPending = false;
+    if (entry) setCurrent(entry);
+  }
+
   function update() {
     frame = 0;
     if (lockedScroll !== null) return;
@@ -86,15 +96,29 @@ export const TOC_SCRIPT = String.raw`(() => {
       layoutDirty = false;
     }
     if (!positions.length) return;
-    const threshold = window.scrollY + document.querySelector('.mote-banner').getBoundingClientRect().height + 20;
+    // Initial fragment jumps and image/layout changes can scroll after the
+    // first paint. Keep explicit navigation selected until the reader actually
+    // scrolls, even when several anchors share the same clamped landing point.
+    if (navigationEntry) {
+      const moved = navigationScroll !== null && Math.abs(window.scrollY - navigationScroll) > 2;
+      if (!userScrollPending || !moved) {
+        navigationScroll = window.scrollY;
+        setCurrent(navigationEntry);
+        return;
+      }
+      navigationEntry = null;
+      userScrollPending = false;
+    }
+    const margin = parseFloat(getComputedStyle(positions[0].entry.heading).scrollMarginTop) || 0;
+    const readingLine = Math.max(margin, document.querySelector('.mote-banner').getBoundingClientRect().height + 12);
+    const threshold = window.scrollY + readingLine + 2;
     let low = 0, high = positions.length;
     while (low < high) {
       const middle = (low + high) >>> 1;
       if (positions[middle].top <= threshold) low = middle + 1;
       else high = middle;
     }
-    const atEnd = window.scrollY > 0 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
-    setCurrent(positions[atEnd ? positions.length - 1 : Math.max(0, low - 1)].entry);
+    setCurrent(positions[Math.max(0, low - 1)].entry);
   }
 
   function schedule(rebuild = false) {
@@ -155,7 +179,7 @@ export const TOC_SCRIPT = String.raw`(() => {
       for (let parent = entry.heading.parentElement; parent && parent !== article; parent = parent.parentElement) {
         if (parent.tagName === 'DETAILS') parent.open = true;
       }
-      setCurrent(entry);
+      selectNavigation(entry);
       schedule(true);
     });
   }
@@ -183,6 +207,7 @@ export const TOC_SCRIPT = String.raw`(() => {
     if (mobileOpen) closePanel(false);
     let target;
     try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch { return; }
+    selectNavigation(entries.find(entry => entry.heading === target) || null);
     if (target && article.contains(target)) {
       let unfolded = false;
       for (let parent = target.parentElement; parent && parent !== article; parent = parent.parentElement) {
@@ -199,6 +224,16 @@ export const TOC_SCRIPT = String.raw`(() => {
     syncPanel();
     if (focusInside && !visible()) trigger.focus({ preventScroll: true });
     schedule(true);
+  });
+  function markUserScroll(event) {
+    if (!panel.contains(event.target)) userScrollPending = true;
+  }
+  window.addEventListener('wheel', markUserScroll, { passive: true });
+  window.addEventListener('touchmove', markUserScroll, { passive: true });
+  // Includes scrollbar dragging; merely clicking without scrolling keeps the selection.
+  window.addEventListener('pointerdown', markUserScroll, { passive: true });
+  window.addEventListener('keydown', event => {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) markUserScroll(event);
   });
   window.addEventListener('scroll', () => schedule(), { passive: true });
   window.addEventListener('resize', () => schedule(true), { passive: true });
