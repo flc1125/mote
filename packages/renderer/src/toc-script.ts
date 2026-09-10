@@ -8,7 +8,7 @@ export const TOC_SCRIPT = String.raw`(() => {
   const nav = panel.querySelector('.toc-nav');
   const close = panel.querySelector('.toc-close');
   const footer = document.querySelector('.mote-colophon');
-  const desktop = matchMedia('(min-width: 1100px)');
+  const desktop = matchMedia('(min-width: 1140px)');
   // Save only a display preference, never document identifiers or headings.
   function savedVisibility(mode) {
     try { return localStorage.getItem('mote:toc:' + mode); } catch { return null; }

@@ -2,7 +2,7 @@ import { BASE_CSS, TOKENS_CSS } from '@mote/theme';
 
 /**
  * Document CSS, inlined into every rendered document (baseline §29, §30):
- * a clean, reading-first page on the shared Mote tokens — 720px prose
+ * a clean, reading-first page on the shared Mote tokens — 760px prose
  * column, 17px/1.75 body text, rule-free headings, softly framed tables,
  * accent-red used only for links, quotes and the brand mark. The slim
  * banner is sticky and blurred; dark mode comes from the token palette,
@@ -23,7 +23,7 @@ const DOCUMENT_CSS = `
 }
 
 .mote-banner-inner {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
   padding: 12px 20px;
   display: flex;
@@ -53,7 +53,7 @@ const DOCUMENT_CSS = `
 }
 
 main {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
   padding: 3rem 20px 4rem;
 }
@@ -440,12 +440,12 @@ body[data-toc-modal] { position: fixed; left: 0; right: 0; }
 .toc-toggle:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: -2px; }
 li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color: var(--mote-accent); }
 
-@media (min-width: 1100px) {
+@media (min-width: 1140px) {
   .has-toc:not([data-toc-collapsed]) main,
-  .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin-left: calc((100% - 1052px) / 2); margin-right: 0; }
-  .has-toc:not([data-toc-collapsed]) .mote-banner-inner { max-width: 1012px; }
+  .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin-left: calc((100% - 1092px) / 2); margin-right: 0; }
+  .has-toc:not([data-toc-collapsed]) .mote-banner-inner { max-width: 1052px; }
   .toc-drawer {
-    left: calc(50% + 266px);
+    left: calc(50% + 286px);
     top: 88px;
     bottom: var(--toc-bottom, 32px);
     width: 260px;
@@ -479,8 +479,8 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
 @media (min-width: 1440px) {
   .has-toc:not([data-toc-collapsed]) main,
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin-left: auto; margin-right: auto; }
-  .has-toc:not([data-toc-collapsed]) .mote-banner-inner { max-width: 720px; }
-  .toc-drawer { left: calc(50% + 412px); }
+  .has-toc:not([data-toc-collapsed]) .mote-banner-inner { max-width: 760px; }
+  .toc-drawer { left: calc(50% + 432px); }
 }
 @media (min-width: 1600px) {
   .toc-drawer { width: 300px; }
@@ -525,7 +525,7 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 .mote-colophon { border-top: 1px solid var(--mote-border); }
 
 .mote-colophon-inner {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
   padding: 22px 20px 34px;
   display: flex;
