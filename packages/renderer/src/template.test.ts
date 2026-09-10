@@ -46,8 +46,12 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
 
   it('provides static anchors and an accessible outline shell', () => {
     expect(page).toContain('<a class="toc-trigger" href="#mote-toc"');
+    expect(page).toMatch(
+      /aria-label="Open table of contents" title="Show contents"><svg[^]*?<\/svg><\/a>/,
+    );
+    expect(page).toContain('<span class="toc-title">Contents</span>');
     expect(page).toContain(
-      '<aside class="toc-drawer" id="mote-toc" aria-label="目录 / Table of contents" tabindex="-1">',
+      '<aside class="toc-drawer" id="mote-toc" aria-label="Table of contents" tabindex="-1">',
     );
     expect(page).toContain('<a class="toc-scrim" href="#!"');
     expect(page).toContain('<nav class="toc">x</nav>');

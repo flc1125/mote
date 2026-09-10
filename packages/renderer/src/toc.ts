@@ -44,7 +44,7 @@ function renderNodes(nodes: TocNode[], depth = 0, counter = { value: 0 }): strin
     const slug = escapeHtml(node.heading.slug);
     const groupId = `mote-toc-group-${counter.value++}`;
     const toggle = node.children.length
-      ? `<button class="toc-toggle" type="button" aria-expanded="true" aria-controls="${groupId}" aria-label="展开或收起子章节 / Toggle subheadings: ${text}" hidden><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`
+      ? `<button class="toc-toggle" type="button" aria-expanded="true" aria-controls="${groupId}" aria-label="Toggle subheadings: ${text}" hidden><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`
       : '';
     const children = node.children.length
       ? `<ul class="toc-branch" id="${groupId}">${renderNodes(node.children, depth + 1, counter)}</ul>`

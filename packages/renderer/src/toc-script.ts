@@ -40,7 +40,8 @@ export const TOC_SCRIPT = String.raw`(() => {
     body.toggleAttribute('data-toc-open', mobileOpen);
     body.toggleAttribute('data-toc-collapsed', desktopCollapsed);
     trigger.setAttribute('aria-expanded', String(visible()));
-    trigger.setAttribute('aria-label', visible() ? '收起目录 / Hide table of contents' : '目录 / Open table of contents');
+    trigger.setAttribute('aria-label', visible() ? 'Close table of contents' : 'Open table of contents');
+    trigger.setAttribute('title', visible() ? 'Hide contents' : 'Show contents');
     if (modal) {
       panel.setAttribute('role', 'dialog');
       panel.setAttribute('aria-modal', 'true');

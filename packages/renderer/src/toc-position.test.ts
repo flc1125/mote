@@ -16,6 +16,7 @@ interface PositionHarness {
   toggle(): void;
   dismiss(): void;
   scrollPosition(): number;
+  triggerLabel(): { label: string; title: string };
 }
 
 /** Minimal layout/event boundary; runs the actual shipped script, not a copy of its selector. */
@@ -136,6 +137,7 @@ function harness(
       },
       visible: () => trigger.getAttribute('aria-expanded') === 'true',
       scrollPosition: () => window.scrollY,
+      triggerLabel: () => ({ label: trigger.getAttribute('aria-label'), title: trigger.getAttribute('title') }),
       toggle() { trigger.handlers.get('click')({ button: 0, preventDefault() {} }); flush(); },
       dismiss() { close.handlers.get('click')({ preventDefault() {} }); flush(); }
     });`,
@@ -233,6 +235,24 @@ describe('TOC footer clearance', () => {
 });
 
 describe('TOC visibility preference', () => {
+  it('updates the icon-only trigger label and tooltip with its restored and toggled state', () => {
+    const page = harness({ storage: { 'mote:toc:desktop': 'closed' } });
+    expect(page.triggerLabel()).toEqual({
+      label: 'Open table of contents',
+      title: 'Show contents',
+    });
+    page.toggle();
+    expect(page.triggerLabel()).toEqual({
+      label: 'Close table of contents',
+      title: 'Hide contents',
+    });
+    page.dismiss();
+    expect(page.triggerLabel()).toEqual({
+      label: 'Open table of contents',
+      title: 'Show contents',
+    });
+  });
+
   it('restores both closed and open desktop preferences after a reload', () => {
     const storage = {};
     const first = harness({ storage });

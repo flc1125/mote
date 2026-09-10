@@ -311,7 +311,7 @@ article details[open] > summary { margin-bottom: 0.6em; }
   align-items: center;
   justify-content: center;
   margin-left: auto;
-  gap: 7px;
+  min-width: 40px;
   min-height: 40px;
   box-sizing: border-box;
   padding: 8px 10px;
@@ -495,7 +495,7 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
     transform: translateY(105%);
   }
   .toc-trigger, .toc-close, .toc-row > a, .toc-toggle { min-height: 44px; }
-  .toc-close { min-width: 44px; }
+  .toc-trigger, .toc-close { min-width: 44px; }
   .toc-row > a { font-size: 14px; padding-top: 11px; padding-bottom: 11px; }
   .toc-toggle { flex-basis: 44px; }
   .toc-row > a:only-child, .toc-toggle[hidden] + a { margin-left: 44px; }

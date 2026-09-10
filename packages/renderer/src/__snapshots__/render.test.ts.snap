@@ -381,7 +381,7 @@ article details[open] > summary { margin-bottom: 0.6em; }
   align-items: center;
   justify-content: center;
   margin-left: auto;
-  gap: 7px;
+  min-width: 40px;
   min-height: 40px;
   box-sizing: border-box;
   padding: 8px 10px;
@@ -565,7 +565,7 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
     transform: translateY(105%);
   }
   .toc-trigger, .toc-close, .toc-row > a, .toc-toggle { min-height: 44px; }
-  .toc-close { min-width: 44px; }
+  .toc-trigger, .toc-close { min-width: 44px; }
   .toc-row > a { font-size: 14px; padding-top: 11px; padding-bottom: 11px; }
   .toc-toggle { flex-basis: 44px; }
   .toc-row > a:only-child, .toc-toggle[hidden] + a { margin-left: 44px; }
@@ -644,14 +644,14 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 </style>
 </head>
 <body class="has-toc">
-<aside class="toc-drawer" id="mote-toc" aria-label="目录 / Table of contents" tabindex="-1">
-<div class="toc-drawer-head"><span class="toc-title">目录 / Contents</span><a class="toc-close" href="#!" tabindex="0" aria-label="关闭目录 / Close table of contents">×</a></div>
-<nav class="toc-nav" aria-label="Table of contents"><ul><li><div class="toc-row" title="Mote 设计文档" style="--toc-depth:0"><button class="toc-toggle" type="button" aria-expanded="true" aria-controls="mote-toc-group-0" aria-label="展开或收起子章节 / Toggle subheadings: Mote 设计文档" hidden><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><a href="#mote-设计文档">Mote 设计文档</a></div><ul class="toc-branch" id="mote-toc-group-0"><li><div class="toc-row" title="背景" style="--toc-depth:1"><a href="#背景">背景</a></div></li><li><div class="toc-row" title="小结" style="--toc-depth:1"><a href="#小结">小结</a></div></li></ul></li></ul></nav>
+<aside class="toc-drawer" id="mote-toc" aria-label="Table of contents" tabindex="-1">
+<div class="toc-drawer-head"><span class="toc-title">Contents</span><a class="toc-close" href="#!" tabindex="0" aria-label="Close table of contents" title="Hide contents">×</a></div>
+<nav class="toc-nav" aria-label="Table of contents"><ul><li><div class="toc-row" title="Mote 设计文档" style="--toc-depth:0"><button class="toc-toggle" type="button" aria-expanded="true" aria-controls="mote-toc-group-0" aria-label="Toggle subheadings: Mote 设计文档" hidden><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><a href="#mote-设计文档">Mote 设计文档</a></div><ul class="toc-branch" id="mote-toc-group-0"><li><div class="toc-row" title="背景" style="--toc-depth:1"><a href="#背景">背景</a></div></li><li><div class="toc-row" title="小结" style="--toc-depth:1"><a href="#小结">小结</a></div></li></ul></li></ul></nav>
 </aside>
 <a class="toc-scrim" href="#!" aria-hidden="true" tabindex="-1"></a>
 <header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-<a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="目录 / Open table of contents"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M2.5 4.5h13M2.5 9h13M2.5 13.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>目录 / Contents</span></a></div></header>
+<a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="Open table of contents" title="Show contents"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 4.5h8M7 9h8M7 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><g fill="currentColor"><circle cx="3" cy="4.5" r="1"/><circle cx="3" cy="9" r="1"/><circle cx="3" cy="13.5" r="1"/></g></svg></a></div></header>
 <main>
 <article>
 <h1 id="mote-设计文档">Mote 设计文档</h1>
@@ -726,7 +726,8 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
     body.toggleAttribute('data-toc-open', mobileOpen);
     body.toggleAttribute('data-toc-collapsed', desktopCollapsed);
     trigger.setAttribute('aria-expanded', String(visible()));
-    trigger.setAttribute('aria-label', visible() ? '收起目录 / Hide table of contents' : '目录 / Open table of contents');
+    trigger.setAttribute('aria-label', visible() ? 'Close table of contents' : 'Open table of contents');
+    trigger.setAttribute('title', visible() ? 'Hide contents' : 'Show contents');
     if (modal) {
       panel.setAttribute('role', 'dialog');
       panel.setAttribute('aria-modal', 'true');
