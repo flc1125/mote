@@ -1,3 +1,4 @@
+import { HISTORY_SCRIPT } from './history-script.js';
 import { Script } from 'node:vm';
 import { Parser } from 'htmlparser2';
 import { describe, expect, it } from 'vitest';
@@ -48,7 +49,7 @@ describe('TOC enhancement boundary', () => {
         if (tag === 'script') inScript = false;
       },
     }).end(html);
-    expect(scripts).toEqual([TOC_SCRIPT]);
+    expect(scripts).toEqual([TOC_SCRIPT, HISTORY_SCRIPT]);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toContain('mote-toc-group-0-1');
     expect(TOC_SCRIPT).not.toContain('attack()');

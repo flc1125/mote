@@ -93,6 +93,7 @@ code, kbd, pre {
 }
 
 .mote-banner-inner {
+  position: relative;
   max-width: 760px;
   margin: 0 auto;
   padding: 12px 20px;
@@ -374,13 +375,47 @@ article summary { cursor: pointer; font-weight: 600; }
 article summary:hover { color: var(--mote-accent); }
 article details[open] > summary { margin-bottom: 0.6em; }
 
+/* A compact history disclosure in the document header. */
+.history-menu { margin-left: auto; }
+.history-menu > summary { list-style: none; }
+.history-menu > summary::-webkit-details-marker { display: none; }
+.history-footer button:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.history-panel {
+  position: absolute; top: calc(100% - 2px); right: 20px; width: min(280px, calc(100vw - 40px));
+  box-sizing: border-box; padding: 6px; border: 1px solid var(--mote-border); border-radius: 8px;
+  background: var(--mote-bg); box-shadow: 0 8px 24px rgb(0 0 0 / 0.1);
+}
+.history-panel ul {
+  list-style: none; padding: 0; margin: 0; max-height: min(240px, calc(100vh - 160px));
+  max-height: min(240px, calc(100dvh - 160px)); overflow-y: auto; overscroll-behavior: contain;
+}
+.history-panel li { margin: 0; }
+.history-panel a {
+  display: block; padding: 6px 8px; border-radius: 4px; font-size: 13px; line-height: 20px;
+  color: var(--mote-fg); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.history-panel a:hover, .history-panel a[aria-current] { color: var(--mote-accent); background: var(--mote-tint); }
+.history-panel a:focus-visible { outline-offset: -2px; }
+.history-panel [role="status"] { margin: 8px; color: var(--mote-muted); font-size: 12px; }
+.history-footer {
+  display: flex; align-items: center; justify-content: flex-end;
+  margin-top: 4px; padding: 6px 0 0; border-top: 1px solid var(--mote-border);
+  font-size: 11px; color: var(--mote-muted);
+}
+.history-footer button {
+  min-height: 28px; padding: 4px 6px; border: 0; background: transparent; color: var(--mote-muted);
+  font: inherit; font-size: 11px; cursor: pointer; border-radius: 4px;
+}
+.history-footer button:hover:not(:disabled) { color: var(--mote-accent); background: var(--mote-tint); }
+.history-footer button:disabled { opacity: 0.45; cursor: default; }
+
 /* Static anchors work without JavaScript. Enhancement adds state, focus
    management and scroll position; it never changes the rendered article. */
-.toc-trigger {
-  display: inline-flex;
+.toc-trigger, .history-menu > summary {
+  display: flex;
+  cursor: pointer;
   align-items: center;
   justify-content: center;
-  margin-left: auto;
   min-width: 40px;
   min-height: 40px;
   box-sizing: border-box;
@@ -391,8 +426,12 @@ article details[open] > summary { margin-bottom: 0.6em; }
   color: var(--mote-muted);
   text-decoration: none;
 }
-.toc-trigger:hover { color: var(--mote-accent); background: var(--mote-tint); }
-.toc-trigger[aria-expanded="true"] { color: var(--mote-fg); }
+.toc-trigger:hover, .history-menu > summary:hover { color: var(--mote-accent); background: var(--mote-tint); }
+.toc-trigger[aria-expanded="true"], .history-menu[open] > summary { color: var(--mote-fg); }
+
+.toc-trigger:focus-visible, .history-menu > summary:focus-visible {
+  outline: 2px solid var(--mote-accent); outline-offset: 3px; border-radius: 999px;
+}
 
 .toc-scrim {
   position: fixed;
@@ -556,6 +595,8 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
   .toc-drawer { width: 300px; }
 }
 @media (max-width: 767px) {
+  .history-panel a { padding-top: 10px; padding-bottom: 10px; }
+  .history-footer button { min-height: 36px; }
   .toc-drawer {
     top: auto; left: 0; right: 0; bottom: 0;
     width: 100%; height: min(80vh, 680px); height: min(80dvh, 680px);
@@ -564,8 +605,8 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
     border-radius: 18px 18px 0 0;
     transform: translateY(105%);
   }
-  .toc-trigger, .toc-close, .toc-row > a, .toc-toggle { min-height: 44px; }
-  .toc-trigger, .toc-close { min-width: 44px; }
+  .toc-trigger, .history-menu > summary, .toc-close, .toc-row > a, .toc-toggle { min-height: 44px; }
+  .toc-trigger, .history-menu > summary, .toc-close { min-width: 44px; }
   .toc-row > a { font-size: 14px; padding-top: 11px; padding-bottom: 11px; }
   .toc-toggle { flex-basis: 44px; }
   .toc-row > a:only-child, .toc-toggle[hidden] + a { margin-left: 44px; }
@@ -631,7 +672,7 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
-  .toc-trigger, .toc-scrim, .toc-drawer { display: none; }
+  .toc-trigger, .toc-scrim, .toc-drawer, .history-menu { display: none; }
   .has-toc:not([data-toc-collapsed]) main,
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin: 0 auto; }
   body[data-toc-modal] { position: static; }
@@ -652,6 +693,13 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 <a class="toc-scrim" href="#!" aria-hidden="true" tabindex="-1"></a>
 <header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
+<details class="history-menu">
+<summary aria-label="History" title="History"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+<div class="history-panel">
+<ul aria-label="Recently visited documents"></ul>
+<p role="status">Enable JavaScript to view history.</p>
+<div class="history-footer"><button type="button" disabled>Clear</button></div>
+</div></details>
 <a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="Open table of contents" title="Show contents"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 4.5h8M7 9h8M7 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><g fill="currentColor"><circle cx="3" cy="4.5" r="1"/><circle cx="3" cy="9" r="1"/><circle cx="3" cy="13.5" r="1"/></g></svg></a></div></header>
 <main>
 <article>
@@ -966,6 +1014,101 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
     openPanel();
   }
   schedule(true);
+})();</script>
+<script>(() => {
+  const menu = document.querySelector('.history-menu');
+  if (!menu) return;
+  const trigger = menu.querySelector('summary');
+  const list = menu.querySelector('ul');
+  const status = menu.querySelector('[role="status"]');
+  const clear = menu.querySelector('button');
+  const key = 'mote:recent:v1';
+  const validId = id => typeof id === 'string' && /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{16}$/.test(id);
+  const segments = location.pathname.split('/').filter(Boolean);
+  const currentId = segments.length === 1 && validId(segments[0]) ? segments[0] : null;
+
+  function read() {
+    const raw = localStorage.getItem(key);
+    if (!raw || raw.length > 65536) return [];
+    let entries;
+    try { entries = JSON.parse(raw); } catch { return []; }
+    if (!Array.isArray(entries)) return [];
+    const seen = new Set();
+    return entries.filter(entry => {
+      if (!entry || !validId(entry.id) || typeof entry.title !== 'string' || seen.has(entry.id)) return false;
+      seen.add(entry.id);
+      return true;
+    }).slice(0, 20).map(entry => ({ id: entry.id, title: entry.title.slice(0, 300) }));
+  }
+
+  function unavailable() {
+    list.replaceChildren();
+    clear.disabled = true;
+    status.hidden = false;
+    status.textContent = 'History is unavailable in this browser.';
+  }
+
+  function show() {
+    try {
+      const entries = read();
+      list.replaceChildren();
+      status.hidden = entries.length > 0;
+      status.textContent = 'No recent documents.';
+      clear.disabled = entries.length === 0;
+      for (const entry of entries) {
+        const item = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '/' + entry.id;
+        link.textContent = entry.title || 'Untitled document';
+        link.title = link.textContent;
+        if (entry.id === currentId) link.setAttribute('aria-current', 'page');
+        item.append(link);
+        list.append(item);
+      }
+    } catch { unavailable(); }
+  }
+
+  function record() {
+    if (!currentId || document.visibilityState !== 'visible') return;
+    try {
+      const entries = [{ id: currentId, title: document.title.slice(0, 300) },
+        ...read().filter(entry => entry.id !== currentId)].slice(0, 20);
+      localStorage.setItem(key, JSON.stringify(entries));
+    } catch { /* Reading must work even if storage is blocked or full. */ }
+  }
+
+  function close(returnFocus = false) {
+    menu.open = false;
+    if (returnFocus) trigger.focus({ preventScroll: true });
+  }
+  menu.addEventListener('toggle', () => { if (menu.open) show(); });
+  document.addEventListener('click', event => { if (!menu.contains(event.target)) close(); });
+  document.addEventListener('focusin', event => { if (!menu.contains(event.target)) close(); });
+  document.addEventListener('keydown', event => {
+    if (menu.open && event.key === 'Escape') { event.preventDefault(); close(true); }
+  });
+  clear.addEventListener('click', () => {
+    try {
+      localStorage.removeItem(key);
+      show();
+      trigger.focus({ preventScroll: true });
+    } catch { unavailable(); }
+  });
+  window.addEventListener('storage', event => {
+    if (menu.open && (event.key === key || event.key === null)) show();
+  });
+  window.addEventListener('pageshow', event => { if (event.persisted) record(); });
+  record();
+  // Record a background tab on its first view, without recreating cleared
+  // entries when an already-read tab merely regains focus.
+  if (document.visibilityState !== 'visible') {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      document.removeEventListener('visibilitychange', onVisible);
+      record();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+  }
 })();</script>
 </body>
 </html>

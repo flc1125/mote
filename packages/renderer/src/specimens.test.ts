@@ -1,3 +1,4 @@
+import { HISTORY_SCRIPT } from './history-script.js';
 import { readFileSync } from 'node:fs';
 import { Parser } from 'htmlparser2';
 import { describe, expect, it } from 'vitest';
@@ -68,10 +69,13 @@ describe('committed compatibility specimens', () => {
     expect(html).not.toContain('暂以源码显示');
     expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
       TOC_SCRIPT,
+      HISTORY_SCRIPT,
     ]);
-    expect(html.replace(`<script>${TOC_SCRIPT}</script>`, '')).not.toMatch(
-      /<(?:script|iframe|foreignObject)\b/,
-    );
+    expect(
+      html
+        .replace(`<script>${TOC_SCRIPT}</script>`, '')
+        .replace(`<script>${HISTORY_SCRIPT}</script>`, ''),
+    ).not.toMatch(/<(?:script|iframe|foreignObject)\b/);
   });
   it('renders supplementary charts with all relationship labels and series', () => {
     const html = renderMarkdown(specimen('markdown-diagrams'), new Map()).html;

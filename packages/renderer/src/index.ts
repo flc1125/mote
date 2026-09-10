@@ -31,3 +31,5 @@ export * from './styles.js';
 export * from './template.js';
 export * from './toc.js';
 export { TOC_SCRIPT } from './toc-script.js';
+
+export { HISTORY_SCRIPT } from './history-script.js';

@@ -1,4 +1,5 @@
 import { escapeHtml } from './escape.js';
+import { HISTORY_SCRIPT } from './history-script.js';
 import { PAGE_CSS } from './styles.js';
 import { TOC_SCRIPT } from './toc-script.js';
 
@@ -40,6 +41,13 @@ ${tocHtml}</aside>
 <body${tocHtml === '' ? '' : ' class="has-toc"'}>
 ${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
+<details class="history-menu">
+<summary aria-label="History" title="History"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+<div class="history-panel">
+<ul aria-label="Recently visited documents"></ul>
+<p role="status">Enable JavaScript to view history.</p>
+<div class="history-footer"><button type="button" disabled>Clear</button></div>
+</div></details>
 ${tocTrigger}</div></header>
 <main>
 <article>
@@ -49,6 +57,7 @@ ${contentHtml}</article>
 <span class="mote-colophon-mark" aria-hidden="true"></span><span>Published with <a href="/">Mote</a></span>
 </div></footer>
 ${tocHtml === '' ? '' : `<script>${TOC_SCRIPT}</script>`}
+<script>${HISTORY_SCRIPT}</script>
 </body>
 </html>
 `;

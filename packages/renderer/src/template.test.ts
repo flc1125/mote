@@ -1,3 +1,4 @@
+import { HISTORY_SCRIPT } from './history-script.js';
 import { describe, expect, it } from 'vitest';
 
 import { TOC_SCRIPT } from './toc-script.js';
@@ -16,11 +17,12 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
     expect(page).toContain('<meta name="viewport" content="width=device-width, initial-scale=1">');
   });
 
-  it('inlines CSS and only the fixed TOC enhancement', () => {
+  it('inlines CSS and only the fixed TOC and history enhancements', () => {
     expect(page).toContain('<style>');
     expect(page).toContain('prefers-color-scheme: dark');
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
       TOC_SCRIPT,
+      HISTORY_SCRIPT,
     ]);
   });
 
@@ -61,7 +63,9 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
     const bare = renderHtmlPage({ title: 'T', tocHtml: '', contentHtml: '<p>x</p>' });
     expect(bare).not.toContain('<aside class="toc-drawer"');
     expect(bare).not.toContain('<a class="toc-trigger"');
-    expect(bare).not.toContain('<script>');
+    expect(bare).not.toContain(`<script>${TOC_SCRIPT}</script>`);
+    expect(bare).toContain(`<script>${HISTORY_SCRIPT}</script>`);
+    expect(bare).toContain('<details class="history-menu">');
   });
 
   it('points the brand links at the same-origin home (self-host friendly)', () => {

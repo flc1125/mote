@@ -5,10 +5,24 @@ The supported format is defined below; Mote does not claim complete compatibilit
 with every Markdown editor or every Mermaid feature.
 
 Published Markdown and document IDs stay unchanged. Server-side rendering produces
-static HTML, MathML and sanitized diagram SVG. Pages with headings include a fixed
-table-of-contents script, authorized by its exact CSP hash, for navigation and
-accessibility enhancements. Document content cannot execute scripts, and static
+static HTML, MathML and sanitized diagram SVG. Fixed scripts, authorized by exact
+CSP hashes, provide browser-local history and enhance the table of contents on
+pages with headings. Document content cannot execute scripts, and static
 contents links remain usable when JavaScript is disabled.
+
+## Recent history
+
+Click **History** in a document header to reopen one of the last 20 documents
+viewed in this browser. The list opens over the current page, shows titles in
+latest-visit order and moves repeated visits to the top. Documents without headings
+use the source filename. Click outside or press Escape to close the list.
+
+**Clear** removes this browser's list; it does not delete publications.
+The next document visit starts a new list. Only document IDs and titles (up to 300
+characters) are stored locally, for the current browser profile and site. There is
+no server index, device sync, separate history page or homepage entry. Others using
+the same browser profile can view these links. Clearing site data removes history;
+JavaScript or storage restrictions may make it unavailable without blocking reading.
 
 ## Support matrix
 

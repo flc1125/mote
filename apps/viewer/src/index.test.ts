@@ -2,7 +2,7 @@ import { env, exports } from 'cloudflare:workers';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { DocumentManifest } from '@mote/protocol';
-import { tocDocumentSecurityHeaders, TOC_SCRIPT } from '@mote/renderer';
+import { tocDocumentSecurityHeaders, HISTORY_SCRIPT, TOC_SCRIPT } from '@mote/renderer';
 import { HOME_HTML } from './home.js';
 import { FAVICON_BASE64, ICON_SVG } from './brand.generated.js';
 import viewer from './index.js';
@@ -43,7 +43,7 @@ async function seedBundle(): Promise<void> {
 beforeAll(seedBundle);
 
 describe('GET /{document-id}', () => {
-  it('renders static math and diagrams with only the trusted TOC script', async () => {
+  it('renders static math and diagrams with only the trusted TOC and history scripts', async () => {
     const id = 'Q9vLm2NkR7xB4PaS';
     const source =
       '# Static extensions\n\n$E=mc^2$\n\n~~~mermaid\nflowchart LR\n A-->B\n~~~\n\n~~~mermaid\nsequenceDiagram\n Alice->>Bob: Hello\n~~~';
@@ -74,10 +74,13 @@ describe('GET /{document-id}', () => {
       expect(html).not.toContain('fonts.googleapis');
       expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
         TOC_SCRIPT,
+        HISTORY_SCRIPT,
       ]);
-      expect(html.replace(`<script>${TOC_SCRIPT}</script>`, '')).not.toMatch(
-        /<(?:script|foreignObject|image)\b/,
-      );
+      expect(
+        html
+          .replace(`<script>${TOC_SCRIPT}</script>`, '')
+          .replace(`<script>${HISTORY_SCRIPT}</script>`, ''),
+      ).not.toMatch(/<(?:script|foreignObject|image)\b/);
       if (previous) expect(html).toBe(previous);
       previous = html;
     }
@@ -253,7 +256,7 @@ describe('public homepage and branding', () => {
     ]);
   });
 
-  it('isolates the homepage copy script from the document TOC script', async () => {
+  it('isolates the homepage copy script from both document scripts', async () => {
     const response = await workerFetch('http://localhost/');
     const html = await response.text();
     const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
@@ -273,19 +276,22 @@ describe('public homepage and branding', () => {
     }
     const document = await workerFetch(`http://localhost/${ID}`);
     const documentHtml = await document.text();
-    const tocScript = [...documentHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)];
-    expect(tocScript.map((match) => match[1])).toEqual([TOC_SCRIPT]);
-    const tocDigest = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(tocScript[0]![1]!),
+    const documentScripts = [...documentHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(
+      (match) => match[1]!,
     );
-    const tocHash = btoa(String.fromCharCode(...new Uint8Array(tocDigest)));
+    expect(documentScripts).toEqual([TOC_SCRIPT, HISTORY_SCRIPT]);
+    const hashes = await Promise.all(
+      documentScripts.map(async (script) => {
+        const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(script));
+        return btoa(String.fromCharCode(...new Uint8Array(digest)));
+      }),
+    );
     const documentPolicy = document.headers.get('Content-Security-Policy')!;
     expect(
       documentPolicy.split('; ').find((directive) => directive.startsWith('script-src ')),
-    ).toBe(`script-src 'sha256-${tocHash}'`);
+    ).toBe(`script-src ${hashes.map((value) => `'sha256-${value}'`).join(' ')}`);
     expect(documentPolicy).not.toContain(hash);
-    expect(policy).not.toContain(tocHash);
+    for (const value of hashes) expect(policy).not.toContain(value);
   });
 
   it('opens document and external links in new tabs while preserving in-page navigation', async () => {
@@ -355,4 +361,14 @@ describe('public homepage and branding', () => {
       expect(await response.text()).toBe('404 Not Found');
     },
   );
+});
+
+it('keeps history inside documents without changing the homepage or adding a route', async () => {
+  expect(HOME_HTML).not.toContain('<details class="history-menu">');
+  expect(HOME_HTML).not.toContain(HISTORY_SCRIPT);
+  expect((await workerFetch('http://localhost/history')).status).toBe(404);
+  const html = await (await workerFetch(`http://localhost/${ID}`)).text();
+  expect(html).toContain('<details class="history-menu">');
+  expect(html).not.toContain('href="/history"');
+  expect(html).toContain('<ul aria-label="Recently visited documents"></ul>');
 });
