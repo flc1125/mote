@@ -35,7 +35,7 @@ Published:
 https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
-Local images referenced by your Markdown are uploaded automatically (deduplicated, opaque URLs). Use `--json` for machine-readable output, `--no-assets` to skip images, `--help` for everything else.
+Local images referenced by your Markdown are uploaded automatically (deduplicated, opaque URLs). In a terminal, publishing shows scanning progress and a content summary on stderr before uploading. Use `--verbose` to include progress in redirected logs, `--json` for machine-readable output without progress, `--no-assets` to skip images, and `--help` for everything else.
 
 Full documentation: [github.com/flc1125/mote](https://github.com/flc1125/mote) — [CLI reference](https://github.com/flc1125/mote/blob/main/docs/cli.md) · [Self-hosting](https://github.com/flc1125/mote/blob/main/docs/self-hosting.md) · [MCP](https://github.com/flc1125/mote/blob/main/docs/mcp.md)
 
