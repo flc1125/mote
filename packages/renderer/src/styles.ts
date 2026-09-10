@@ -461,16 +461,16 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
   /* Native momentum scrolling can paint before the scroll handler runs.
      Keep the footer above the rail and links during that transient overlap. */
   .has-toc .mote-colophon { position: relative; z-index: 10; background: var(--mote-bg); }
-  /* Keep both lines inside the scrollable area so the active marker can
-     cover the rail without being clipped. Preserve the text indentation. */
+  /* Center the 2px marker over the 1px rail at x = 1.5px. Keep both
+     inside the scrollable area to avoid clipping their outer edges. */
   .toc-nav {
     padding-left: 0;
-    background: linear-gradient(var(--mote-border), var(--mote-border)) left top / 1px 100% no-repeat;
+    background: linear-gradient(var(--mote-border), var(--mote-border)) 1px top / 1px 100% no-repeat;
   }
   .toc-row { padding-left: calc(5px + var(--toc-depth) * 16px); }
   .toc-row > a { min-height: 32px; padding-top: 6px; padding-bottom: 6px; }
   .toc-toggle { min-height: 32px; }
-  .toc-row:has(> a[aria-current])::before { top: 8px; bottom: 8px; }
+  .toc-row:has(> a[aria-current])::before { left: 0.5px; top: 8px; bottom: 8px; }
   body .toc-scrim { display: none; }
   body[data-toc-open] .toc-drawer, body:not([data-toc-enhanced]) .toc-drawer:target { box-shadow: none; }
   body[data-toc-collapsed] .toc-drawer { visibility: hidden; }
