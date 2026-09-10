@@ -4,8 +4,32 @@ Mote renders CommonMark-style Markdown with selected GFM and document extensions
 The supported format is defined below; Mote does not claim complete compatibility
 with every Markdown editor or every Mermaid feature.
 
-Published Markdown and document IDs stay unchanged. Rendering produces static HTML,
-MathML and sanitized diagram SVG; document pages do not run JavaScript.
+Published Markdown and document IDs stay unchanged. Server-side rendering produces
+static HTML, MathML and sanitized diagram SVG. Fixed scripts, authorized by exact
+CSP hashes, provide browser-local history and enhance the table of contents on
+pages with headings. Document content cannot execute scripts, and static
+contents links remain usable when JavaScript is disabled.
+
+## Recent history
+
+Click **History** in a document header to reopen one of the last 20 documents
+viewed in this browser. The list opens over the current page, shows titles in
+latest-visit order and moves repeated visits to the top. Documents without headings
+use the source filename. Click outside or press Escape to close the list.
+
+**Record history** is on by default. Turning it off stops new records while keeping
+existing visits available. Turning it back on records the current document and
+resumes recording. The switch preference persists in this browser across reloads.
+Use the × button beside a title to remove that visit while keeping the list open.
+**Clear** removes the entire list. Neither action changes the switch or deletes publications;
+when recording is on, the next document visit starts a new list.
+
+History entries contain only document IDs and titles (up to 300 characters); the
+recording preference is stored separately. Both stay in the current browser profile
+and site. There is no server index, device sync, separate history page or homepage
+entry. Others using the same browser profile can view these links. Clearing site
+data removes history and resets recording to on. JavaScript or storage restrictions
+may make history unavailable without blocking reading.
 
 ## Support matrix
 

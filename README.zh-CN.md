@@ -103,8 +103,9 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [docs/skill.md](do
 ## 📝 Markdown 支持
 
 支持表格、任务列表、脚注、GitHub 风格提示块、静态代码高亮、中文加粗兼容、
-数学公式和有明确边界的 Mermaid 图表。文档内容在服务端渲染，响应式目录由一小段
-受 CSP 限制的自有脚本增强；文档内容不能执行脚本。
+数学公式和有明确边界的 Mermaid 图表。文档内容在服务端渲染，固定的自有脚本在
+CSP 限制下增强响应式目录和文档页顶部的 **History** 浮层，可查看当前浏览器最近访问的
+20 篇文档，支持逐条删除或清空记录。**Record history** 开关可暂停新增记录，保留已有历史；文档内容不能执行脚本。
 
 [兼容性说明与限制](docs/markdown.md) · [在线兼容性案例](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown 源文件](docs/examples/markdown-compatibility.md)
 

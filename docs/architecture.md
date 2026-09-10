@@ -95,7 +95,7 @@ documents/
 
 ## 安全要点
 
-- Raw HTML 白名单净化、仅允许固定目录脚本哈希的严格 CSP、`Referrer-Policy: no-referrer`、noindex。
+- Raw HTML 白名单净化、仅允许固定目录和历史脚本哈希的严格 CSP、`Referrer-Policy: no-referrer`、noindex。
 - 图片 MIME 以 Magic Bytes 为准；V1 不支持 SVG（Active Content 风险）。
 - 发布接口：静态 token 或经过 Access 的签名身份；Bundle ≤ 20MB、Asset ≤ 50 个。Access 模式绑定 issuer/AUD/API 主机，不支持从备用 Worker 域名旁路。
 - CLI 与本地 stdio 共享 Mote 凭据存储、刷新锁与发布管线；Codex 独立保存自己的 OAuth 凭据。远程 MCP 保持无状态，无文档所有权或用户配额新增。

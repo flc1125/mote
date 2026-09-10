@@ -31,7 +31,7 @@ function articleContent(html: string): string {
 describe('XSS security tests (§57)', () => {
   it('<script>alert(1)</script> must not become an element', () => {
     const html = renderAttack('<script>alert(1)</script>');
-    expect(html).not.toContain('<script>');
+    expect(articleContent(html)).not.toContain('<script>');
     // The allowlist sanitizer drops the script subtree entirely.
     expect(html).not.toContain('alert(1)');
   });

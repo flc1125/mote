@@ -1,3 +1,4 @@
+import { HISTORY_SCRIPT } from './history-script.js';
 import { TOC_SCRIPT } from './toc-script.js';
 
 /** Base policy: surfaces opt into an exact trusted script hash where needed. */
@@ -27,17 +28,20 @@ export function documentSecurityHeaders(): Record<string, string> {
 
 let tocHeaders: Promise<Record<string, string>> | undefined;
 
-/** Only the exact, static TOC enhancement is executable; source content never is. */
+/** Only the exact, static TOC and history scripts are executable; source content never is. */
 export async function tocDocumentSecurityHeaders(): Promise<Record<string, string>> {
   // Web Crypto runs on the first request, not during Worker module initialization.
-  tocHeaders ??= crypto.subtle
-    .digest('SHA-256', new TextEncoder().encode(TOC_SCRIPT))
-    .then((digest) => ({
-      ...documentSecurityHeaders(),
-      'Content-Security-Policy': CONTENT_SECURITY_POLICY.replace(
-        "script-src 'none'",
-        `script-src 'sha256-${btoa(String.fromCharCode(...new Uint8Array(digest)))}'`,
-      ),
-    }));
+  tocHeaders ??= Promise.all(
+    [TOC_SCRIPT, HISTORY_SCRIPT].map(async (script) => {
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(script));
+      return `'sha256-${btoa(String.fromCharCode(...new Uint8Array(digest)))}'`;
+    }),
+  ).then((hashes) => ({
+    ...documentSecurityHeaders(),
+    'Content-Security-Policy': CONTENT_SECURITY_POLICY.replace(
+      "script-src 'none'",
+      `script-src ${hashes.join(' ')}`,
+    ),
+  }));
   return { ...(await tocHeaders) };
 }
