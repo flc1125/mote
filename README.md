@@ -34,7 +34,7 @@
 - 🔒 **Immutable** — every publish creates a new URL; old URLs keep their content forever
 - 🔑 **Capability URL** — the URL is the only credential; unguessable (94-bit random ID), never indexed
 - 🖼️ **Local images** — referenced images are uploaded automatically, deduplicated, and served from opaque URLs
-- ⚡ **Fast** — Cloudflare Workers + R2 + CDN cache; no database, no JS on pages
+- ⚡ **Fast** — Cloudflare Workers + R2 + CDN cache; no database, server-rendered documents
 - 🤖 **Agent-ready** — CLI `--json` output, plus remote and local MCP servers
 
 ## 🚀 Quick Start
@@ -104,7 +104,8 @@ The skill drives the CLI or MCP tools — details: [docs/skill.md](docs/skill.md
 
 Tables, task lists, footnotes, GitHub-style alerts, static code highlighting,
 Chinese emphasis compatibility, math formulas and a bounded Mermaid subset.
-Document pages remain script-free.
+Document content is rendered on the server. A small, CSP-restricted script enhances
+the responsive table of contents; document content cannot run scripts.
 
 [Compatibility reference and limits](docs/markdown.md) · [Live compatibility specimen](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown source](docs/examples/markdown-compatibility.md)
 

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { Parser } from 'htmlparser2';
 import { describe, expect, it } from 'vitest';
 
-import { render } from './index.js';
+import { render, TOC_SCRIPT } from './index.js';
 import { renderMarkdown } from './markdown.js';
 
 const specimen = (name: string) =>
@@ -66,7 +66,12 @@ describe('committed compatibility specimens', () => {
     expect(html).toContain('hljs-keyword');
     expect(html).not.toContain('Metadata does not override');
     expect(html).not.toContain('暂以源码显示');
-    expect(html).not.toMatch(/<(?:script|iframe|foreignObject)\b/);
+    expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
+      TOC_SCRIPT,
+    ]);
+    expect(html.replace(`<script>${TOC_SCRIPT}</script>`, '')).not.toMatch(
+      /<(?:script|iframe|foreignObject)\b/,
+    );
   });
   it('renders supplementary charts with all relationship labels and series', () => {
     const html = renderMarkdown(specimen('markdown-diagrams'), new Map()).html;

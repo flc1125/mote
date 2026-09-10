@@ -87,7 +87,9 @@ describe('render (§42)', () => {
 
   it('renders a TOC drawer linking to heading anchors', () => {
     const html = render(markdown, manifest, DOCUMENT_ID);
-    expect(html).toContain('<aside class="toc-drawer" id="mote-toc">');
+    expect(html).toContain(
+      '<aside class="toc-drawer" id="mote-toc" aria-label="目录 / Table of contents" tabindex="-1">',
+    );
     expect(html).toContain('<nav class="toc-nav" aria-label="Table of contents">');
     expect(html).toContain('<a href="#背景">背景</a>');
     expect(html).toContain('<h2 id="背景">背景</h2>');
