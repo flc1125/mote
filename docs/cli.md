@@ -75,7 +75,37 @@ mote auth logout --api https://mote.example.com --json
 
 `mote login` is an alias for `mote auth login`; both remain supported. After credentials are saved successfully, login remembers the API origin in `auth/default-api.json`. You can then run `mote README.md` without `--api`, unless environment or config overrides select another instance. Explicit auth-mode settings still apply; a one-off `--api` publish does not change the saved default. Logout retains the default and OAuth selection marker but removes the selected target's OAuth credentials.
 
-Login requires an interactive terminal and rejects `--json`. `--no-browser` prints the login URL but is still interactive. `--client-id <public-id>` reuses a registration; keep its exact callback port using `--callback-port <port>`. Default storage is Keychain on verified macOS; `--credential-store file` explicitly opts into private plaintext files. There is no automatic fallback. See [storage and refresh](authentication.md#credential-storage-and-refresh).
+Login requires an interactive terminal and rejects `--json`. It displays the full
+authorization URL and waits for you to choose an action; it no longer opens a
+browser automatically. Press `o` to open the link, `c` to copy it, or `Ctrl+C` to
+cancel. Opening or copying failures leave the link available for manual use.
+`--no-browser` selects manual link mode without keyboard actions. Output redirected
+to a file or a `TERM=dumb` terminal also uses manual mode; stdin must still be a TTY.
+Open the link in a browser on the same computer as the CLI, because authorization
+returns to its loopback callback. Keep the command running until it confirms that
+credentials have been saved.
+
+```text
+Mote · Sign in
+
+Instance  https://mote.example.com
+
+Open this link to authorize:
+<full authorization URL>
+
+[o] Open browser   [c] Copy link   [Ctrl+C] Cancel
+
+Waiting for authorization…
+```
+
+The terminal reports browser/clipboard actions, then verification and credential
+storage, and finally success or an error. Human-readable status uses labeled fields;
+`--offline` explicitly identifies unverified cached state. Colors are disabled for
+redirected output, `TERM=dumb`, or when `NO_COLOR` is set. URLs are never truncated
+or manually wrapped, including in narrow terminals. Machine-readable `--json`
+results and exit codes are unchanged.
+
+`--client-id <public-id>` reuses a registration; keep its exact callback port using `--callback-port <port>`. Default storage is Keychain on verified macOS; `--credential-store file` explicitly opts into private plaintext files. There is no automatic fallback. See [storage and refresh](authentication.md#credential-storage-and-refresh).
 
 Online status verifies identity and may refresh; offline status reports cache only (`authenticated: null`). Status JSON contains mode, source, expiry if known, storage and identity, not tokens. Logout JSON includes `loggedOut: true` and `remoteRevoked: false`; it removes local OAuth credentials only and retains an OAuth selection marker. Static/service credentials and Codex credentials are unchanged.
 

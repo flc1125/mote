@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import * as oauth from 'oauth4webapi';
@@ -195,30 +194,13 @@ export async function callbackListener(
     },
   };
 }
-export async function openBrowser(url: string): Promise<boolean> {
-  const [command, args] =
-    process.platform === 'darwin'
-      ? (['open', [url]] as const)
-      : process.platform === 'win32'
-        ? (['rundll32.exe', ['url.dll,FileProtocolHandler', url]] as const)
-        : (['xdg-open', [url]] as const);
-  return new Promise((resolve) => {
-    const child = spawn(command, [...args], { stdio: 'ignore', shell: false });
-    child.once('error', () => resolve(false));
-    child.once('exit', (code) => resolve(code === 0));
-    const timer = setTimeout(() => {
-      child.kill();
-      resolve(false);
-    }, 5000);
-    timer.unref();
-    child.once('close', () => clearTimeout(timer));
-  });
-}
+export { openBrowser } from '../terminal-actions.js';
 export interface LoginOptions {
   clientId?: string;
   callbackPort?: number;
   fetchImpl?: typeof fetch;
   onUrl: (url: string) => Promise<void>;
+  onAuthorized?: () => void;
   signal?: AbortSignal;
   timeoutMs?: number;
 }
@@ -288,6 +270,7 @@ export async function login(api: string, options: LoginOptions): Promise<OAuthCr
     }).toString();
     await options.onUrl(url.href);
     const callback = oauth.validateAuthResponse(d.server, client, await listener.result, state);
+    options.onAuthorized?.();
     const response = await oauth.authorizationCodeGrantRequest(
       d.server,
       client,

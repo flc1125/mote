@@ -7,7 +7,10 @@ import { publishBundle } from './client.js';
 import { resolveConfig } from './config.js';
 import { CliError } from './errors.js';
 import { authStatus, defaultCredentialStore, prepareAuth } from './auth/manager.js';
-import { login, openBrowser } from './auth/oauth.js';
+import { login } from './auth/oauth.js';
+import type { copyLink, openBrowser } from './terminal-actions.js';
+import { loginInteraction, terminalFields, terminalText, terminalTitle } from './terminal.js';
+import type { LoginInput } from './terminal.js';
 import type { CredentialStore } from './auth/store.js';
 import { apiOrigin } from './auth/urls.js';
 
@@ -16,6 +19,8 @@ export const CLI_VERSION = packageJson.version;
 export interface CliIO {
   stdout: (text: string) => void;
   stderr: (text: string) => void;
+  stdoutIsTTY?: boolean;
+  stderrIsTTY?: boolean;
 }
 
 export interface RunDeps {
@@ -24,7 +29,9 @@ export interface RunDeps {
   configPath?: string;
   store?: CredentialStore;
   interactive?: boolean;
-  openBrowser?: (url: string) => Promise<boolean>;
+  openBrowser?: typeof openBrowser;
+  copyLink?: typeof copyLink;
+  input?: LoginInput;
   loginImpl?: typeof login;
 }
 
@@ -39,23 +46,29 @@ Usage:
   mote auth logout [--json]
 
 Options:
-  --api <url>       API origin (overrides MOTE_API_URL, config and remembered instance)
-  --token <token>   Publish token        (env: MOTE_TOKEN)
-  --auth-mode <mode> token | oauth | service (env: MOTE_AUTH_MODE)
-  --no-browser      Login: print URL instead of opening browser (interactive only)
-  --client-id <id>   Login: existing public OAuth client; otherwise register one
-  --callback-port <port> Login: registered loopback port (default: temporary port)
-  --credential-store <store> Login: keyring (default) or explicit private file
-  --offline         Auth status: cached state only, not online verification
-  Machine mode requires MOTE_SERVICE_API_URL, MOTE_SERVICE_CLIENT_ID,
-  and MOTE_SERVICE_CLIENT_SECRET. Credentials are never sent across redirects.
-  --json            Print only {"id","url"} as JSON (for agents/CI)
-  --no-assets       Do not upload local images
-  --verbose         Verbose progress on stderr
-  -h, --help        Show this help
-  -v, --version     Show version
+  --api <url>                 API origin (overrides environment and configuration)
+  --token <token>             Publish token (env: MOTE_TOKEN)
+  --auth-mode <mode>          token | oauth | service (env: MOTE_AUTH_MODE)
+  --json                      Machine-readable output (publish: {"id","url"})
+  --no-assets                 Do not upload local images
+  --verbose                   Verbose progress on stderr
+  -h, --help                  Show this help
+  -v, --version               Show version
 
-Login opens your browser and remembers the instance after credentials are saved.
+Login options (interactive terminal required):
+  --no-browser                Manual link mode without keyboard actions
+  --client-id <id>            Existing public OAuth client; otherwise register one
+  --callback-port <port>      Registered loopback port (default: temporary port)
+  --credential-store <store>  keyring (default) or explicit private file
+
+Status options:
+  --offline                   Cached state only, not online verification
+
+Machine mode requires MOTE_SERVICE_API_URL, MOTE_SERVICE_CLIENT_ID,
+and MOTE_SERVICE_CLIENT_SECRET. Credentials are never sent across redirects.
+
+Login displays an authorization link. Press o to open it or c to copy it.
+The instance is remembered after credentials are saved.
 API priority: --api > MOTE_API_URL > config apiUrl > remembered instance > https://mote.pub.
 Explicit auth-mode settings still apply. Use --auth-mode oauth for OAuth login.
 `;
@@ -88,6 +101,7 @@ function extractMarkdownFile(positionals: string[]): string {
  * stays testable; the entry point maps it to process.exitCode.
  */
 export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promise<number> {
+  const env = deps.env ?? process.env;
   try {
     const { values, positionals } = parseArgs({
       args: argv,
@@ -162,8 +176,14 @@ export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promis
           io.stderr(
             'Warning: explicitly using private plaintext credential storage, not a system credential store.',
           );
+        io.stderr(terminalTitle('Mote · Sign in', io.stderrIsTTY, env));
+        io.stderr(`\n${terminalFields([['Instance', config.apiUrl]])}`);
         const abort = new AbortController();
-        const cancel = () => abort.abort();
+        let stopInteraction = () => {};
+        const cancel = () => {
+          stopInteraction();
+          abort.abort();
+        };
         process.once('SIGINT', cancel);
         process.once('SIGTERM', cancel);
         try {
@@ -174,11 +194,22 @@ export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promis
               callbackPort,
               signal: abort.signal,
               onUrl: async (url) => {
-                if (values['no-browser'] || !(await (deps.openBrowser ?? openBrowser)(url)))
-                  io.stderr(`Open this URL to log in:\n${url}`);
-                else io.stderr('Complete login in your browser. Waiting for authorization...');
+                abort.signal.throwIfAborted();
+                stopInteraction = loginInteraction(url, {
+                  input: deps.input ?? process.stdin,
+                  enabled: Boolean(io.stderrIsTTY) && env.TERM !== 'dumb' && !values['no-browser'],
+                  write: io.stderr,
+                  cancel,
+                  open: deps.openBrowser,
+                  copy: deps.copyLink,
+                });
+              },
+              onAuthorized: () => {
+                stopInteraction();
+                io.stderr('Authorization received. Verifying identity and saving credentials…');
               },
             });
+            stopInteraction();
             abort.signal.throwIfAborted();
             if (credential.apiUrl !== apiOrigin(config.apiUrl, true))
               throw new CliError('login credential API does not match requested instance');
@@ -191,8 +222,13 @@ export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promis
                 `Credentials saved, but the default instance could not be saved. Use --api ${credential.apiUrl}; do not repeat login just to retry publishing.`,
               );
             }
+            io.stdout(`\n${terminalTitle('Logged in', io.stdoutIsTTY, env)}\n`);
             io.stdout(
-              `Logged in to ${credential.apiUrl} as ${credential.identity.email ?? credential.identity.subject}. Credentials: ${backend}.`,
+              terminalFields([
+                ['Instance', credential.apiUrl],
+                ['Identity', credential.identity.email ?? credential.identity.subject ?? 'Unknown'],
+                ['Credentials', backend],
+              ]),
             );
             io.stdout(`Default instance saved: ${credential.apiUrl}.`);
             const next = await resolveConfig({ env: deps.env, configPath: deps.configPath, store });
@@ -205,13 +241,32 @@ export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promis
                 `Notice: your configured auth mode is ${next.authMode}. Use --auth-mode oauth or update that setting to publish with this login.`,
               );
           });
+        } catch (error) {
+          if (abort.signal.aborted) throw new CliError('OAuth login cancelled');
+          throw error;
         } finally {
+          stopInteraction();
           process.removeListener('SIGINT', cancel);
           process.removeListener('SIGTERM', cancel);
         }
       } else if (command === 'status') {
         const result = await authStatus(config, store, !values.offline, deps.fetchImpl);
-        io.stdout(json ? JSON.stringify(result) : JSON.stringify(result, null, 2));
+        if (json) io.stdout(JSON.stringify(result));
+        else {
+          io.stdout(`${terminalTitle('Mote · Authentication', io.stdoutIsTTY, env)}\n`);
+          io.stdout(
+            terminalFields([
+              ['Instance', result.api],
+              ['Mode', result.mode],
+              ['Check', result.source === 'online' ? 'Online' : 'Offline (not verified)'],
+              ['Status', result.state],
+              ['Identity', result.identity?.email ?? result.identity?.subject ?? 'Unknown'],
+              ['Storage', result.storage ?? 'Not applicable'],
+              ['Token expires', result.accessTokenExpiresAt ?? 'Unknown'],
+              ['Session expires', result.authorizationSessionExpiresAt ?? 'Unknown'],
+            ]),
+          );
+        }
       } else {
         await store.locked(config.apiUrl, () => store.remove(config.apiUrl));
         const result = {
@@ -260,7 +315,7 @@ export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promis
     return 0;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    io.stderr(`error: ${message}`);
+    io.stderr(`error: ${terminalText(message)}`);
     return 1;
   }
 }
