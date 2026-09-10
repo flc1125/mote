@@ -526,7 +526,13 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
     transition: none;
   }
   .toc-drawer-head { padding: 0 8px 8px; border-bottom: 0; margin-bottom: 4px; }
-  .toc-nav { border-left: 1px solid var(--mote-border); }
+  /* Keep both lines inside the scrollable area so the active marker can
+     cover the rail without being clipped. Preserve the text indentation. */
+  .toc-nav {
+    padding-left: 0;
+    background: linear-gradient(var(--mote-border), var(--mote-border)) left top / 1px 100% no-repeat;
+  }
+  .toc-row { padding-left: calc(5px + var(--toc-depth) * 12px); }
   body .toc-scrim { display: none; }
   body[data-toc-open] .toc-drawer, body:not([data-toc-enhanced]) .toc-drawer:target { box-shadow: none; }
   body[data-toc-collapsed] .toc-drawer { visibility: hidden; }
