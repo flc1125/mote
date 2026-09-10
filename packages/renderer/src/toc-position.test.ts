@@ -10,23 +10,26 @@ interface PositionHarness {
   nativeScroll(y: number): void;
   hash(id: string, landing: number): void;
   reflow(): void;
+  bottom(): string | null;
+  resize(height: number, desktop?: boolean): void;
 }
 
 /** Minimal layout/event boundary; runs the actual shipped script, not a copy of its selector. */
 function harness(
-  options: { hash?: string; scroll?: number; tops?: number[] } = {},
+  options: { hash?: string; scroll?: number; tops?: number[]; footerTop?: number } = {},
 ): PositionHarness {
   const context = {
     initialHash: options.hash ?? '',
     initialScroll: options.scroll ?? 0,
     tops: options.tops ?? [100, 600, 900],
+    footerTop: options.footerTop ?? 1200,
   };
   return runInNewContext(
     String.raw`
     const callbacks = new Map();
     let queued = [], nextFrame = 0;
     function element() {
-      const attributes = new Map(), handlers = new Map();
+      const attributes = new Map(), handlers = new Map(), styles = new Map();
       return {
         attributes, handlers, parentElement: null,
         setAttribute: (name, value) => attributes.set(name, value),
@@ -38,7 +41,11 @@ function harness(
         getClientRects: () => [1],
         closest: () => null,
         focus: () => {},
-        style: { removeProperty() {} }
+        style: {
+          setProperty: (name, value) => styles.set(name, value),
+          getPropertyValue: name => styles.get(name) ?? null,
+          removeProperty: name => styles.delete(name)
+        }
       };
     }
     const window = {
@@ -49,6 +56,8 @@ function harness(
     const location = { hash: initialHash, pathname: '/doc', search: '' };
     const body = element(), trigger = element(), close = element(), scrim = element();
     const article = element(), panel = element(), nav = element(), banner = element();
+    const footer = element();
+    footer.getBoundingClientRect = () => ({ top: footerTop - window.scrollY });
     const links = [], headings = [], items = [];
     for (let i = 0; i < tops.length; i++) {
       const id = ['a', 'b', 'c'][i];
@@ -71,10 +80,11 @@ function harness(
     const document = {
       body, activeElement: body, documentElement: { scrollHeight: 1200 },
       getElementById: id => id === 'mote-toc' ? panel : headings.find(heading => heading.id === id),
-      querySelector: selector => ({ '.toc-trigger': trigger, 'article': article, '.toc-scrim': scrim, '.mote-banner': banner })[selector],
+      querySelector: selector => ({ '.toc-trigger': trigger, 'article': article, '.toc-scrim': scrim, '.mote-banner': banner, '.mote-colophon': footer })[selector],
       querySelectorAll: () => [], addEventListener() {}
     };
-    const matchMedia = () => ({ matches: true, addEventListener() {} });
+    const media = { matches: true, addEventListener() {} };
+    const matchMedia = () => media;
     const requestAnimationFrame = fn => { queued.push(fn); return ++nextFrame; };
     const getComputedStyle = () => ({ scrollMarginTop: '76px' });
     function flush() { while (queued.length) { const batch = queued; queued = []; for (const fn of batch) fn(); } }
@@ -95,7 +105,9 @@ function harness(
       scroll(y) { callbacks.get('wheel')({ target: article }); window.scrollY = y; callbacks.get('scroll')(); flush(); },
       nativeScroll(y) { window.scrollY = y; callbacks.get('scroll')(); flush(); },
       hash(id, landing) { location.hash = '#' + id; window.scrollY = landing; callbacks.get('hashchange')(); flush(); },
-      reflow() { callbacks.get('resize')(); flush(); }
+      reflow() { callbacks.get('resize')(); flush(); },
+      bottom: () => panel.style.getPropertyValue('--toc-bottom'),
+      resize(height, desktop = true) { window.innerHeight = height; media.matches = desktop; callbacks.get('resize')(); flush(); }
     });`,
     context,
   ) as PositionHarness;
@@ -159,5 +171,33 @@ describe('TOC anchor selection', () => {
     expect(page.current()).toBe('#b');
     page.click('c', 0);
     expect(page.current()).toBe('#c');
+  });
+});
+
+describe('TOC footer clearance', () => {
+  it('stays above the footer and restores its normal inset when scrolling back up', () => {
+    const page = harness({ footerTop: 1200 });
+    expect(page.bottom()).toBe('32px');
+    page.scroll(480);
+    expect(page.bottom()).toBe('96px');
+    page.scroll(0);
+    expect(page.bottom()).toBe('32px');
+  });
+
+  it('reserves footer space even while an explicit anchor remains selected', () => {
+    const page = harness({ hash: '#c', scroll: 480, footerTop: 1200 });
+    expect(page.current()).toBe('#c');
+    expect(page.bottom()).toBe('96px');
+    page.resize(900);
+    expect(page.bottom()).toBe('196px');
+    expect(page.current()).toBe('#c');
+  });
+
+  it('clears the desktop inset on mobile and restores it on desktop', () => {
+    const page = harness({ scroll: 480, footerTop: 1200 });
+    page.resize(844, false);
+    expect(page.bottom()).toBeNull();
+    page.resize(800);
+    expect(page.bottom()).toBe('96px');
   });
 });

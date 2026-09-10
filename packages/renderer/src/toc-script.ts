@@ -7,6 +7,7 @@ export const TOC_SCRIPT = String.raw`(() => {
   const body = document.body;
   const nav = panel.querySelector('.toc-nav');
   const close = panel.querySelector('.toc-close');
+  const footer = document.querySelector('.mote-colophon');
   const desktop = matchMedia('(min-width: 1100px)');
   const background = [...document.querySelectorAll('.mote-banner, main, .mote-colophon')];
   const entries = [...nav.querySelectorAll('a[href^="#"]')].map(link => ({
@@ -23,6 +24,7 @@ export const TOC_SCRIPT = String.raw`(() => {
   let frame = 0;
   let layoutDirty = true;
   let navHovered = false;
+  let panelBottom = null;
 
   function visible() { return desktop.matches ? !desktopCollapsed : mobileOpen; }
 
@@ -89,6 +91,17 @@ export const TOC_SCRIPT = String.raw`(() => {
   function update() {
     frame = 0;
     if (lockedScroll !== null) return;
+    // Fixed desktop navigation must stop above the footer, including its
+    // otherwise empty background. Keep overflow inside the navigation region.
+    const bottom = desktop.matches && footer
+      ? Math.max(32, Math.ceil(window.innerHeight - footer.getBoundingClientRect().top + 16))
+      : null;
+    if (bottom !== panelBottom) {
+      panelBottom = bottom;
+      if (bottom === null) panel.style.removeProperty('--toc-bottom');
+      else panel.style.setProperty('--toc-bottom', bottom + 'px');
+      if (desktop.matches && !navHovered && !nav.contains(document.activeElement)) revealCurrent();
+    }
     if (layoutDirty) {
       positions = entries.filter(entry => entry.heading.getClientRects().length).map(entry => ({
         entry, top: entry.heading.getBoundingClientRect().top + window.scrollY
@@ -240,7 +253,11 @@ export const TOC_SCRIPT = String.raw`(() => {
   window.addEventListener('hashchange', onHashChange);
   window.addEventListener('pageshow', () => { syncPanel(); schedule(true); });
   article.addEventListener('toggle', () => schedule(true), true);
-  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => schedule(true)).observe(article);
+  if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver(() => schedule(true));
+    observer.observe(article);
+    if (footer) observer.observe(footer);
+  }
   body.setAttribute('data-toc-enhanced', '');
   syncPanel();
   onHashChange();

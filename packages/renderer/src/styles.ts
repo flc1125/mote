@@ -447,7 +447,7 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
   .toc-drawer {
     left: calc(50% + 266px);
     top: 88px;
-    bottom: 32px;
+    bottom: var(--toc-bottom, 32px);
     width: 260px;
     padding: 0;
     border: 0;
