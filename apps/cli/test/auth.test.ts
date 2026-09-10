@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import { chmod, lstat, mkdtemp, readdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { PassThrough } from 'node:stream';
+import type { LoginInput } from '../src/terminal.js';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -256,8 +258,13 @@ describe('OAuth protocol', () => {
   it('performs public DCR and PKCE login, ignoring bad-state callbacks', async () => {
     const request = mockOAuth();
     let challenge = '';
+    const authorized = vi.fn();
     const result = await login(api, {
-      fetchImpl: request,
+      onAuthorized: authorized,
+      fetchImpl: async (input, init) => {
+        if (String(input) === issuer + '/token') expect(authorized).toHaveBeenCalledOnce();
+        return request(input, init);
+      },
       onUrl: async (value) => {
         const url = new URL(value);
         challenge = url.searchParams.get('code_challenge')!;
@@ -265,6 +272,7 @@ describe('OAuth protocol', () => {
         expect(url.searchParams.get('resource')).toBe(resource);
         const redirect = url.searchParams.get('redirect_uri')!;
         expect((await fetch(redirect + '?code=bad&state=bad')).status).toBe(400);
+        expect(authorized).not.toHaveBeenCalled();
         await fetch(redirect + '?code=code&state=' + url.searchParams.get('state'));
       },
     });
@@ -622,5 +630,132 @@ describe('login shortcut and default instance', () => {
       }),
     ).toBe(0);
     expect(await store.defaultApi()).toBe(api);
+  });
+});
+
+describe('terminal login integration', () => {
+  class Input extends PassThrough {
+    isTTY = true;
+    isRaw = false;
+    setRawMode(raw: boolean) {
+      this.isRaw = raw;
+      return this;
+    }
+  }
+  const authUrl = 'https://team.cloudflareaccess.com/authorize?state=fake';
+  it.each(['success', 'denied', 'timeout', 'cancel', 'save-failure'])(
+    'cleans up terminal and signals after %s',
+    async (outcome) => {
+      const input = new Input();
+      const out: string[] = [];
+      const err: string[] = [];
+      const sigint = process.listenerCount('SIGINT'),
+        sigterm = process.listenerCount('SIGTERM');
+      const open = vi.fn(async () => true);
+      if (outcome === 'save-failure')
+        vi.spyOn(store, 'save').mockRejectedValue(new Error('storage failed'));
+      const code = await run(
+        ['login', '--api', api],
+        {
+          stdout: (s) => out.push(s),
+          stderr: (s) => err.push(s),
+          stderrIsTTY: true,
+        },
+        {
+          env: { NO_COLOR: '' },
+          configPath: join(dir, 'none'),
+          store,
+          interactive: true,
+          input: input as unknown as LoginInput,
+          openBrowser: open,
+          loginImpl: async (_api, options) => {
+            await options.onUrl(authUrl);
+            expect(input.isRaw).toBe(true);
+            expect(open).not.toHaveBeenCalled();
+            if (outcome === 'cancel') {
+              input.emit('data', '\x03');
+              expect(options.signal?.aborted).toBe(true);
+              throw new Error('cancelled');
+            }
+            if (outcome === 'denied' || outcome === 'timeout') throw new Error(`OAuth ${outcome}`);
+            options.onAuthorized?.();
+            expect(input.isRaw).toBe(false);
+            expect(err.join()).toContain('Verifying identity');
+            expect(out).toEqual([]);
+            return credential();
+          },
+        },
+      );
+      expect(code).toBe(outcome === 'success' ? 0 : 1);
+      expect(input.isRaw).toBe(false);
+      expect(input.isPaused()).toBe(true);
+      expect(input.listenerCount('data')).toBe(0);
+      expect(process.listenerCount('SIGINT')).toBe(sigint);
+      expect(process.listenerCount('SIGTERM')).toBe(sigterm);
+      expect(err.join()).toContain(authUrl);
+      expect(err.join()).not.toContain('\x1b');
+      expect(out.join()).not.toContain('access-secret');
+      if (outcome !== 'success') {
+        expect(out).toEqual([]);
+        expect(await store.load(api)).toBeUndefined();
+      }
+    },
+  );
+  it.each(['no-browser', 'redirected', 'dumb'])('keeps %s login in manual mode', async (mode) => {
+    const input = new Input();
+    const err: string[] = [];
+    const open = vi.fn(async () => true),
+      copy = vi.fn(async () => true);
+    expect(
+      await run(
+        ['login', '--api', api, ...(mode === 'no-browser' ? ['--no-browser'] : [])],
+        {
+          stdout: () => {},
+          stderr: (s) => err.push(s),
+          stderrIsTTY: mode !== 'redirected',
+        },
+        {
+          env: { TERM: mode === 'dumb' ? 'dumb' : 'xterm' },
+          configPath: join(dir, 'none'),
+          store,
+          interactive: true,
+          input: input as unknown as LoginInput,
+          openBrowser: open,
+          copyLink: copy,
+          loginImpl: async (_api, options) => {
+            await options.onUrl(authUrl);
+            expect(input.isRaw).toBe(false);
+            input.emit('data', 'o');
+            input.emit('data', 'c');
+            return credential();
+          },
+        },
+      ),
+    ).toBe(0);
+    expect(open).not.toHaveBeenCalled();
+    expect(copy).not.toHaveBeenCalled();
+    expect(err.join()).toContain(authUrl);
+    expect(err.join()).not.toContain('[o]');
+  });
+  it('keeps offline human status distinct from verified authentication and JSON unchanged', async () => {
+    await store.locked(api, () => store.save(credential()));
+    const out: string[] = [];
+    const err: string[] = [];
+    const io = {
+      stdout: (s: string) => out.push(s),
+      stderr: (s: string) => err.push(s),
+      stdoutIsTTY: true,
+    };
+    const deps = { env: { MOTE_API_URL: api, NO_COLOR: '' }, store, configPath: join(dir, 'none') };
+    expect(await run(['auth', 'status', '--offline'], io, deps)).toBe(0);
+    expect(out.join()).toContain('Offline (not verified)');
+    expect(out.join()).not.toContain('access-secret');
+    expect(out.join()).toContain('cached-token-valid');
+    expect(out.join()).not.toContain('\x1b');
+    out.length = 0;
+    const expected = await authStatus({ apiUrl: api }, store, false);
+    expect(await run(['auth', 'status', '--offline', '--json'], io, deps)).toBe(0);
+    expect(out).toEqual([JSON.stringify(expected)]);
+    expect(err).toEqual([]);
   });
 });
