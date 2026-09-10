@@ -17,6 +17,7 @@ const url =
 function setup(
   overrides: {
     enabled?: boolean;
+    color?: boolean;
     open?: () => Promise<boolean>;
     copy?: () => Promise<boolean>;
   } = {},
@@ -34,6 +35,7 @@ function setup(
     loginInteraction(url, {
       input: input as unknown as LoginInput,
       enabled: overrides.enabled ?? true,
+      color: overrides.color,
       write: (text) => output.push(text),
       cancel,
       open,
@@ -44,6 +46,21 @@ function setup(
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve));
 
 describe('login keyboard interaction', () => {
+  it('colors the displayed link without changing the opened or copied URL', async () => {
+    const s = setup({ color: true });
+    const stop = s.start();
+    try {
+      expect(s.output.join('\n')).toContain(`\x1b[36m${url}\x1b[0m`);
+      s.input.emit('data', 'o');
+      await tick();
+      s.input.emit('data', 'c');
+      await tick();
+      expect(s.open).toHaveBeenCalledWith(url, expect.any(AbortSignal));
+      expect(s.copy).toHaveBeenCalledWith(url, expect.any(AbortSignal));
+    } finally {
+      stop();
+    }
+  });
   it('prints the complete URL, waits without opening, and responds to o and c', async () => {
     const s = setup();
     const stop = s.start();

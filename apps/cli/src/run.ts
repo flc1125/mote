@@ -9,7 +9,13 @@ import { CliError } from './errors.js';
 import { authStatus, defaultCredentialStore, prepareAuth } from './auth/manager.js';
 import { login } from './auth/oauth.js';
 import type { copyLink, openBrowser } from './terminal-actions.js';
-import { loginInteraction, terminalFields, terminalText, terminalTitle } from './terminal.js';
+import {
+  loginInteraction,
+  terminalColorEnabled,
+  terminalFields,
+  terminalText,
+  terminalTitle,
+} from './terminal.js';
 import type { LoginInput } from './terminal.js';
 import type { CredentialStore } from './auth/store.js';
 import { apiOrigin } from './auth/urls.js';
@@ -198,6 +204,7 @@ export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promis
                 stopInteraction = loginInteraction(url, {
                   input: deps.input ?? process.stdin,
                   enabled: Boolean(io.stderrIsTTY) && env.TERM !== 'dumb' && !values['no-browser'],
+                  color: terminalColorEnabled(io.stderrIsTTY, env),
                   write: io.stderr,
                   cancel,
                   open: deps.openBrowser,

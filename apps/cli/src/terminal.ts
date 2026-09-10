@@ -20,14 +20,19 @@ export function terminalText(text: string): string {
   return stripVTControlCharacters(text).replace(/[\x00-\x1f\x7f-\x9f]/g, ' ');
 }
 
+export function terminalColorEnabled(
+  tty: boolean | undefined,
+  env: Record<string, string | undefined>,
+): boolean {
+  return Boolean(tty) && env.NO_COLOR === undefined && env.TERM !== 'dumb';
+}
+
 export function terminalTitle(
   text: string,
   tty: boolean | undefined,
   env: Record<string, string | undefined>,
 ): string {
-  return tty && env.NO_COLOR === undefined && env.TERM !== 'dumb'
-    ? `\x1b[1;31m${text}\x1b[0m`
-    : text;
+  return terminalColorEnabled(tty, env) ? `\x1b[1;31m${text}\x1b[0m` : text;
 }
 
 export function terminalFields(fields: [string, string][]): string {
@@ -40,6 +45,7 @@ export function terminalFields(fields: [string, string][]): string {
 export interface LoginInteractionOptions {
   input: LoginInput;
   enabled: boolean;
+  color?: boolean;
   write: (text: string) => void;
   cancel: () => void;
   open?: typeof openBrowser;
@@ -49,7 +55,8 @@ export interface LoginInteractionOptions {
 /** Starts listening without blocking OAuth's callback wait. Stop is idempotent. */
 export function loginInteraction(url: string, options: LoginInteractionOptions): () => void {
   const { input, write } = options;
-  write(`\nOpen this link to authorize:\n${url}\n`);
+  const displayUrl = options.color ? `\x1b[36m${url}\x1b[0m` : url;
+  write(`\nOpen this link to authorize:\n${displayUrl}\n`);
   let active = true;
   let busy = false;
   let listening = false;
