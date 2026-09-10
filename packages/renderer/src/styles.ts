@@ -396,7 +396,7 @@ body[data-toc-modal] { position: fixed; left: 0; right: 0; }
 .toc-nav ul { list-style: none; margin: 0; padding: 0; }
 .toc-nav li { margin: 2px 0; }
 .toc-nav [hidden] { display: none !important; }
-.toc-row { display: flex; align-items: flex-start; padding-left: calc(var(--toc-depth) * 12px); position: relative; }
+.toc-row { display: flex; align-items: flex-start; padding-left: calc(var(--toc-depth) * 16px); position: relative; }
 .toc-row > a {
   display: block;
   flex: 1;
@@ -415,8 +415,9 @@ body[data-toc-modal] { position: fixed; left: 0; right: 0; }
 }
 .toc-row > a:only-child, .toc-toggle[hidden] + a { margin-left: 24px; }
 .toc-nav > ul > li > .toc-row > a { color: var(--mote-fg); font-weight: 550; }
+.toc-nav > ul > li > ul > li > .toc-row > a { font-weight: 500; }
 .toc-row > a:hover { color: var(--mote-fg); background: var(--mote-pre-bg); }
-.toc-row > a[aria-current] { color: var(--mote-accent); background: var(--mote-tint); font-weight: 600; }
+.toc-row > a[aria-current] { color: var(--mote-accent); font-weight: 600; }
 .toc-row:has(> a[aria-current])::before {
   content: ""; position: absolute; left: 0; top: 10px; bottom: 10px;
   width: 2px; min-height: 14px; border-radius: 2px; background: var(--mote-accent);
@@ -455,14 +456,17 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
     z-index: 9;
     transition: none;
   }
-  .toc-drawer-head { padding: 0 8px 8px; border-bottom: 0; margin-bottom: 4px; }
+  .toc-drawer-head { padding: 0 8px; border-bottom: 0; margin-bottom: 4px; }
   /* Keep both lines inside the scrollable area so the active marker can
      cover the rail without being clipped. Preserve the text indentation. */
   .toc-nav {
     padding-left: 0;
     background: linear-gradient(var(--mote-border), var(--mote-border)) left top / 1px 100% no-repeat;
   }
-  .toc-row { padding-left: calc(5px + var(--toc-depth) * 12px); }
+  .toc-row { padding-left: calc(5px + var(--toc-depth) * 16px); }
+  .toc-row > a { min-height: 32px; padding-top: 6px; padding-bottom: 6px; }
+  .toc-toggle { min-height: 32px; }
+  .toc-row:has(> a[aria-current])::before { top: 8px; bottom: 8px; }
   body .toc-scrim { display: none; }
   body[data-toc-open] .toc-drawer, body:not([data-toc-enhanced]) .toc-drawer:target { box-shadow: none; }
   body[data-toc-collapsed] .toc-drawer { visibility: hidden; }
@@ -473,6 +477,9 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin-left: auto; margin-right: auto; }
   .has-toc:not([data-toc-collapsed]) .mote-banner-inner { max-width: 720px; }
   .toc-drawer { left: calc(50% + 412px); }
+}
+@media (min-width: 1600px) {
+  .toc-drawer { width: 300px; }
 }
 @media (max-width: 767px) {
   .toc-drawer {
