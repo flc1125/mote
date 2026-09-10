@@ -64,7 +64,7 @@ base-uri 'none'; form-action 'none'; frame-ancestors 'none'
 
 Viewer 在首次请求时计算固定脚本的哈希并复用，GET 与 HEAD 的策略一致。`script-src` 不允许 `self`、`unsafe-inline`、`unsafe-eval` 或外部源；首页的复制脚本使用独立哈希，不与文档页互相授权。基础 `documentSecurityHeaders()` 保留全禁脚本策略，文档响应显式使用 `tocDocumentSecurityHeaders()`。
 
-最近访问保存在 `localStorage` 的 `mote:recent:v1`，最多 20 篇，只包含文档 ID 和标题。文档 ID 是访问凭证，同一浏览器配置的使用者也可查看这些链接；浮层提供记录开关和清空操作。记录默认开启，开关偏好保存在 `mote:recent:enabled`（`on`/`off`）；关闭后保留历史但停止新增，重新开启时记录当前文档。清空仅删除历史列表，不修改开关偏好；清除网站数据会重置为默认开启。数据不上传服务端、不形成服务端列表或索引，不进入共享缓存，也不自动请求历史链接。存储数据按不可信输入验证 ID、字段类型和长度，链接只拼接同源文档路径，标题使用 `textContent`。存储异常不影响正文阅读；无 JavaScript 时历史浮层提示功能不可用。
+最近访问保存在 `localStorage` 的 `mote:recent:v1`，最多 20 篇，只包含文档 ID 和标题。文档 ID 是访问凭证，同一浏览器配置的使用者也可查看这些链接；浮层提供记录开关、逐条删除和清空操作。记录默认开启，开关偏好保存在 `mote:recent:enabled`（`on`/`off`）；关闭后保留历史但停止新增，重新开启时记录当前文档。逐条删除和清空仅移除本地历史记录，不删除文档或修改开关偏好；清除网站数据会重置为默认开启。数据不上传服务端、不形成服务端列表或索引，不进入共享缓存，也不自动请求历史链接。存储数据按不可信输入验证 ID、字段类型和长度，链接只拼接同源文档路径，标题使用 `textContent`。存储异常不影响正文阅读；无 JavaScript 时历史浮层提示功能不可用。
 
 外加 `X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`。
 

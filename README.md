@@ -107,7 +107,8 @@ Chinese emphasis compatibility, math formulas and a bounded Mermaid subset.
 Document content is rendered on the server. Fixed, CSP-restricted scripts enhance
 the responsive table of contents and a **History** dropdown in the document header
 for your last 20 documents, stored only in this browser. The **Record history**
-switch pauses new records without deleting existing visits. Document content cannot run scripts.
+switch pauses new records without deleting existing visits. Remove visits individually
+or clear the list. Document content cannot run scripts.
 
 [Compatibility reference and limits](docs/markdown.md) · [Live compatibility specimen](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown source](docs/examples/markdown-compatibility.md)
 

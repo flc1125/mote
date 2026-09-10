@@ -45,7 +45,7 @@ export const HISTORY_SCRIPT = String.raw`(() => {
       status.hidden = entries.length > 0;
       status.textContent = recording.checked ? 'No recent documents.' : 'History recording is off.';
       clear.disabled = entries.length === 0;
-      for (const entry of entries) {
+      for (const [index, entry] of entries.entries()) {
         const item = document.createElement('li');
         const link = document.createElement('a');
         link.href = '/' + entry.id;
@@ -53,6 +53,24 @@ export const HISTORY_SCRIPT = String.raw`(() => {
         link.title = link.textContent;
         if (entry.id === currentId) link.setAttribute('aria-current', 'page');
         item.append(link);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'history-remove';
+        remove.textContent = '×';
+        remove.title = 'Remove from history';
+        remove.setAttribute('aria-label', 'Remove ' + link.textContent + ' from history');
+        remove.addEventListener('click', event => {
+          event.stopPropagation();
+          try {
+            const scrollTop = list.scrollTop;
+            localStorage.setItem(key, JSON.stringify(read().filter(saved => saved.id !== entry.id)));
+            show();
+            list.scrollTop = scrollTop;
+            const next = list.children[Math.min(index, list.children.length - 1)];
+            (next ? next.lastElementChild : recording).focus({ preventScroll: true });
+          } catch { unavailable(); trigger.focus({ preventScroll: true }); }
+        });
+        item.append(remove);
         list.append(item);
       }
     } catch { unavailable(); }

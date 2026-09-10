@@ -20,7 +20,8 @@ use the source filename. Click outside or press Escape to close the list.
 **Record history** is on by default. Turning it off stops new records while keeping
 existing visits available. Turning it back on records the current document and
 resumes recording. The switch preference persists in this browser across reloads.
-**Clear** removes the list without changing the switch or deleting publications;
+Use the × button beside a title to remove that visit while keeping the list open.
+**Clear** removes the entire list. Neither action changes the switch or deletes publications;
 when recording is on, the next document visit starts a new list.
 
 History entries contain only document IDs and titles (up to 300 characters); the

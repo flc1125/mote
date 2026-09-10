@@ -18,6 +18,9 @@ class Element {
   disabled = true;
   textContent = '';
   href = '';
+  get lastElementChild() {
+    return this.children.at(-1);
+  }
   focus = vi.fn();
   addEventListener(name: string, callback: (event: Record<string, unknown>) => void) {
     this.events.set(name, callback);
@@ -219,6 +222,51 @@ describe('document history', () => {
     page.document.fire('keydown', { key: 'Escape', preventDefault });
     expect(page.menu.open).toBe(false);
     expect(preventDefault).toHaveBeenCalled();
+    expect(page.trigger.focus).toHaveBeenCalled();
+  });
+
+  it('removes only the selected visit using fresh storage and keeps the menu open', () => {
+    const page = harness({ data: JSON.stringify([{ id: OTHER, title: 'Other' }]) });
+    page.open();
+    const third = { id: 'Aq8K3pLm92Xq1234', title: 'New in another tab' };
+    page.store.set(KEY, JSON.stringify([...page.entries(), third]));
+    const stopPropagation = vi.fn();
+    page.list.children[0]?.lastElementChild?.fire('click', { stopPropagation });
+    expect(page.entries()).toEqual([{ id: OTHER, title: 'Other' }, third]);
+    expect(page.menu.open).toBe(true);
+    expect(stopPropagation).toHaveBeenCalled();
+    expect(page.list.children[0]?.lastElementChild?.focus).toHaveBeenCalled();
+    page.open();
+    expect(page.entries()).toEqual([{ id: OTHER, title: 'Other' }, third]);
+  });
+
+  it('supports keyboard focus after removing the last row and leaves preferences unchanged', () => {
+    const page = harness({
+      preference: 'off',
+      data: JSON.stringify([
+        { id: ID, title: 'Current' },
+        { id: OTHER, title: 'Other' },
+      ]),
+    });
+    page.open();
+    page.list.children[1]?.lastElementChild?.fire('click', { stopPropagation: vi.fn() });
+    expect(page.list.children[0]?.lastElementChild?.focus).toHaveBeenCalled();
+    page.list.children[0]?.lastElementChild?.fire('click', { stopPropagation: vi.fn() });
+    expect(page.entries()).toEqual([]);
+    expect(page.recording.focus).toHaveBeenCalled();
+    expect(page.status.textContent).toBe('History recording is off.');
+    expect(page.clear.disabled).toBe(true);
+    expect(page.store.get(PREFERENCE_KEY)).toBe('off');
+    expect(page.menu.open).toBe(true);
+  });
+
+  it('contains failed single-entry deletion without claiming success', () => {
+    const data = JSON.stringify([{ id: OTHER, title: 'Other' }]);
+    const page = harness({ preference: 'off', data, quota: true });
+    page.open();
+    page.list.children[0]?.lastElementChild?.fire('click', { stopPropagation: vi.fn() });
+    expect(page.store.get(KEY)).toBe(data);
+    expect(page.status.textContent).toContain('unavailable');
     expect(page.trigger.focus).toHaveBeenCalled();
   });
 

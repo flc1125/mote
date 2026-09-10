@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { HISTORY_SCRIPT } from '../../../packages/renderer/src/history-script.js';
 import { TOC_SCRIPT } from '../../../packages/renderer/src/toc-script.js';
 import { execFile } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
@@ -131,13 +132,15 @@ function assetPaths(html: string): string[] {
   );
 }
 
-function expectTocPolicy(response: Response, html: string): void {
+function expectDocumentScriptPolicy(response: Response, html: string): void {
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
-  expect(scripts).toEqual([TOC_SCRIPT]);
-  const hash = createHash('sha256').update(scripts[0]!).digest('base64');
+  expect(scripts).toEqual([TOC_SCRIPT, HISTORY_SCRIPT]);
+  const hashes = scripts
+    .map((script) => `'sha256-${createHash('sha256').update(script!).digest('base64')}'`)
+    .join(' ');
   const policy = response.headers.get('Content-Security-Policy')!;
   expect(policy.split('; ').find((directive) => directive.startsWith('script-src '))).toBe(
-    `script-src 'sha256-${hash}'`,
+    `script-src ${hashes}`,
   );
   expect(policy).toContain("connect-src 'none'");
 }
@@ -153,7 +156,7 @@ describe('E2E (§59)', () => {
     const page = await view(`/${id}`);
     expect(page.status).toBe(200);
     const html = await page.text();
-    expectTocPolicy(page, html);
+    expectDocumentScriptPolicy(page, html);
     expect(html.match(/aria-label="Mermaid diagram"/g)).toHaveLength(4);
     expect(html.match(/<math\b/g)).toHaveLength(6);
     const paths = assetPaths(html);
@@ -173,7 +176,7 @@ describe('E2E (§59)', () => {
     expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
     const response = await view(`/${id}`);
     const html = await response.text();
-    expectTocPolicy(response, html);
+    expectDocumentScriptPolicy(response, html);
     expect(html).toContain('<title>Body title</title>');
     expect(html).not.toContain('Hidden metadata');
     expect(html).not.toContain('missing.png');
@@ -194,7 +197,7 @@ describe('E2E (§59)', () => {
     const page = await view(`/${id}`);
     expect(page.status).toBe(200);
     const html = await page.text();
-    expectTocPolicy(page, html);
+    expectDocumentScriptPolicy(page, html);
     expect(html).toContain('class="markdown-alert markdown-alert-note"');
     expect(html).toContain('<strong>说明：</strong>');
     const paths = assetPaths(html);
