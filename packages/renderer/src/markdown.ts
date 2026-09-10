@@ -40,7 +40,7 @@ function inlineTextContent(token: InlineTokenLike): string {
  * survive; scriptable vectors are stripped. GFM extensions come from
  * markdown-it core (tables, strikethrough, linkify) plus the footnote
  * and task-lists plugins (task lists render as disabled checkboxes,
- * keeping pages JavaScript-free).
+ * requiring no JavaScript for their display).
  */
 export function renderMarkdown(
   markdown: string,
