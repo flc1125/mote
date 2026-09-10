@@ -510,6 +510,7 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
 }
 
 /* Footnotes (markdown-it-footnote). */
+hr.footnotes-sep { display: none; }
 .footnotes {
   border-top: 1px solid var(--mote-border);
   margin-top: 2.5em;
