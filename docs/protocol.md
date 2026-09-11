@@ -136,16 +136,16 @@ documents/{document-id}/
 
 ## 公开访问（Viewer）
 
-| 路由                              | 说明                                           |
-| --------------------------------- | ---------------------------------------------- |
-| `GET /{document-id}`              | 渲染后的 HTML（`html:false`，无 JS，严格 CSP） |
-| `GET /{document-id}/a/{asset-id}` | 图片资产（Content-Type 来自 manifest）         |
-| `GET /robots.txt`                 | `User-agent: * Disallow: /`                    |
-| `GET /health`                     | `{"status":"ok"}`（不访问 R2）                 |
+| 路由                              | 说明                                                       |
+| --------------------------------- | ---------------------------------------------------------- |
+| `GET /{document-id}`              | 渲染后的 HTML（HTML 白名单净化，仅可信目录脚本，严格 CSP） |
+| `GET /{document-id}/a/{asset-id}` | 图片资产（Content-Type 来自 manifest）                     |
+| `GET /robots.txt`                 | `User-agent: * Disallow: /`                                |
+| `GET /health`                     | `{"status":"ok"}`（不访问 R2）                             |
 
 - Malformed ID 与不存在的 ID 返回**完全相同的 404**，不暴露枚举信息。
 - 缓存：Document 边缘缓存 1 年（浏览器 5 分钟）；Asset `immutable` 1 年。
-- 安全头：`Content-Security-Policy`（`script-src 'none'` 等）、`Referrer-Policy: no-referrer`、`X-Robots-Tag: noindex` 等，详见 [security.md](security.md)。
+- 安全头：`Content-Security-Policy`（`script-src` 仅授权固定目录脚本的 SHA-256 哈希）、`Referrer-Policy: no-referrer`、`X-Robots-Tag: noindex` 等，详见 [security.md](security.md)。
 
 ## ID 格式
 

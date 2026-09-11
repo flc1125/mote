@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-11
+
+### Added
+
+- Expanded Markdown rendering with GitHub-style alerts, selected-language code highlighting, conservative YAML front matter recognition, CJK emphasis handling, native MathML formulas and six families of sanitized, server-rendered Mermaid diagrams. Unsupported syntax and rendering-budget overruns retain readable source. ([#42](https://github.com/flc1125/mote/pull/42))
+- Responsive document contents navigation with section tracking, collapsible branches, desktop positioning, a mobile drawer and keyboard/focus handling. Only the fixed contents script is authorized by its exact CSP hash; document content cannot execute scripts. Static contents links remain usable without JavaScript. ([#47](https://github.com/flc1125/mote/pull/47))
+- Interactive CLI login actions: press `o` to open the authorization link, `c` to copy it, or `Ctrl+C` to cancel. Added clearer authentication status, logout and error output. ([#45](https://github.com/flc1125/mote/pull/45))
+- Default publishing progress and a document/image summary on terminal stderr. Redirected stderr stays quiet unless `--verbose` is set; `--json` suppresses progress and retains the exact publish result `{id,url}` on stdout. ([#46](https://github.com/flc1125/mote/pull/46))
+
+### Changed
+
+- Widened the document reading area to 760px and opened document header/footer brand links in a new tab so readers keep their current document. ([#48](https://github.com/flc1125/mote/pull/48), [#51](https://github.com/flc1125/mote/pull/51))
+- Added publishable compatibility and fallback specimens, linked the READMEs to the live example, and refined the publishing Skill guidance and branding. ([#42](https://github.com/flc1125/mote/pull/42), [#43](https://github.com/flc1125/mote/pull/43), [#44](https://github.com/flc1125/mote/pull/44))
+
+### Fixed
+
+- Resolve encoded local image paths consistently across publishing and rendering, including Unicode and spaces. Image scanning ignores recognized front matter and mathematical source while stored Markdown remains unchanged. ([#42](https://github.com/flc1125/mote/pull/42))
+- Allocate unique heading IDs for repeated, numeric-suffixed and punctuation-only headings, avoid collisions with generated UI IDs, and preserve task-list inline formatting exactly once. ([#42](https://github.com/flc1125/mote/pull/42))
+
+### Upgrade notes
+
+- Upgrade to `mote-cli@0.6.0` for the CLI interaction and image-scanning changes. Local stdio MCP users should rebuild from the matching source revision and restart their server; the MCP workspace package remains private.
+- **CLI behavior change:** login now shows the authorization URL and waits for an explicit `o` action instead of opening a browser automatically. `--no-browser` provides manual link mode without keyboard actions. Scripts consuming authentication status or logout output should use `--json`; their default output is now human-readable. ([#45](https://github.com/flc1125/mote/pull/45))
+- Existing document IDs and stored Markdown remain unchanged. Updated Viewer rendering can hide recognized front matter and change previously ambiguous heading anchors; ordinary heading links are preserved. See the [Markdown compatibility guide](https://github.com/flc1125/mote/blob/v0.6.0/docs/markdown.md) for limits. ([#42](https://github.com/flc1125/mote/pull/42))
+- Stable tags publish the CLI package and GitHub Release only. API and Viewer deploy independently through Workers Builds on `main`; verify both production rollouts separately. Installing the CLI does not deploy the new rendering or contents navigation.
+
 ## [0.5.0] - 2026-09-09
 
 ### Changed
@@ -109,7 +135,8 @@ Published manually to npm without a matching Git tag or GitHub Release; v0.1.1 i
 - **Docs** — architecture, publish protocol, security model, self-hosting guide, CLI and MCP references (English + 中文) ([initial commit](https://github.com/flc1125/mote/commit/214ded08ef6f19483e8cba460ba268e756fe49d5); no PR)
 - **Infrastructure** — Cloudflare Workers + R2 only; Workers Cache with per-version cache namespaces; runs on the free tier ([initial commit](https://github.com/flc1125/mote/commit/214ded08ef6f19483e8cba460ba268e756fe49d5); no PR)
 
-[Unreleased]: https://github.com/flc1125/mote/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/flc1125/mote/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/flc1125/mote/releases/tag/v0.6.0
 [0.5.0]: https://github.com/flc1125/mote/releases/tag/v0.5.0
 [0.4.0]: https://github.com/flc1125/mote/releases/tag/v0.4.0
 [0.3.0]: https://github.com/flc1125/mote/releases/tag/v0.3.0

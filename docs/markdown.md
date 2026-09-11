@@ -4,8 +4,11 @@ Mote renders CommonMark-style Markdown with selected GFM and document extensions
 The supported format is defined below; Mote does not claim complete compatibility
 with every Markdown editor or every Mermaid feature.
 
-Published Markdown and document IDs stay unchanged. Rendering produces static HTML,
-MathML and sanitized diagram SVG; document pages do not run JavaScript.
+Published Markdown and document IDs stay unchanged. Server-side rendering produces
+static HTML, MathML and sanitized diagram SVG. A fixed script, authorized by its
+exact CSP hash, enhances the table of contents on pages with headings. Document
+content cannot execute scripts, and static contents links remain usable when
+JavaScript is disabled.
 
 ## Support matrix
 
