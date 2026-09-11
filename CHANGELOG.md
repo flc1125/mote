@@ -32,6 +32,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Existing document IDs and stored Markdown remain unchanged. Updated Viewer rendering can hide recognized front matter and change previously ambiguous heading anchors; ordinary heading links are preserved. See the [Markdown compatibility guide](https://github.com/flc1125/mote/blob/v0.6.0/docs/markdown.md) for limits. ([#42](https://github.com/flc1125/mote/pull/42))
 - Stable tags publish the CLI package and GitHub Release only. API and Viewer deploy independently through Workers Builds on `main`; verify both production rollouts separately. Installing the CLI does not deploy the new rendering or contents navigation.
 
+### Contributors
+
+- [@flc1125](https://github.com/flc1125) — Markdown rendering, document navigation, CLI improvements, documentation and release preparation.
+
 ## [0.5.0] - 2026-09-09
 
 ### Changed
