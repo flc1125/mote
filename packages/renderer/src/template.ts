@@ -39,14 +39,14 @@ ${tocHtml}</aside>
 </head>
 <body${tocHtml === '' ? '' : ' class="has-toc"'}>
 ${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
-<a class="mote-brand" href="/"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
+<a class="mote-brand" href="/" target="_blank" rel="noopener noreferrer"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
 ${tocTrigger}</div></header>
 <main>
 <article>
 ${contentHtml}</article>
 </main>
 <footer class="mote-colophon"><div class="mote-colophon-inner">
-<span class="mote-colophon-mark" aria-hidden="true"></span><span>Published with <a href="/">Mote</a></span>
+<span class="mote-colophon-mark" aria-hidden="true"></span><span>Published with <a href="/" target="_blank" rel="noopener noreferrer">Mote</a></span>
 </div></footer>
 ${tocHtml === '' ? '' : `<script>${TOC_SCRIPT}</script>`}
 </body>

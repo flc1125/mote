@@ -64,9 +64,13 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
     expect(bare).not.toContain('<script>');
   });
 
-  it('points the brand links at the same-origin home (self-host friendly)', () => {
-    expect(page).toContain('<a class="mote-brand" href="/">');
-    expect(page).toContain('Published with <a href="/">Mote</a>');
+  it('opens the same-origin home in a new tab from both brand links', () => {
+    expect(page).toContain(
+      '<a class="mote-brand" href="/" target="_blank" rel="noopener noreferrer">',
+    );
+    expect(page).toContain(
+      'Published with <a href="/" target="_blank" rel="noopener noreferrer">Mote</a>',
+    );
   });
 
   it('inlines no external resources beyond the favicons', () => {
