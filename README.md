@@ -59,6 +59,8 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 The default instance, `https://mote.pub`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Details: [authentication guide](docs/authentication.md).
 
+In the current source build, `mote login` (also `mote auth login`) selects the built-in default instance unless `--api` is supplied, ignoring previous logins and environment/config API targets. Successful login remembers the selected instance for publishing. Explicit publishing overrides still apply and are reported after login.
+
 > **Note** — Browser login and Service Token authentication require **mote-cli ≥ 0.2.0**. Full options (`--json`, `--no-assets`, `--api`, `--token`, …), config file, and scripting: [docs/cli.md](docs/cli.md).
 
 <details><summary><strong>From source</strong> (requires Node.js ≥ 20 and pnpm)</summary>

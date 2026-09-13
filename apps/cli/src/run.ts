@@ -4,7 +4,7 @@ import packageJson from '../package.json' with { type: 'json' };
 
 import { buildBundle } from './bundle.js';
 import { publishBundle } from './client.js';
-import { resolveConfig } from './config.js';
+import { DEFAULT_API_URL, resolveConfig } from './config.js';
 import { CliError } from './errors.js';
 import { authStatus, defaultCredentialStore, prepareAuth } from './auth/manager.js';
 import { login } from './auth/oauth.js';
@@ -75,7 +75,8 @@ and MOTE_SERVICE_CLIENT_SECRET. Credentials are never sent across redirects.
 
 Login displays an authorization link. Press o to open it or c to copy it.
 The instance is remembered after credentials are saved.
-API priority: --api > MOTE_API_URL > config apiUrl > remembered instance > https://mote.pub.
+Login API: --api > ${DEFAULT_API_URL}; ignores environment, config apiUrl and remembered instance.
+Other commands API priority: --api > MOTE_API_URL > config apiUrl > remembered instance > ${DEFAULT_API_URL}.
 Explicit auth-mode settings still apply. Use --auth-mode oauth for OAuth login.
 `;
 
@@ -142,15 +143,17 @@ export async function run(argv: string[], io: CliIO, deps: RunDeps = {}): Promis
     const verbose = values.verbose && !json;
 
     const store = deps.store ?? defaultCredentialStore(deps.env, deps.configPath);
+    const loginAlias = positionals[0] === 'login';
+    const isLogin = loginAlias || (positionals[0] === 'auth' && positionals[1] === 'login');
     const config = await resolveConfig({
-      api: values.api,
+      // A new login chooses its target independently of saved publishing settings.
+      api: values.api ?? (isLogin ? DEFAULT_API_URL : undefined),
       token: values.token,
       authMode: values['auth-mode'],
       env: deps.env,
       configPath: deps.configPath,
       store,
     });
-    const loginAlias = positionals[0] === 'login';
     if (loginAlias || positionals[0] === 'auth') {
       const command = loginAlias ? 'login' : positionals[1];
       if (
