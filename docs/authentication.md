@@ -11,6 +11,8 @@ mote login --api https://mote.pub --auth-mode oauth
 mote auth status --api https://mote.pub --json
 ```
 
+In the current source build, plain `mote login` also selects `https://mote.pub`, even when a previous login remembered the old domain. Successful login replaces the remembered default; it does not rewrite explicit environment or config API overrides.
+
 Remote MCP clients must use `https://mote.pub/api/mcp` and authorize that connection separately. Local stdio clients must also update any pinned API origin and restart their process. Service clients must update both their API origin and `MOTE_SERVICE_API_URL` (or `serviceToken.apiUrl`). Do not copy credentials between origins or rely on redirects: OAuth discovery and publication reject redirects. Old-domain availability is not guaranteed; use new-domain document links directly.
 
 ## Choose a mode
@@ -37,9 +39,9 @@ mote report.md --json
 mote auth logout --json
 ```
 
-`mote login` and `mote auth login` are equivalent. Successful login saves the default API origin after saving credentials; subsequent commands use it unless flags, environment or configuration select another target. Remove conflicting instance/auth-mode overrides before using the flag-free commands above. Use `--api` with an **origin**, not `/api/mcp` or `/api/v1/publish`. OAuth and service modes require HTTPS. Each target has separate credentials.
+`mote login` and `mote auth login` are equivalent. In the current source build, login selects `--api` when supplied, otherwise the built-in default `https://mote.pub`; previous logins, `MOTE_API_URL` and config `apiUrl` do not choose the login target. Successful login saves the default API origin after saving credentials; subsequent commands use it unless flags, environment or configuration select another target. Failed login leaves the previous default and credentials unchanged. Remove conflicting instance/auth-mode overrides before using the flag-free commands above. Use `--api` with an **origin**, not `/api/mcp` or `/api/v1/publish`. OAuth and service modes require HTTPS. Each target has separate credentials.
 
-Login displays the authorization URL and waits: press `o` to open it in a browser, `c` to copy it, or `Ctrl+C` to cancel. It does not open a browser automatically. If desktop actions are unavailable, open the full displayed URL manually on the same computer as the CLI. `--no-browser` disables keyboard actions and uses manual link mode, but still requires an interactive terminal. See the [terminal interaction guide](cli.md#authentication-commands). Login does not support `--json`; publishing, status and logout never initiate browser login. An expired or revoked session requires an explicit `mote auth login`.
+Login displays the authorization URL and waits: press `o` to open it in a browser, `c` to copy it, or `Ctrl+C` to cancel. It does not open a browser automatically. If desktop actions are unavailable, open the full displayed URL manually on the same computer as the CLI. `--no-browser` disables keyboard actions and uses manual link mode, but still requires an interactive terminal. See the [terminal interaction guide](cli.md#authentication-commands). Login does not support `--json`; publishing, status and logout never initiate browser login. An expired or revoked session requires an explicit `mote auth login --api <your-instance-origin>`.
 
 Login registers a public client unless `--client-id` is supplied. The Mote CLI callback is `http://127.0.0.1:<port>/oauth/callback`; `--callback-port` fixes its port. In the tested Access setup, reusing a client with another port was rejected. Preserve the exact registered URI and port, or register a new client. Do not reuse a Codex callback for the CLI. Pending login waits up to 10 minutes; do not replay a previous authorization URL/code after a failed or cancelled attempt.
 
@@ -55,7 +57,7 @@ Verified compatibility is limited to macOS CLI/stdio and Codex CLI 0.153.4's app
 
 ## Configuration selection
 
-The API URL resolves as flags → environment → config file → remembered instance → `https://mote.pub`. Static token and explicit auth mode keep flags → environment → config file precedence. Login stores only the non-secret default origin in `auth/default-api.json`; it does not rewrite `config.json`. A one-off `--api` override does not change this preference, and logout does not clear it. Auth mode is chosen separately from the presence of credentials:
+For publishing, status and logout, the API URL resolves as flags → environment → config file → remembered instance → `https://mote.pub`. Login uses `--api` → `https://mote.pub` instead. Static token and explicit auth mode keep flags → environment → config file precedence. Login stores only the non-secret default origin in `auth/default-api.json`; it does not rewrite `config.json` and warns if environment or config API overrides still select a different publishing target. A one-off `--api` override on other commands does not change this preference, and logout does not clear it. Auth mode is chosen separately from the presence of credentials:
 
 1. Explicit `--auth-mode`, `MOTE_AUTH_MODE`, or `authMode` wins.
 2. Otherwise, an existing OAuth profile for this target selects OAuth, including its logged-out marker.

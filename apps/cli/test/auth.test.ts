@@ -11,7 +11,7 @@ import { callbackListener, discover, generateAccessPkce, login } from '../src/au
 import { CredentialStore, type KeyringEntry } from '../src/auth/store.js';
 import type { OAuthCredential } from '../src/auth/types.js';
 import { apiOrigin, trustedIssuer } from '../src/auth/urls.js';
-import { resolveConfig } from '../src/config.js';
+import { DEFAULT_API_URL, resolveConfig } from '../src/config.js';
 import { run } from '../src/run.js';
 
 const api = 'https://mote.example.com';
@@ -460,6 +460,104 @@ describe('login shortcut and default instance', () => {
     };
   };
   const deps = () => ({ env: {}, configPath: join(dir, 'config.json'), store, interactive: true });
+
+  describe.each([{ args: ['login'] }, { args: ['auth', 'login'] }])(
+    '$args target selection',
+    ({ args }) => {
+      it.each(['remembered', 'config', 'environment'])(
+        'ignores the %s publishing target',
+        async (source) => {
+          await store.save(credential());
+          await store.rememberApi(api);
+          const configPath = join(dir, 'config.json');
+          if (source !== 'remembered')
+            await writeFile(
+              configPath,
+              JSON.stringify({ apiUrl: 'https://configured.example.com' }),
+            );
+          const env = source === 'environment' ? { MOTE_API_URL: 'https://env.example.com' } : {};
+          const output = capture();
+          const loginImpl = vi.fn(async (target: string) => ({
+            ...credential(),
+            apiUrl: target,
+            resource: `${target}/api/mcp`,
+            accessToken: 'new-access-secret',
+          }));
+
+          expect(await run(args, output.io, { ...deps(), env, loginImpl })).toBe(0);
+          expect(loginImpl).toHaveBeenCalledWith(DEFAULT_API_URL, expect.any(Object));
+          expect(await store.defaultApi()).toBe(DEFAULT_API_URL);
+          expect((await store.load(api))?.accessToken).toBe('access-secret');
+          expect((await store.load(DEFAULT_API_URL))?.accessToken).toBe('new-access-secret');
+          if (source !== 'remembered') expect(output.err.join()).toContain('still selects');
+
+          if (source === 'remembered') {
+            const file = join(dir, 'report.md');
+            await writeFile(file, '# Example');
+            const fetchImpl = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+              expect(String(input)).toBe(`${DEFAULT_API_URL}/api/v1/publish`);
+              expect(new Headers(init?.headers).get('Authorization')).toBe(
+                'Bearer new-access-secret',
+              );
+              return json(
+                { id: '7Vk3mQ9x2NFaP4Ls', url: `${DEFAULT_API_URL}/7Vk3mQ9x2NFaP4Ls` },
+                201,
+              );
+            });
+            expect(await run([file, '--json'], output.io, { ...deps(), fetchImpl })).toBe(0);
+            expect(fetchImpl).toHaveBeenCalledOnce();
+          }
+        },
+      );
+
+      it('honors --api over all previous publishing targets', async () => {
+        await store.rememberApi('https://old.example.com');
+        await writeFile(
+          join(dir, 'config.json'),
+          JSON.stringify({ apiUrl: 'https://configured.example.com' }),
+        );
+        const loginImpl = vi.fn(async () => credential());
+        expect(
+          await run([...args, '--api', api], capture().io, {
+            ...deps(),
+            env: { MOTE_API_URL: 'https://env.example.com' },
+            loginImpl,
+          }),
+        ).toBe(0);
+        expect(loginImpl).toHaveBeenCalledWith(api, expect.any(Object));
+        expect(await store.defaultApi()).toBe(api);
+      });
+
+      it('preserves the previous login when default-origin login fails', async () => {
+        await store.save(credential());
+        await store.rememberApi(api);
+        const loginImpl = vi.fn(async () => {
+          throw new Error('Login cancelled');
+        });
+        expect(await run(args, capture().io, { ...deps(), loginImpl })).toBe(1);
+        expect(loginImpl).toHaveBeenCalledWith(DEFAULT_API_URL, expect.any(Object));
+        expect(await store.defaultApi()).toBe(api);
+        expect((await store.load(api))?.accessToken).toBe('access-secret');
+        expect(await store.load(DEFAULT_API_URL)).toBeUndefined();
+      });
+
+      it('repairs a corrupted remembered instance after successful default-origin login', async () => {
+        await store.rememberApi(api);
+        await writeFile(join(store.directory, 'default-api.json'), '{bad', { mode: 0o600 });
+        expect(
+          await run(args, capture().io, {
+            ...deps(),
+            loginImpl: async () => ({
+              ...credential(),
+              apiUrl: DEFAULT_API_URL,
+              resource: `${DEFAULT_API_URL}/api/mcp`,
+            }),
+          }),
+        ).toBe(0);
+        expect(await store.defaultApi()).toBe(DEFAULT_API_URL);
+      });
+    },
+  );
 
   it.each([['login'], ['auth', 'login']])(
     '%j saves a default only after successful login',

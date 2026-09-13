@@ -37,9 +37,12 @@ mote --help
 Resolution order (highest priority first):
 
 ```text
-API URL: CLI arguments > environment variables > config file > remembered instance > default
+Login API URL: --api > built-in default (https://mote.pub)
+Other commands API URL: CLI arguments > environment variables > config file > remembered instance > default
 Other settings: CLI arguments > environment variables > config file > defaults
 ```
+
+`mote login` and `mote auth login` ignore `MOTE_API_URL`, config `apiUrl` and the remembered instance when choosing the login target. Use `--api` to log in to a self-hosted instance. Successful login remembers that target for subsequent commands; failed login leaves the previous default and credentials unchanged. Environment and config API overrides still apply to subsequent commands, and login warns when they select a different instance.
 
 | Setting        | CLI argument         | Environment variable         | Config file key             | Default                                     |
 | -------------- | -------------------- | ---------------------------- | --------------------------- | ------------------------------------------- |
@@ -182,7 +185,7 @@ Publishing prepares authentication before reading the input bundle. It never ope
 | `UNAUTHORIZED`                    | Wrong or expired token                                                |
 | `BUNDLE_TOO_LARGE`                | Bundle exceeds a size limit (see README limits)                       |
 
-- **Login required / refresh pending**: explicitly run `mote auth login` for the same API. Do not delete metadata to reactivate an old token.
+- **Login required / refresh pending**: explicitly run `mote auth login --api <your-instance-origin>` for the same API. Omitting `--api` selects `https://mote.pub`. Do not delete metadata to reactivate an old token.
 - **Service mode requires matching variables**: set all three service variables, explicitly select `service`, and match the API origin. Do not paste secrets into bug reports.
 - **Keyring or permissions error**: fix the system credential store or use an explicitly chosen private file backend after logout; no silent fallback is performed.
 - **Callback mismatch / port occupied**: reuse the exact registered URI and available fixed port, or register a new client. Start a fresh login instead of replaying a previous code.
