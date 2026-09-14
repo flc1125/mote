@@ -15,14 +15,6 @@
 
 合并到 `main` 后，生产部署可能早于该提交的 push CI 完成。合并前应要求 PR 检查通过；GitHub 检查成功本身不代表部署成功。标签不部署 Worker，也不等待 Worker 上线。旧 GitHub Deploy 与诊断工作流已移除，不要重跑历史部署 job。
 
-## 生产域名切换
-
-生产使用 `mote.pub`，`access-test` 继续使用 `mote-test.flc.io`。仓库中的目标白名单按环境选择 DNS zone；Worker 名称、生产 R2 数据、Access issuer 和应用 AUD 保持不变。
-
-合并域名迁移前，准备 `mote.pub` 的代理 DNS 和有效边缘证书，确认两个 Workers Builds 凭据具有新 zone 的路由权限。协调合并与现有生产 Access 应用的三个目标替换：`mote.pub/api/mcp`、`mote.pub/api/v1/publish`、`mote.pub/api/auth/*`。保留发布者策略、Managed OAuth 和回环客户端设置。首页、文档和健康检查保持公开。
-
-本次切换接受短暂停机，不实现双域名运行。两个 Worker 部署完成后，验证新域名登录、发布、文档资源和远程 MCP；客户端需[切换地址并重新授权](../authentication.md#moving-to-motepub)，服务端部署不会更新已安装 CLI 的默认值。旧域名跳转如有保留，也只是随时可能取消的临时便利。故障恢复不应依赖旧域名：回退不兼容的业务变更时，保留新路由和 hostname 配置。
-
 ## Workers Builds 预期设置
 
 在每个 Worker 的**设置 → 构建**中核对以下生产设置。fork 必须换成自己的仓库、资源与身份配置。
@@ -82,3 +74,9 @@ Release 失败时，检查原 Actions 运行并保留 manifest、tarball 和结�
 删除前，按当前工作流引用盘点旧 GitHub Environment 凭据、部署变量及 Actions 产物，记录准确目标并取得清理批准。删除 GitHub Secret 副本不等于撤销 Cloudflare Token；须先识别令牌及其他使用方，再单独执行撤销。
 
 保留当前 Workers Builds 凭据、npm Trusted Publishing、GitHub Release 资产、当前 Worker 版本、R2 文档、Access 资源和故障调查仍需要的历史证据。退役 GitHub 部署自动化不代表可以删除测试 Worker 或测试 bucket。
+
+## 迁移历史
+
+<a id="生产域名切换"></a>
+
+迁至 `mote.pub` 的过程见[生产域名切换记录（英文）](../migrations.md#production-domain-cutover)。仍使用旧默认域名的客户端请按[迁移到 mote.pub（英文）](../migrations.md#moving-to-motepub)更新地址并重新授权。

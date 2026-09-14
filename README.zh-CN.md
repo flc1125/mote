@@ -23,7 +23,8 @@
 <p align="center">
   <a href="#-快速开始">快速开始</a> •
   <a href="https://mote.pub/MxNfTmvTNxMnrbkU">在线示例</a> •
-  <a href="docs/self-hosting.md">自托管</a> •
+  <a href="docs/README.md">文档导航（英文）</a> •
+  <a href="docs/zh-CN/self-hosting.md">自托管</a> •
   <a href="README.md">English</a>
 </p>
 
@@ -45,37 +46,27 @@
 
 ### CLI
 
+准备 Node.js 20+，并确认你已获准向 `https://mote.pub` 发布。创建 `hello.md`，写入 `# Hello, Mote`，然后在文件所在目录运行：
+
 ```bash
 npm install -g mote-cli
 mote login
-mote README.md
+mote hello.md
 ```
 
 ```text
 Published:
 
-https://mote.example.com/7Vk3mQ9x2NFaP4Ls
+https://mote.pub/7Vk3mQ9x2NFaP4Ls
 ```
 
 <sub>在线示例 → [包含图片、表格与代码的项目周报](https://mote.pub/MxNfTmvTNxMnrbkU) · [Markdown 源文件](docs/examples/weekly-report.md)</sub>
 
-默认实例 `https://mote.pub` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。详见[鉴权指南](docs/authentication.md)。
+打开返回的 URL 即可阅读页面。上方 URL 仅展示输出格式，每次发布都会生成新 ID。
 
-登录使用 `--api` 指定的实例，未指定时使用 `https://mote.pub`。登录成功后会记住该实例用于发布，显式环境变量和配置文件仍有更高优先级。详见[配置选择规则](docs/authentication.md#configuration-selection)。
+需要选择实例或了解登录步骤？见[首次发布教程（英文）](docs/quick-start.md)。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth` 登录；实例选择和其他鉴权模式见[鉴权指南（英文）](docs/authentication.md)。
 
-完整参数（`--json`、`--no-assets`、`--api`、`--token` 等）、配置文件与脚本用法见 [docs/cli.md](docs/cli.md)。
-
-<details><summary><strong>从源码构建</strong>（推荐 Node.js 24 与仓库固定的 pnpm 版本）</summary>
-
-```bash
-git clone https://github.com/flc1125/mote.git
-cd mote
-pnpm install --frozen-lockfile
-pnpm --filter @mote/cli build
-cd apps/cli && npm install -g .
-```
-
-</details>
+完整参数、配置、脚本用法及源码安装见 [CLI 参考（英文）](docs/cli.md)。
 
 ### MCP
 
@@ -92,7 +83,7 @@ cd apps/cli && npm install -g .
 }
 ```
 
-另有本地 stdio server，额外提供 `publish_markdown_file`（自动上传本地图片）。配置、工具说明与已验证客户端见 [docs/mcp.md](docs/mcp.md)。
+另有本地 stdio server，额外提供 `publish_markdown_file`（自动上传本地图片）。配置、工具说明与已验证客户端见 [MCP 指南（英文）](docs/mcp.md)。
 
 ### Skill
 
@@ -102,7 +93,7 @@ cd apps/cli && npm install -g .
 npx skills add flc1125/mote
 ```
 
-Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [docs/skill.md](docs/skill.md)。
+Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [Skill 指南（英文）](docs/skill.md)。
 
 ## 📝 Markdown 支持
 
@@ -110,11 +101,11 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [docs/skill.md](do
 数学公式和有明确边界的 Mermaid 图表。文档内容在服务端渲染，响应式目录由一小段
 受 CSP 限制的自有脚本增强；文档内容不能执行脚本。
 
-[兼容性说明与限制](docs/markdown.md) · [在线兼容性案例](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown 源文件](docs/examples/markdown-compatibility.md)
+[兼容性说明与限制（英文）](docs/markdown.md) · [在线兼容性案例](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown 源文件](docs/examples/markdown-compatibility.md)
 
 ## 🏠 自托管
 
-在 Cloudflare 部署自己的实例：[docs/self-hosting.md](docs/self-hosting.md)，其中包含免费额度与容量说明。
+在 Cloudflare 部署自己的实例：[自托管指南](docs/zh-CN/self-hosting.md)，其中包含免费额度与容量说明。
 
 ## 📏 限制
 
@@ -132,17 +123,14 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [docs/skill.md](do
 
 ## 📚 文档
 
-- [Markdown 兼容性](docs/markdown.md)
-- [CLI 参考](docs/cli.md)
-- [鉴权与迁移](docs/authentication.md)
-- [MCP 指南](docs/mcp.md)
-- [Skill](docs/skill.md)
-- [自托管指南](docs/self-hosting.md)
-- [部署操作手册](docs/zh-CN/deployment.md)
+- [文档导航（英文）](docs/README.md) · [首次发布教程（英文）](docs/quick-start.md)
+- [CLI 参考（英文）](docs/cli.md) · [鉴权指南（英文）](docs/authentication.md) · [MCP 指南（英文）](docs/mcp.md) · [Skill（英文）](docs/skill.md) · [Markdown 兼容性（英文）](docs/markdown.md)
+- [自托管指南](docs/zh-CN/self-hosting.md) · [部署操作手册](docs/zh-CN/deployment.md)
 - [架构](docs/architecture.md)
 - [发布协议](docs/protocol.md)
 - [安全模型](docs/security.md)
-- [漏洞报告政策](SECURITY.md)
+- [迁移记录（英文）](docs/migrations.md) · [Changelog（英文）](CHANGELOG.md)
+- [贡献指南（英文）](CONTRIBUTING.md) · [漏洞报告政策](SECURITY.md#中文)
 
 > 生产 Worker 由 Cloudflare Workers Builds 随 `main` 部署。GitHub Actions 负责 CI 和稳定标签的 CLI/GitHub Release 发布，详见[部署操作手册](docs/zh-CN/deployment.md)。
 

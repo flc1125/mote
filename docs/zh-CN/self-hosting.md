@@ -192,7 +192,7 @@ MOTE_ACCESS_HOSTNAME = "mote.example.com"
 6. 人工确认部署环境、Worker、路由优先级、R2 后再部署选定配置；测试不可误用默认生产 deploy。已有生产迁移必须另行批准。
 7. 按[CLI 登录/状态/发布/退出](../authentication.md#user-login-cli-and-local-stdio)及 Codex 指南复核。匿名发布应拒绝、发现 resource 精确匹配、用户与机器发布成功、无效凭据拒绝、阅读和图片匿名可用、备用主机不能发布。记录版本和结果，不记录秘密值。
 
-已有 token 实例请按[鉴权与迁移指南](../authentication.md#migrate-an-existing-instance)迁移或回退，不留无鉴权窗口。该指南同时说明凭据存储、兼容性与会话限制。OAuth 登录授权不等于生产部署或配置变更授权。
+已有 token 实例请按[迁移与回退步骤（英文）](../migrations.md#migrate-an-existing-instance-to-access)操作，不留无鉴权窗口。凭据存储、兼容性与会话限制见[鉴权指南（英文）](../authentication.md)。OAuth 登录授权不等于生产部署或配置变更授权。
 
 ## 部署自动化
 

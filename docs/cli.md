@@ -2,7 +2,7 @@
 
 The `mote` CLI publishes a local Markdown file to a Mote instance and prints its URL.
 
-Use an Access-enabled deployment for OAuth/service authentication. See [authentication and migration](authentication.md) for setup, secure storage and mode selection, and the [changelog](../CHANGELOG.md) for version-specific upgrade notes.
+Use an Access-enabled deployment for OAuth/service authentication. See [authentication](authentication.md) for setup, secure storage and mode selection, and the [changelog](../CHANGELOG.md) for version-specific upgrade notes.
 
 ```bash
 mote <markdown-file>

@@ -9,7 +9,7 @@ Mote offers two MCP integrations with the same goal: publish Markdown → get a 
 | Auth     | OAuth for Access; static Bearer for token deployments | Mote CLI OAuth store, explicit service mode, or static token |
 | Verified | Codex 0.153.4 app-server on macOS                     | Actual stdio process on macOS                                |
 
-Production `mote.pub` uses Access. Client/platform verification is listed above; [authentication and migration](authentication.md) covers setup, credential storage and validation limits.
+Production `mote.pub` uses Access. Client/platform verification is listed above; [authentication](authentication.md) covers setup, credential storage and validation limits.
 
 ## Remote MCP
 
