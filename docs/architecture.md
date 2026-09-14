@@ -1,6 +1,6 @@
 # Mote 架构
 
-> 本文记录当前架构与核心决策；接口契约以[发布协议](protocol.md)为准，安全约束以[安全模型](security.md)为准，鉴权配置以[鉴权指南（英文）](authentication.md)为准。理解与维护项目不依赖未随仓库发布的内部计划文档。
+> 本文记录当前架构与核心决策；接口契约以[发布协议](protocol.md)为准，安全约束以[安全模型](security.md)为准，鉴权配置以[鉴权指南](zh-CN/authentication.md)为准。理解与维护项目不依赖未随仓库发布的内部计划文档。
 
 ## 总览
 
@@ -39,7 +39,7 @@ Mote 完全运行在 Cloudflare 上，由两个职责分离的 Worker 与一个 
 
 V1 不引入：数据库、KV、D1、Durable Object、Queue、独立服务器。
 
-Access 发布鉴权链路：CLI/远程 MCP → Cloudflare Access 校验 OAuth 或机器双凭据 → API Worker 校验签名断言 → 发布管线。读取侧不变。未指定模式时保留 `token` 回退，仓库生产部署配置显式选择 Access；客户端版本要求、模式选择与凭据存储见[鉴权指南](authentication.md)。
+Access 发布鉴权链路：CLI/远程 MCP → Cloudflare Access 校验 OAuth 或机器双凭据 → API Worker 校验签名断言 → 发布管线。读取侧不变。未指定模式时保留 `token` 回退，仓库生产部署配置显式选择 Access；客户端要求、模式选择与凭据存储见[鉴权指南](zh-CN/authentication.md)。
 
 发布端点：`POST https://mote.pub/api/v1/publish`。两个 Worker 通过 Cloudflare Routes 共用同一域名，按路径前缀分流（最具体路由优先）；本部署为两个 Worker 使用 Routes 和代理 DNS。
 
@@ -112,9 +112,9 @@ documents/
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | §3、§5、§8.2、§10–§12、§54 | 本文的核心原则、Worker 划分与 R2 数据模型；[协议](protocol.md)的 ID 格式与服务端处理                                                         |
 | §13–§18                    | [协议](protocol.md)的请求、服务端处理与响应；[安全模型](security.md)的上传侧防护                                                             |
-| §20–§23                    | [CLI](cli.md)的 Configuration、Options 与 How assets are handled                                                                             |
+| §20–§23                    | [CLI](zh-CN/cli.md)的配置、参数与资产处理方式                                                                                                |
 | §24、§26–§36、§42          | 本文的渲染与缓存；[协议](protocol.md)的公开访问；[安全模型](security.md)的防泄露与 XSS 防护；渲染细节由 `packages/renderer/src` 及其测试维护 |
-| §38                        | [鉴权指南（英文）](authentication.md)及[安全模型](security.md)的发布鉴权与凭据管理                                                           |
-| §43、§45、plan 002 Phase 1 | [MCP](mcp.md)的远程无状态协议、本地工具与共享发布管线                                                                                        |
-| §47、§52、§53、§65.14      | [自托管](self-hosting.md)的健康检查与部署配置；本文的渲染与缓存；当前兼容日期以 Worker 配置为准                                              |
+| §38                        | [鉴权指南](zh-CN/authentication.md)及[安全模型](security.md)的发布鉴权与凭据管理                                                             |
+| §43、§45、plan 002 Phase 1 | [MCP（英文）](mcp.md)的远程无状态协议、本地工具与共享发布管线                                                                                |
+| §47、§52、§53、§65.14      | [自托管](zh-CN/self-hosting.md)的健康检查与部署配置；本文的渲染与缓存；当前兼容日期以 Worker 配置为准                                        |
 | §57–§59                    | [安全模型](security.md)的 XSS 回归测试；`apps/api/src/m3.integration.test.ts` 与 `apps/cli/test/e2e.test.ts` 的集成测试契约                  |

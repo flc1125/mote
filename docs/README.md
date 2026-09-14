@@ -1,5 +1,7 @@
 # Mote documentation
 
+[简体中文](zh-CN/README.md)
+
 Publish Markdown from your terminal or an AI agent, operate your own instance, or contribute to Mote. Start with the task you want to complete.
 
 ## First publication
@@ -32,4 +34,4 @@ Publish Markdown from your terminal or an AI agent, operate your own instance, o
 - [Security model (简体中文)](security.md) — publication authorization, capability URLs and rendering defenses.
 - [Security policy](../SECURITY.md) — report a vulnerability privately.
 
-Most usage guides are in English. Chinese readers can start from the [中文项目入口](../README.zh-CN.md) and the Chinese self-hosting and deployment guides linked above.
+Quick start, CLI, authentication, Markdown, self-hosting, deployment and migration guides are available in English and Chinese, with a language link at the top of each page. MCP, Skill, contributing and release history remain in English. Browse the [中文文档导航](zh-CN/README.md) for Chinese guides.

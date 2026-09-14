@@ -23,7 +23,7 @@
 <p align="center">
   <a href="#-快速开始">快速开始</a> •
   <a href="https://mote.pub/MxNfTmvTNxMnrbkU">在线示例</a> •
-  <a href="docs/README.md">文档导航（英文）</a> •
+  <a href="docs/zh-CN/README.md">文档导航</a> •
   <a href="docs/zh-CN/self-hosting.md">自托管</a> •
   <a href="README.md">English</a>
 </p>
@@ -33,7 +33,7 @@
 ## ✨ 特性
 
 - 🔒 **不可变**：每次发布生成全新 URL，已存储的 Markdown 和已上传资产不可更新
-- 🔑 **Capability URL**：知道链接即可阅读，94 bit 随机 ID 防猜测，页面发送禁止索引指令
+- 🔑 **能力 URL（Capability URL）**：知道链接即可阅读，94 bit 随机 ID 防猜测，页面发送禁止索引指令
 - 🖼️ **本地图片**：自动上传、按内容去重，公开 URL 不泄露原始文件名
 - ⚡ **快**：Cloudflare Workers + R2 + CDN 缓存；无数据库，文档内容在服务端渲染
 - 🤖 **Agent 友好**：CLI `--json` 输出，另有远程与本地 MCP server
@@ -64,9 +64,9 @@ https://mote.pub/7Vk3mQ9x2NFaP4Ls
 
 打开返回的 URL 即可阅读页面。上方 URL 仅展示输出格式，每次发布都会生成新 ID。
 
-需要选择实例或了解登录步骤？见[首次发布教程（英文）](docs/quick-start.md)。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth` 登录；实例选择和其他鉴权模式见[鉴权指南（英文）](docs/authentication.md)。
+需要选择实例或了解登录步骤？见[首次发布教程](docs/zh-CN/quick-start.md)。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth` 登录；实例选择和其他鉴权模式见[鉴权指南](docs/zh-CN/authentication.md)。
 
-完整参数、配置、脚本用法及源码安装见 [CLI 参考（英文）](docs/cli.md)。
+完整参数、配置、脚本用法及源码安装见 [CLI 参考](docs/zh-CN/cli.md)。
 
 ### MCP
 
@@ -101,7 +101,7 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [Skill 指南（�
 数学公式和有明确边界的 Mermaid 图表。文档内容在服务端渲染，响应式目录由一小段
 受 CSP 限制的自有脚本增强；文档内容不能执行脚本。
 
-[兼容性说明与限制（英文）](docs/markdown.md) · [在线兼容性案例](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown 源文件](docs/examples/markdown-compatibility.md)
+[兼容性说明与限制](docs/zh-CN/markdown.md) · [在线兼容性案例](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown 源文件（英文）](docs/examples/markdown-compatibility.md)
 
 ## 🏠 自托管
 
@@ -123,13 +123,13 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [Skill 指南（�
 
 ## 📚 文档
 
-- [文档导航（英文）](docs/README.md) · [首次发布教程（英文）](docs/quick-start.md)
-- [CLI 参考（英文）](docs/cli.md) · [鉴权指南（英文）](docs/authentication.md) · [MCP 指南（英文）](docs/mcp.md) · [Skill（英文）](docs/skill.md) · [Markdown 兼容性（英文）](docs/markdown.md)
+- [文档导航](docs/zh-CN/README.md) · [首次发布教程](docs/zh-CN/quick-start.md)
+- [CLI 参考](docs/zh-CN/cli.md) · [鉴权指南](docs/zh-CN/authentication.md) · [MCP 指南（英文）](docs/mcp.md) · [Skill（英文）](docs/skill.md) · [Markdown 兼容性](docs/zh-CN/markdown.md)
 - [自托管指南](docs/zh-CN/self-hosting.md) · [部署操作手册](docs/zh-CN/deployment.md)
 - [架构](docs/architecture.md)
 - [发布协议](docs/protocol.md)
 - [安全模型](docs/security.md)
-- [迁移记录（英文）](docs/migrations.md) · [Changelog（英文）](CHANGELOG.md)
+- [迁移记录](docs/zh-CN/migrations.md) · [Changelog（英文）](CHANGELOG.md)
 - [贡献指南（英文）](CONTRIBUTING.md) · [漏洞报告政策](SECURITY.md#中文)
 
 > 生产 Worker 由 Cloudflare Workers Builds 随 `main` 部署。GitHub Actions 负责 CI 和稳定标签的 CLI/GitHub Release 发布，详见[部署操作手册](docs/zh-CN/deployment.md)。

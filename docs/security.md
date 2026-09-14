@@ -1,6 +1,6 @@
 # Mote 安全模型
 
-> 本文定义 Mote 的权限模型、防护机制与运维红线；整体设计见[架构](architecture.md)，部署鉴权见[鉴权指南（英文）](authentication.md)。
+> 本文定义 Mote 的权限模型、防护机制与运维红线；整体设计见[架构](architecture.md)，部署鉴权见[鉴权指南](zh-CN/authentication.md)。
 
 ## 1. Capability URL 权限模型
 
@@ -85,7 +85,7 @@ CLI 侧：通过 Markdown AST 和 HTML tokenizer 收集图片引用，包含 `im
 
 ## 5. 发布鉴权与凭据管理
 
-服务端 `MOTE_AUTH_MODE=token|cloudflare-access`，省略时兼容回退到 token，未知模式拒绝；仓库中的生产部署配置显式选择 `cloudflare-access`。客户端选择 `token|oauth|service`，不可与服务端枚举混用；客户端要求、配置与兼容性见[鉴权指南（英文）](authentication.md)。
+服务端 `MOTE_AUTH_MODE=token|cloudflare-access`，省略时兼容回退到 token，未知模式拒绝；仓库中的生产部署配置显式选择 `cloudflare-access`。客户端选择 `token|oauth|service`，不可与服务端枚举混用；客户端要求、配置与兼容性见[鉴权指南](zh-CN/authentication.md)。
 
 Access 模式由 Cloudflare 校验 OAuth 或 Service Token 双凭据、注入 `Cf-Access-Jwt-Assertion`；Worker 仅接受配置的 HTTPS API 主机并校验签名、issuer、AUD、时间、类型与明确身份。用户为非空 sub；机器为合法 common_name 且空 sub，无歧义混用。旧 `MOTE_TOKEN`、邮箱头、Cookie、客户端自报身份及管理 API token 均不能绕过校验。公开阅读仍是 capability URL，不因发布者鉴权升级而要求读者登录。
 
@@ -114,7 +114,7 @@ Mote CLI/stdio 共享自身的按 API 目标、issuer/resource 绑定的凭据�
 
 OAuth logout 删除本地秘密并保留无秘密选择标记，阻止旧 token 自动复活；不执行远端撤权、不删静态配置、不禁用 Service Token。机器模式须显式选择，三项环境配置缺一/目标不同即拒绝；每次发送双凭据，不复用 cookie。`status --offline` 不是在线有效性证明，授权会话到期时间未知时返回 null。
 
-长生命周期增加泄露暴露窗口，应按实例风险选择并验证撤权和恢复流程；验证边界见[会话与撤权](authentication.md#session-duration-logout-and-revocation)。并发刷新串行，未知交换或发布结果不自动重放。退出、撤权、禁用均不删除已发布内容；URL 泄露仍需按阅读能力凭证泄露处理。
+长生命周期增加泄露暴露窗口，应按实例风险选择并验证撤权和恢复流程；验证边界见[会话与撤权](zh-CN/authentication.md#会话时长退出与撤权)。并发刷新串行，未知交换或发布结果不自动重放。退出、撤权、禁用均不删除已发布内容；URL 泄露仍需按阅读能力凭证泄露处理。
 
 `mote login` 的回环回调页（`http://127.0.0.1:<port>/oauth/callback`）是纯静态品牌页：不回显任何回调参数（state/code/error 都不会出现在 HTML 中），CSP 为 `default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'`——仅在默认全禁之上允许内联样式，并保持 `Cache-Control: no-store` 与 host/state 校验不变。
 
@@ -146,9 +146,9 @@ OAuth logout 删除本地秘密并保留无秘密选择标记，阻止旧 token 
 - **测试凭证**：一律使用显式假 token，命名必须自证其假（如 `test-only-publish-token-not-a-secret`），不得使用任何真实凭证的片段；
 - **示例文档**：文档与 issue 中引用 token 时使用占位符（如 `<your-token>`），即使是自己实例的真 token 也不要贴进 Git；
 - **提交前自检**：`git diff --cached | grep -iE "token|secret|bearer"` 人工过一遍；
-- **发现泄露**：如果自己或他人的真实凭证进入了 git 历史，立即按 §5 轮换该凭证，并按根目录 [SECURITY.md](../SECURITY.md) 的流程处理（历史改写无法挽回已泄露的凭证，轮换才是正解）。
+- **发现泄露**：如果自己或他人的真实凭证进入了 git 历史，立即按 §5 轮换该凭证，并按根目录 [SECURITY.md](../SECURITY.md#中文) 的流程处理（历史改写无法挽回已泄露的凭证，轮换才是正解）。
 
-漏洞报告政策见根目录 [SECURITY.md](../SECURITY.md)（GitHub Security Advisory 渠道、响应承诺）。
+漏洞报告政策见根目录 [SECURITY.md](../SECURITY.md#中文)（GitHub Security Advisory 渠道、响应承诺）。
 
 ## 8. 滥用防护现状
 
