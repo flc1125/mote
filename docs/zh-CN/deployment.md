@@ -8,7 +8,7 @@
 
 | 事件               | 执行方                                                  | 结果                                                                   |
 | ------------------ | ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Pull request       | GitHub Actions CI                                       | lint、类型检查、测试、Worker dry-run 与 CLI 包验证                     |
+| Pull request       | GitHub Actions CI                                       | 文档检查、lint、类型检查、测试、Worker dry-run 与 CLI 包验证           |
 | 推送 `main`        | GitHub Actions CI 与 Cloudflare Workers Builds 独立执行 | CI 检查提交；两个生产 Worker 分别构建并部署                            |
 | 稳定 `vX.Y.Z` 标签 | GitHub Actions Release                                  | 通过 npm Trusted Publishing 发布已验证的 CLI 包，并创建 GitHub Release |
 | 重试或回退         | 维护者在 Cloudflare Dashboard 操作                      | 明确选定的 Worker Build 或版本                                         |

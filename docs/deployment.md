@@ -8,7 +8,7 @@ This guide is for maintainers of production Workers connected to Cloudflare Work
 
 | Event               | Owner                                                          | Result                                                                                        |
 | ------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Pull request        | GitHub Actions CI                                              | Lint, type checks, tests, Worker dry-runs and CLI package verification                        |
+| Pull request        | GitHub Actions CI                                              | Documentation checks, lint, type checks, tests, Worker dry-runs and CLI package verification  |
 | Push to `main`      | GitHub Actions CI and Cloudflare Workers Builds, independently | CI checks the commit; each production Worker builds and deploys it                            |
 | Stable `vX.Y.Z` tag | GitHub Actions Release                                         | Publish the verified CLI package through npm Trusted Publishing and create the GitHub Release |
 | Retry or rollback   | Maintainer in Cloudflare Dashboard                             | An explicitly selected Worker build or version                                                |
