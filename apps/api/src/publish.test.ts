@@ -1,8 +1,30 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { RandomSource } from '@mote/core';
 
-import { allocateDocumentId, commitBundle, type PreparedBundle } from './publish.js';
+import { allocateDocumentId, commitBundle, prepareBundle, type PreparedBundle } from './publish.js';
+
+it('rejects excess asset entries before reading image bytes', async () => {
+  const form = new FormData();
+  form.append('document', new File(['# Limit'], 'a.md'));
+  form.append(
+    'manifest',
+    JSON.stringify({
+      version: 1,
+      entry: 'a.md',
+      assets: Array.from({ length: 51 }, (_, i) => ({
+        field: `asset_${i}`,
+        references: [`./${i}.png`],
+      })),
+    }),
+  );
+  form.append('asset_0', new File(['unread image'], 'image.png'));
+  const read = vi.spyOn(form.get('asset_0') as File, 'arrayBuffer');
+  const { bucket, puts } = stubBucket();
+  await expect(prepareBundle(form, bucket)).rejects.toMatchObject({ code: 'BUNDLE_TOO_LARGE' });
+  expect(read).not.toHaveBeenCalled();
+  expect(puts).toEqual([]);
+});
 
 /** Minimal R2Bucket stub recording put order and faking head() results. */
 function stubBucket(options?: { existingKeys?: string[] }): {

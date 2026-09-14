@@ -139,10 +139,43 @@ describe('XSS security tests (§57)', () => {
     expect(article).not.toContain('<a ');
   });
 
-  it('a protocol-relative href that slips through parsing is stripped', () => {
-    // Direct unit-level check of the link_open override behavior:
-    // even when a link IS produced, '//...' hrefs are neutralized.
-    const html = renderAttack('[ok](https://example.com)');
-    expect(html).toContain('<a href="https://example.com">ok</a>');
+  it('strips protocol-relative Markdown links and inline/reference images', () => {
+    const article = articleContent(
+      renderAttack(
+        '[link](//external.example/page)\n\n' +
+          '![inline](//external.example/inline.png)\n\n' +
+          '![reference][image]\n\n[image]: //external.example/reference.png',
+      ),
+    );
+    expect(article).toContain('<a href="">link</a>');
+    expect(article).toContain('<img src="" alt="inline">');
+    expect(article).toContain('<img src="" alt="reference">');
+    expect(article).not.toContain('external.example');
+  });
+
+  it.each([
+    '//external.example/image.png',
+    '/\\external.example/image.png',
+    '\\/external.example/image.png',
+    '\\\\external.example/image.png',
+    '  //external.example/image.png  ',
+    '/&#x2f;external.example/image.png',
+    '/&#x5c;external.example/image.png',
+  ])('strips network-path HTML src and srcset candidates: %s', (url) => {
+    const article = articleContent(
+      renderAttack(
+        `<picture><source srcset="${url} 1x, https://example.com/safe.png 2x">` +
+          `<img src="${url}" srcset="${url} 1x, /local.png 2x"></picture>`,
+      ),
+    );
+    expect(article).toContain('<source srcset="https://example.com/safe.png 2x">');
+    expect(article).toContain('<img srcset="/local.png 2x">');
+    expect(article).not.toContain('external.example');
+  });
+
+  it('strips network-path src after decoding browser-ignored whitespace', () => {
+    const article = articleContent(renderAttack('<img src="/&#x09;/external.example/image.png">'));
+    expect(article).toContain('<img>');
+    expect(article).not.toContain('src=');
   });
 });

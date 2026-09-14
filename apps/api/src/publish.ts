@@ -110,7 +110,7 @@ export async function prepareBundle(
   }
   const manifestResult = validatePublishManifest(manifestValue);
   if (!manifestResult.ok) {
-    throw new PublishError(ErrorCode.InvalidDocument, manifestResult.issues.join('; '));
+    throw new PublishError(manifestResult.code, manifestResult.issues.join('; '));
   }
   const manifest = manifestValue as PublishManifest;
 

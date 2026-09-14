@@ -3,6 +3,20 @@ import { describe, expect, it } from 'vitest';
 import { safeImageUrl, safeLinkUrl } from './urls.js';
 
 describe('URL policies with control characters (§57)', () => {
+  it.each([
+    '//external.example/image.png',
+    '///external.example/image.png',
+    '/\\external.example/image.png',
+    '\\/external.example/image.png',
+    '\\\\external.example/image.png',
+    '  //external.example/image.png  ',
+    '/\t/external.example/image.png',
+    '/\n\\external.example/image.png',
+  ])('rejects network-path references in links and images: %j', (url) => {
+    expect(safeLinkUrl(url)).toBeNull();
+    expect(safeImageUrl(url)).toBeNull();
+  });
+
   it('strips TAB/LF/CR before judging the scheme', () => {
     // Browsers ignore these characters anywhere in a URL, so
     // "java\nscript:" must be judged as javascript: and rejected.
@@ -25,6 +39,9 @@ describe('URL policies with control characters (§57)', () => {
     expect(safeLinkUrl('mailto:a@b.c')).toBe('mailto:a@b.c');
     expect(safeImageUrl('/doc/a/AbC123')).toBe('/doc/a/AbC123');
     expect(safeImageUrl('./images/x.png')).toBe('./images/x.png');
+    expect(safeImageUrl('https://example.com/x.png')).toBe('https://example.com/x.png');
+    expect(safeImageUrl('http://example.com/x.png')).toBe('http://example.com/x.png');
+    expect(safeImageUrl('  /doc/a/AbC123  ')).toBe('/doc/a/AbC123');
   });
 
   it('still rejects dangerous schemes and absolute paths', () => {

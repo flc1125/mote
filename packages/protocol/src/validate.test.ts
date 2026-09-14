@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ValidationResult } from '@mote/core';
+
+import { ErrorCode } from './errors.js';
 import { validateDocumentManifest, validatePublishManifest } from './validate.js';
 
 const validPublishManifest = {
@@ -31,7 +34,7 @@ const validDocumentManifest = {
   ],
 };
 
-function issuesOf(result: ReturnType<typeof validatePublishManifest>): string {
+function issuesOf(result: ValidationResult): string {
   return result.ok ? '' : result.issues.join('\n');
 }
 
@@ -44,9 +47,12 @@ describe('validatePublishManifest (§16)', () => {
   });
 
   it('rejects non-objects and wrong version', () => {
-    expect(validatePublishManifest(null).ok).toBe(false);
-    expect(validatePublishManifest([]).ok).toBe(false);
-    expect(validatePublishManifest({ ...validPublishManifest, version: 2 }).ok).toBe(false);
+    for (const value of [null, [], { ...validPublishManifest, version: 2 }]) {
+      expect(validatePublishManifest(value)).toMatchObject({
+        ok: false,
+        code: ErrorCode.InvalidDocument,
+      });
+    }
   });
 
   it('rejects a missing entry', () => {
@@ -81,7 +87,7 @@ describe('validatePublishManifest (§16)', () => {
     expect(issuesOf(validatePublishManifest(manifest))).toMatch(/references/);
   });
 
-  it('rejects more than 50 assets', () => {
+  it('distinguishes the asset count limit from structural errors', () => {
     const manifest = {
       ...validPublishManifest,
       assets: Array.from({ length: 51 }, (_, i) => ({
@@ -89,7 +95,27 @@ describe('validatePublishManifest (§16)', () => {
         references: ['./a.png'],
       })),
     };
-    expect(issuesOf(validatePublishManifest(manifest))).toMatch(/limit is 50/);
+    expect(validatePublishManifest(manifest)).toEqual({
+      ok: false,
+      code: ErrorCode.BundleTooLarge,
+      issues: ['assets has 51 entries, limit is 50'],
+    });
+    expect(validatePublishManifest({ ...manifest, assets: manifest.assets.slice(0, 50) })).toEqual({
+      ok: true,
+    });
+  });
+
+  it('rejects an oversized asset array before inspecting its entries', () => {
+    const assets = Array.from({ length: 51 }, () => null);
+    Object.defineProperty(assets, '0', {
+      get() {
+        throw new Error('Oversized arrays must not be traversed');
+      },
+    });
+    expect(validatePublishManifest({ ...validPublishManifest, assets })).toMatchObject({
+      ok: false,
+      code: ErrorCode.BundleTooLarge,
+    });
   });
 });
 

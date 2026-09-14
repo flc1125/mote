@@ -1,10 +1,11 @@
 import { env, exports } from 'cloudflare:workers';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { isAssetId, isDocumentId, MAX_MARKDOWN_BYTES } from '@mote/core';
 import { isDocumentManifest, type ErrorResponse, type PublishResponse } from '@mote/protocol';
 
 import { TEST_PUBLISH_TOKEN } from './test-token.js';
+import apiWorker from './index.js';
 
 const PUBLISH_URL = 'http://localhost/api/v1/publish';
 const PNG_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
@@ -68,6 +69,51 @@ describe('authentication (§38)', () => {
 });
 
 describe('request validation (§18)', () => {
+  it('rejects 51 asset entries with 413 before accessing storage', async () => {
+    const head = vi.fn();
+    const put = vi.fn();
+    const form = buildForm({
+      manifest: {
+        version: 1,
+        entry: 'a.md',
+        assets: Array.from({ length: 51 }, (_, i) => ({
+          field: `asset_${i}`,
+          references: [`./${i}.png`],
+        })),
+      },
+      assets: [],
+    });
+    const response = await apiWorker.fetch(
+      new Request(PUBLISH_URL, { method: 'POST', headers: authorized(), body: form }),
+      {
+        MOTE_TOKEN: TEST_PUBLISH_TOKEN,
+        VIEWER_BASE_URL: 'https://mote.example.com',
+        DOCUMENTS: { head, put } as unknown as R2Bucket,
+      },
+    );
+    expect(response.status).toBe(413);
+    expect(((await response.json()) as ErrorResponse).error.code).toBe('BUNDLE_TOO_LARGE');
+    expect(head).not.toHaveBeenCalled();
+    expect(put).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    {
+      assets: [
+        { field: 'asset_0', references: ['./a.png'] },
+        { field: 'asset_0', references: ['./b.png'] },
+      ],
+    },
+    { assets: [{ field: 'asset_0', references: [] }] },
+  ])('keeps invalid asset structure at 422: %j', async ({ assets }) => {
+    const response = await publish(
+      buildForm({ manifest: { version: 1, entry: 'a.md', assets } }),
+      authorized(),
+    );
+    expect(response.status).toBe(422);
+    expect(((await response.json()) as ErrorResponse).error.code).toBe('INVALID_DOCUMENT');
+  });
+
   it('rejects a non-multipart Content-Type with 415', async () => {
     const response = await exports.default.fetch(PUBLISH_URL, {
       method: 'POST',
@@ -143,6 +189,31 @@ describe('request validation (§18)', () => {
 });
 
 describe('successful publish (§17)', () => {
+  it('accepts exactly 50 assets and commits them to R2', async () => {
+    const assets = Array.from({ length: 50 }, (_, i) => ({
+      field: `asset_${i}`,
+      references: [`./${i}.png`],
+    }));
+    const response = await publish(
+      buildForm({
+        manifest: { version: 1, entry: 'a.md', assets },
+        assets: assets.map(({ field }) => ({ field, bytes: PNG_BYTES })),
+      }),
+      authorized(),
+    );
+    expect(response.status).toBe(201);
+    const { id } = (await response.json()) as PublishResponse;
+    const object = await env.DOCUMENTS.get(`documents/${id}/manifest.json`);
+    const manifest = await object!.json();
+    expect(isDocumentManifest(manifest)).toBe(true);
+    if (!isDocumentManifest(manifest)) throw new Error('Expected a committed manifest');
+    expect(manifest.assets).toHaveLength(50);
+    const last = manifest.assets[49]!;
+    expect(last.references).toEqual(['./49.png']);
+    const image = await env.DOCUMENTS.get(`documents/${id}/assets/${last.id}`);
+    expect(new Uint8Array(await image!.arrayBuffer())).toEqual(PNG_BYTES);
+  });
+
   it('returns 201 with id and url, and writes the bundle to R2', async () => {
     const response = await publish(buildForm(), authorized());
     expect(response.status).toBe(201);
