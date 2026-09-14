@@ -20,6 +20,15 @@ importers:
       eslint-config-prettier:
         specifier: ^10.0.0
         version: 10.1.8(eslint@10.9.1(supports-color@10.2.2))
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
+      htmlparser2:
+        specifier: ^12.0.0
+        version: 12.0.0
+      markdown-it:
+        specifier: ^15.0.1
+        version: 15.0.1
       prettier:
         specifier: ^3.3.3
         version: 3.9.6
@@ -1537,6 +1546,9 @@ packages:
   get-proto@1.0.1:
     resolution: {integrity: sha512-sTSfBjoXBp89JvIKIefqw7U2CCebsc74kiY6awiGogKtoSGbgjYE/G/+l9sF3MWFPNc9IcoOC4ODfKHfxFmp0g==}
     engines: {node: '>= 0.4'}
+
+  github-slugger@2.0.0:
+    resolution: {integrity: sha512-IaOQ9puYtjrkq7Y0Ygl9KDZnrf/aiUJYUpVf89y8kyaxbRG7Y1SrX/jaumrv81vc61+kiMempujsM3Yw7w5qcw==}
 
   glob-parent@6.0.2:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
@@ -3338,6 +3350,8 @@ snapshots:
     dependencies:
       dunder-proto: 1.0.1
       es-object-atoms: 1.1.2
+
+  github-slugger@2.0.0: {}
 
   glob-parent@6.0.2:
     dependencies:

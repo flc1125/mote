@@ -29,6 +29,7 @@
 ## 开发与原理
 
 - [贡献指南（英文）](../../CONTRIBUTING.md)——仓库结构、本地开发与完整 CI 检查。
+- [文档检查（英文）](../../CONTRIBUTING.md#documentation-checks)——通过 `pnpm docs:check` 离线校验链接、发布记录与上传限额。
 - [架构](../architecture.md)——组件、存储与设计决策。
 - [发布协议](../protocol.md)——请求格式、校验、错误与不可变提交。
 - [安全模型](../security.md)——发布鉴权、能力 URL 与渲染防护。

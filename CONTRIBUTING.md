@@ -69,6 +69,7 @@ Before submitting a PR, run the same sequence as CI:
 
 ```bash
 pnpm install --frozen-lockfile
+pnpm docs:check
 pnpm lint
 pnpm typecheck
 pnpm test
@@ -81,7 +82,20 @@ pnpm format:check
 
 Worker integration tests need loopback networking and writable Wrangler logs. One real system credential-store test is opt-in and skipped by default; see [`native-auth.test.ts`](apps/cli/test/native-auth.test.ts) for its `MOTE_NATIVE_AUTH_TEST=1` switch. Do not weaken assertions to accommodate a restricted test environment.
 
-Use `pnpm format` to apply repository formatting, then review the diff. For documentation changes, also follow local links and anchors and verify that examples match the implementation.
+Use `pnpm format` to apply repository formatting, then review the diff. For documentation changes, also verify that examples match the implementation.
+
+### Documentation checks
+
+Run `pnpm docs:check` with the contributor Node.js 24 environment. It imports the core upload constants directly from TypeScript, so no build is required.
+
+- The inventory comes from `git ls-files`; content is read from the working tree. Stage new documents and assets with `git add` before checking them. A link to an untracked file fails even if that file exists locally. Scratch directories (`.docs`), dependencies and build output are excluded.
+- Markdown links and images, reference-style links, HTML `href`/`src`/`srcset`, GitHub-style heading anchors and explicit HTML IDs are checked. Root-relative paths start at the repository root. Fenced, indented and inline code, HTML code examples and comments are excluded from link scanning. JSON fences must parse.
+- Links to this repository's `main` are checked locally. Versioned repository links must name a release recorded in the changelog; historical paths and anchors are not checked against today's files. The CLI package version must have exactly one non-empty release section, using the same validation as the release workflow. Third-party versions and historical installation commands are not treated as current-version requirements.
+- The canonical upload tables in both root READMEs and `docs/protocol.md`, including the exact byte counts and MiB definition, are compared with `packages/core/src/limits.ts`. If table labels change, update the selectors in `scripts/docs/contracts.mjs`. Other prose and rendering budgets still need review against the implementation.
+
+The checker never fetches URLs or Git tags. External availability and historical page contents require a separate check when relevant; a passing result does not verify them. Errors include a file and source line and produce a nonzero exit code.
+
+Checker regression tests run with `pnpm test`; for focused work use `pnpm exec vitest run --config scripts/vitest.config.mjs scripts/docs`.
 
 ## Code and documentation conventions
 

@@ -29,6 +29,7 @@ Publish Markdown from your terminal or an AI agent, operate your own instance, o
 ## Development and design
 
 - [Contributing](../CONTRIBUTING.md) — repository structure, local development and the complete CI checks.
+- [Documentation checks](../CONTRIBUTING.md#documentation-checks) — offline link, release and upload-limit validation with `pnpm docs:check`.
 - [Architecture (简体中文)](architecture.md) — components, storage and design decisions.
 - [Publish protocol (简体中文)](protocol.md) — request formats, validation, errors and immutable commits.
 - [Security model (简体中文)](security.md) — publication authorization, capability URLs and rendering defenses.
