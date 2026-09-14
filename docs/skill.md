@@ -51,7 +51,7 @@ readable source even when publication succeeds.
 
 The skill itself is just instructions — publishing still needs:
 
-- A current mote-cli release or matching source build, with explicit authentication configuration or a valid Mote OAuth login (see [CLI reference](cli.md) and [authentication](authentication.md)). For the public `mote.pub` instance, use v0.5.0 or later; v0.2.0 introduced OAuth but still used the old default domain. Self-hosted users should keep their intended instance configuration, or
+- A current stable mote-cli release or matching source build, with explicit authentication configuration or a valid Mote OAuth login (see [CLI reference](cli.md) and [version compatibility](authentication.md#version-compatibility)). Self-hosted users should keep their intended instance configuration, or
 - A Mote MCP server connected (see [MCP guide](mcp.md))
 
 Only the local server exposes `publish_markdown_file`. Authentication failures must be surfaced to the user; the skill does not create credentials, initiate browser login without authorization, read another client's keychain, or switch to an old token. Explicit requests for login assistance can be handled within the user's authorized scope. Do not repeat a publish after a timeout or unknown outcome without resolving whether it succeeded.

@@ -45,7 +45,9 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 | `<meta name="robots">`   | `noindex,nofollow,noarchive`   |
 | `/robots.txt`            | `User-agent: * Disallow: /`    |
 
-注意：robots.txt 只是君子协定，真正防枚举的是高熵 ID；真正防收录的是 noindex 头。
+`robots.txt` 和 `noindex` 都依赖爬虫遵守，不能保证所有搜索引擎或爬虫不收录，也不是访问控制。高熵 ID 用于抵抗猜测；知道链接的人仍可读取和转发内容。
+
+不可变指已存储的 Markdown 和已上传资产不可通过发布接口更新；Viewer 升级可以改变呈现效果，远程图片的内容与可用性由来源站点决定。文档持续可用还依赖实例与存储正常运行。
 
 ## 3. XSS 与内容安全
 
@@ -62,6 +64,8 @@ object-src 'none'; frame-src 'none'; script-src 'sha256-<TOC_SCRIPT 的 SHA-256 
 base-uri 'none'; form-action 'none'; frame-ancestors 'none'
 ```
 
+以上 URL 策略以当前源码为准：#55 补齐协议相对图片及反斜杠变体的拦截，覆盖 Markdown 和 HTML `src`/`srcset`。该修复不包含在 v0.6.0 Viewer 源码中；自托管需部署更新后的 Worker。
+
 Viewer 在首次请求时计算固定脚本的哈希并复用，GET 与 HEAD 的策略一致。`script-src` 不允许 `self`、`unsafe-inline`、`unsafe-eval` 或外部源；首页的复制脚本使用独立哈希，不与文档页互相授权。基础 `documentSecurityHeaders()` 保留全禁脚本策略，文档响应显式使用 `tocDocumentSecurityHeaders()`。
 
 外加 `X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`。
@@ -75,11 +79,11 @@ Viewer 在首次请求时计算固定脚本的哈希并复用，GET 与 HEAD 的
 | 发布鉴权   | token 模式使用原生 HMAC 验证避免直接字符串比较；Access 模式验证受信签名断言，均先于正文读取 |
 | 图片白名单 | 仅 png/jpeg/webp/gif/avif，**按 Magic Bytes 判定**，不信任扩展名                            |
 | 排除 SVG   | SVG 可携带脚本（Active Content），V1 直接拒绝（415）                                        |
-| 大小限额   | Markdown ≤ 2 MB、单图 ≤ 10 MB、包 ≤ 20 MB、≤ 50 个（413）                                   |
+| 大小限额   | Markdown ≤ 2 MiB、单图 ≤ 10 MiB、包 ≤ 20 MiB、上传资产 ≤ 50 个（413）                       |
 | 原子发布   | `manifest.json` 最后写入；写入中途失败不会产生半可见文档（Viewer 只认 manifest）            |
 | ID 冲突    | Document ID 撞库时服务端内部重试，不对客户端暴露 409                                        |
 
-CLI 侧：只读取 Markdown **实际引用**的文件（AST 解析，非正则），绝不扫描整个目录；逐文件做 存在 → regular file → MIME → 大小 → SHA-256 检查；同内容图片按哈希去重。
+CLI 侧：通过 Markdown AST 和 HTML tokenizer 收集图片引用，包含 `img src`、`img srcset` 与 `source srcset`；已识别 front matter 和数学源码中的图片语法不参与收集。只读取实际引用的文件，不扫描整个目录。图片须存在、为 regular file 且通过 MIME 检测，随后按 SHA-256 去重；上传前统一验证文档包限额。1 MiB = 1,048,576 字节，精确限额见[协议](protocol.md#大小与数量限额)。
 
 ## 5. 发布鉴权与凭据管理
 

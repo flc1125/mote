@@ -9,7 +9,7 @@
 
 <p align="center">
   <strong>Markdown in, URL out.</strong><br>
-  将本地 Markdown 文档发布为不可枚举、永久有效、可直接通过浏览器阅读的在线页面。
+  将本地 Markdown 文档发布为不可变、难以猜测链接、可直接通过浏览器阅读的在线页面。
 </p>
 
 <p align="center">
@@ -31,11 +31,13 @@
 
 ## ✨ 特性
 
-- 🔒 **不可变**：每次发布生成全新 URL，旧 URL 永久保持原内容
-- 🔑 **Capability URL**：URL 即访问凭证，94 bit 随机 ID 不可枚举，不被搜索引擎收录
+- 🔒 **不可变**：每次发布生成全新 URL，已存储的 Markdown 和已上传资产不可更新
+- 🔑 **Capability URL**：知道链接即可阅读，94 bit 随机 ID 防猜测，页面发送禁止索引指令
 - 🖼️ **本地图片**：自动上传、按内容去重，公开 URL 不泄露原始文件名
 - ⚡ **快**：Cloudflare Workers + R2 + CDN 缓存；无数据库，文档内容在服务端渲染
 - 🤖 **Agent 友好**：CLI `--json` 输出，另有远程与本地 MCP server
+
+可访问性取决于实例和存储持续运行。Viewer 更新可能改变呈现效果，远程图片依赖其来源站点。搜索引擎指令不构成访问控制，也不是绝对不被收录的保证。
 
 ## 🚀 快速开始
 
@@ -59,21 +61,24 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 默认实例 `https://mote.pub` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。详见[鉴权指南](docs/authentication.md)。
 
-当前源码构建中，`mote login`（或 `mote auth login`）未指定 `--api` 时使用内置默认实例，不受历史登录、环境变量或配置文件中的 API 地址影响。登录成功后会记住所选实例用于发布；显式配置的发布地址仍然生效，登录后会提示覆盖情况。
+**尚未发布：**#54 之后的源码构建中，`mote login` 未指定 `--api` 时使用内置默认实例。稳定版 v0.6.0 登录仍使用已保存和显式配置的 API 地址。两个版本的自托管登录都建议显式传入 `--api`，详见[版本兼容表](docs/authentication.md#version-compatibility)。
 
-> **注意**——浏览器登录和 Service Token 鉴权需要 **mote-cli ≥ 0.2.0**。完整参数（`--json`、`--no-assets`、`--api`、`--token` 等）、配置文件与脚本用法见 [docs/cli.md](docs/cli.md)。
+完整参数（`--json`、`--no-assets`、`--api`、`--token` 等）、配置文件与脚本用法见 [docs/cli.md](docs/cli.md)。
 
-<details><summary><strong>从源码构建</strong>（需要 Node.js ≥ 20 与 pnpm）</summary>
+<details><summary><strong>从源码构建</strong>（推荐 Node.js 24 与仓库固定的 pnpm 版本）</summary>
 
 ```bash
 git clone https://github.com/flc1125/mote.git
 cd mote
-pnpm install
+git switch --detach v0.6.0
+pnpm install --frozen-lockfile
 pnpm --filter @mote/cli build
 cd apps/cli && npm install -g .
 ```
 
 </details>
+
+上述命令使用当前稳定标签；体验标注为“尚未发布”的功能时，改为构建 `main`。
 
 ### MCP
 
@@ -112,17 +117,19 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [docs/skill.md](do
 
 ## 🏠 自托管
 
-在 Cloudflare 免费额度内部署自己的实例：[docs/self-hosting.md](docs/self-hosting.md)。
+在 Cloudflare 部署自己的实例：[docs/self-hosting.md](docs/self-hosting.md)，其中包含免费额度与容量说明。
 
 ## 📏 限制
 
 | 项             | 限制                           |
 | -------------- | ------------------------------ |
-| Markdown       | ≤ 2 MB                         |
-| 单个图片       | ≤ 10 MB                        |
-| 整个文档包     | ≤ 20 MB                        |
-| 图片数量       | ≤ 50                           |
+| Markdown       | ≤ 2 MiB                        |
+| 单个图片       | ≤ 10 MiB                       |
+| 整个文档包     | ≤ 20 MiB                       |
+| 上传资产数量   | ≤ 50                           |
 | 支持的图片格式 | png / jpeg / webp / gif / avif |
+
+1 MiB = 1,048,576 字节。CLI 按内容去重后计算资产数量，远程图片不计入。文档包大小为 Markdown 与已上传图片的字节数之和，详见[精确限额](docs/protocol.md#大小与数量限额)。
 
 不支持上传 SVG 图片或直接嵌入 SVG；Mermaid 图表使用独立净化的静态生成 SVG。
 

@@ -31,11 +31,13 @@
 
 ## ✨ Features
 
-- 🔒 **Immutable** — every publish creates a new URL; old URLs keep their content forever
-- 🔑 **Capability URL** — the URL is the only credential; unguessable (94-bit random ID), never indexed
+- 🔒 **Immutable** — every publish creates a new URL; stored Markdown and uploaded assets cannot be updated
+- 🔑 **Capability URL** — anyone with the URL can read it; a 94-bit random ID resists guessing, and pages request no indexing
 - 🖼️ **Local images** — referenced images are uploaded automatically, deduplicated, and served from opaque URLs
 - ⚡ **Fast** — Cloudflare Workers + R2 + CDN cache; no database, server-rendered documents
 - 🤖 **Agent-ready** — CLI `--json` output, plus remote and local MCP servers
+
+Availability depends on the instance and storage remaining operational. Viewer updates can change presentation; remote images depend on their hosts. Search-engine directives are not access control or a guarantee against indexing.
 
 ## 🚀 Quick Start
 
@@ -59,21 +61,24 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 The default instance, `https://mote.pub`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Details: [authentication guide](docs/authentication.md).
 
-In the current source build, `mote login` (also `mote auth login`) selects the built-in default instance unless `--api` is supplied, ignoring previous logins and environment/config API targets. Successful login remembers the selected instance for publishing. Explicit publishing overrides still apply and are reported after login.
+**Unreleased:** source builds after #54 make `mote login` select the built-in default instance unless `--api` is supplied. The stable v0.6.0 CLI still uses saved and explicit API settings for login. Use explicit `--api` for self-hosted login in either version; see [version compatibility](docs/authentication.md#version-compatibility).
 
-> **Note** — Browser login and Service Token authentication require **mote-cli ≥ 0.2.0**. Full options (`--json`, `--no-assets`, `--api`, `--token`, …), config file, and scripting: [docs/cli.md](docs/cli.md).
+Full options (`--json`, `--no-assets`, `--api`, `--token`, …), configuration and scripting: [docs/cli.md](docs/cli.md).
 
-<details><summary><strong>From source</strong> (requires Node.js ≥ 20 and pnpm)</summary>
+<details><summary><strong>From source</strong> (recommended: Node.js 24 and the repository's pinned pnpm)</summary>
 
 ```bash
 git clone https://github.com/flc1125/mote.git
 cd mote
-pnpm install
+git switch --detach v0.6.0
+pnpm install --frozen-lockfile
 pnpm --filter @mote/cli build
 cd apps/cli && npm install -g .
 ```
 
 </details>
+
+The source commands use the current stable tag. Build `main` instead to try the explicitly marked unreleased changes.
 
 ### MCP
 
@@ -113,17 +118,19 @@ the responsive table of contents; document content cannot run scripts.
 
 ## 🏠 Self-hosting
 
-Run your own instance on Cloudflare's free tier: [docs/self-hosting.md](docs/self-hosting.md).
+Run your own instance on Cloudflare: [docs/self-hosting.md](docs/self-hosting.md), including free-tier limits and capacity considerations.
 
 ## 📏 Limits
 
-| Item          | Limit                          |
-| ------------- | ------------------------------ |
-| Markdown      | ≤ 2 MB                         |
-| Single image  | ≤ 10 MB                        |
-| Whole bundle  | ≤ 20 MB                        |
-| Images        | ≤ 50                           |
-| Image formats | png / jpeg / webp / gif / avif |
+| Item            | Limit                          |
+| --------------- | ------------------------------ |
+| Markdown        | ≤ 2 MiB                        |
+| Single image    | ≤ 10 MiB                       |
+| Whole bundle    | ≤ 20 MiB                       |
+| Uploaded assets | ≤ 50                           |
+| Image formats   | png / jpeg / webp / gif / avif |
+
+1 MiB = 1,048,576 bytes. The CLI counts assets after content deduplication; remote images are not included. The bundle limit is Markdown plus uploaded image bytes. See [exact limits](docs/protocol.md#大小与数量限额).
 
 Uploaded SVG images and raw HTML SVG are not supported. Static Mermaid diagrams
 use separately sanitized, generated SVG.

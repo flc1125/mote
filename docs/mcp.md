@@ -9,7 +9,7 @@ Mote offers two MCP integrations with the same goal: publish Markdown → get a 
 | Auth     | OAuth for Access; static Bearer for token deployments | Mote CLI OAuth store, explicit service mode, or static token |
 | Verified | Codex 0.153.4 app-server on macOS                     | Actual stdio process on macOS                                |
 
-OAuth/service support requires the v0.2.0 source revision or later compatible builds; the CLI credential flow requires mote-cli v0.2.0, not v0.1.1. Production `mote.pub` uses Access. Compatibility is limited to the verified clients/platforms above; see [authentication and migration](authentication.md) for setup and validation limits.
+Use the current stable CLI and matching source checkout for local stdio. Production `mote.pub` uses Access. See [version compatibility](authentication.md#version-compatibility) for minimum feature versions and unreleased changes. Client/platform verification is listed above; [authentication and migration](authentication.md) covers setup and validation limits.
 
 ## Remote MCP
 
@@ -17,10 +17,10 @@ A **stateless** Streamable HTTP endpoint (no MCP sessions, no SSE): `initialize`
 
 ### Tool: `publish_markdown`
 
-| Parameter  | Type   | Required | Description                                   |
-| ---------- | ------ | -------- | --------------------------------------------- |
-| `markdown` | string | ✅       | Markdown content (≤ 2 MB; remote images only) |
-| `name`     | string | no       | Logical file name (default `document.md`)     |
+| Parameter  | Type   | Required | Description                                                   |
+| ---------- | ------ | -------- | ------------------------------------------------------------- |
+| `markdown` | string | ✅       | Markdown content (≤ 2 MiB of UTF-8 bytes; remote images only) |
+| `name`     | string | no       | Logical file name (default `document.md`)                     |
 
 Returns `{ id, url }`.
 
@@ -69,19 +69,23 @@ codex mcp logout mote
 
 Get the actual callback from your Codex setup; do not invent or copy another server's callback ID. Match both the registered URI and listening port. Use the MCP endpoint (including `/api/mcp`) as the OAuth resource. This configuration uses a pre-registered public client; do not add a duplicate `oauth_resource` override. Follow the [official Codex callback guidance](https://learn.chatgpt.com/zh-Hans/docs/extend/mcp).
 
-Codex stores its own tokens; Mote CLI/stdio must not read or copy them. MCP logout does not log out the Codex account or revoke Access grants. Verify login, tool discovery, publishing and anonymous reading against your own instance; use a non-sensitive document because publication is permanent.
+Codex stores its own tokens; Mote CLI/stdio must not read or copy them. MCP logout does not log out the Codex account or revoke Access grants. Verify login, tool discovery, publishing and anonymous reading against your own instance; use a non-sensitive document because each publish creates an immutable document with no user-facing deletion endpoint.
 
 ## Local MCP (stdio)
 
 The local server additionally exposes `publish_markdown_file`, which runs the CLI's asset scanning chain (local images uploaded and deduplicated automatically).
 
-The local MCP server remains a private workspace package; installing `mote-cli` does not install `mote-mcp`. Build it from the matching v0.2.0 source checkout:
+The local MCP server remains a private workspace package; installing `mote-cli` does not install `mote-mcp`. Build from a checkout matching your CLI release. For the current stable v0.6.0, use Node.js 24 and the pnpm version pinned in the root `package.json`:
 
 ```bash
+git clone https://github.com/flc1125/mote.git
+cd mote
+git switch --detach v0.6.0
+pnpm install --frozen-lockfile
 pnpm --filter @mote/mcp build
 ```
 
-Configure:
+Replace `<repo>` below with the absolute path to that checkout. To use unreleased changes, build both CLI and stdio from the same `main` revision and consult the source-only notes in the authentication guide. Configure:
 
 ```json
 {
@@ -113,6 +117,6 @@ Returns `{ id, url, markdownBytes, assetCount, totalBytes }`.
 - **Tool not visible** — remote: verify the connector/`.mcp.json` entry and that the client supports remote (Streamable HTTP) servers. Local: verify the `command` path points at the built `dist/mcp.js`.
 - **`no publish token configured`** (local) — static mode requires `MOTE_TOKEN` or config `token`; an Access instance instead requires OAuth login or explicit service mode.
 
-- **OAuth login required** — CLI/stdio: run `mote auth login` interactively for the same origin; Codex remote: use `codex mcp login mote`. Do not copy credentials between them.
+- **OAuth login required** — CLI/stdio: run `mote auth login --api <your-instance-origin> --auth-mode oauth` interactively for the same origin; Codex remote: use `codex mcp login mote`. Do not copy credentials between them.
 - **Service configuration invalid** — provide the whole target-bound triple and explicit service mode; never fall back to OAuth.
 - **Unknown publish outcome** — do not automatically repeat the call. A timeout may have occurred after the immutable write.

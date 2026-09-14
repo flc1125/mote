@@ -48,10 +48,12 @@ Access 发布鉴权链路：CLI/远程 MCP → Cloudflare Access 校验 OAuth �
 ```text
 Markdown is the source of truth.   → R2 只存 Markdown，不存预生成 HTML
 HTML is ephemeral.                 → HTML 仅存在于 Workers Cache
-Documents are immutable.           → 每次发布生成新 Document，无更新/删除
+Documents are immutable.           → 每次发布生成新 Document，无更新/删除接口
 The URL is the capability.         → 知道 URL 即可访问，无登录/ACL
 The CDN is the materialized view.  → 渲染结果由 CDN 长缓存
 ```
+
+不可变针对存储的 Markdown 和已上传资产；Viewer/Theme 更新可改变呈现效果。远程图片依赖外部站点，文档可访问性依赖实例和 R2 持续运行。
 
 ## Worker 划分
 
@@ -97,7 +99,7 @@ documents/
 
 - Raw HTML 白名单净化、仅允许固定目录脚本哈希的严格 CSP、`Referrer-Policy: no-referrer`、noindex。
 - 图片 MIME 以 Magic Bytes 为准；V1 不支持 SVG（Active Content 风险）。
-- 发布接口：静态 token 或经过 Access 的签名身份；Bundle ≤ 20MB、Asset ≤ 50 个。Access 模式绑定 issuer/AUD/API 主机，不支持从备用 Worker 域名旁路。
+- 发布接口：静态 token 或经过 Access 的签名身份；Bundle ≤ 20 MiB（20 × 1,048,576 字节）、上传 Asset ≤ 50 个。Access 模式绑定 issuer/AUD/API 主机，不支持从备用 Worker 域名旁路。
 - CLI 与本地 stdio 共享 Mote 凭据存储、刷新锁与发布管线；Codex 独立保存自己的 OAuth 凭据。远程 MCP 保持无状态，无文档所有权或用户配额新增。
 
 详见 [发布协议](protocol.md)与[安全模型](security.md)。

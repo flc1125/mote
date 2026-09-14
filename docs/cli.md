@@ -2,7 +2,7 @@
 
 The `mote` CLI publishes a local Markdown file to a Mote instance and prints its URL.
 
-OAuth/Service Token commands and the `mote login` shortcut require **mote-cli v0.2.0 or the matching source build**; v0.1.1 does not include them. Use an Access-enabled deployment for OAuth/service authentication. See [authentication and migration](authentication.md) for setup, secure storage and mode selection.
+This reference targets **mote-cli v0.6.0**, the current stable release. Unreleased differences are labeled explicitly. Use an Access-enabled deployment for OAuth/service authentication. See [version compatibility](authentication.md#version-compatibility) and [authentication and migration](authentication.md) for setup, secure storage and mode selection.
 
 ```bash
 mote <markdown-file>
@@ -16,17 +16,18 @@ mote publish <markdown-file>
 npm install -g mote-cli
 ```
 
-**From source** (requires Node.js ≥ 20 and pnpm):
+**From source** (recommended development environment: Node.js 24 and the pnpm version pinned in the root `package.json`):
 
 ```bash
 git clone https://github.com/flc1125/mote.git
 cd mote
-pnpm install
+git switch --detach v0.6.0
+pnpm install --frozen-lockfile
 pnpm --filter @mote/cli build
 cd apps/cli && npm install -g .
 ```
 
-Verify:
+The tag matches this reference. To try unreleased changes, build `main` instead and follow the source-only notes below. Verify:
 
 ```bash
 mote --help
@@ -34,15 +35,16 @@ mote --help
 
 ## Configuration
 
-Resolution order (highest priority first):
+Resolution order in **v0.6.0** (highest priority first):
 
 ```text
-Login API URL: --api > built-in default (https://mote.pub)
-Other commands API URL: CLI arguments > environment variables > config file > remembered instance > default
+All commands API URL: CLI arguments > environment variables > config file > remembered instance > default
 Other settings: CLI arguments > environment variables > config file > defaults
 ```
 
-`mote login` and `mote auth login` ignore `MOTE_API_URL`, config `apiUrl` and the remembered instance when choosing the login target. Use `--api` to log in to a self-hosted instance. Successful login remembers that target for subsequent commands; failed login leaves the previous default and credentials unchanged. Environment and config API overrides still apply to subsequent commands, and login warns when they select a different instance.
+**Unreleased (#54):** `mote login` and `mote auth login` use `--api` → built-in default (`https://mote.pub`), ignoring `MOTE_API_URL`, config `apiUrl` and the remembered instance when choosing the login target. Other commands keep the priority above. The new login output warns when environment/config API overrides select a different publishing instance.
+
+Use `--api` to log in to a self-hosted instance in either version. Successful login remembers that target for subsequent commands; environment and config overrides still take precedence when publishing. See [version compatibility](authentication.md#version-compatibility).
 
 | Setting        | CLI argument         | Environment variable         | Config file key             | Default                                     |
 | -------------- | -------------------- | ---------------------------- | --------------------------- | ------------------------------------------- |
@@ -120,7 +122,7 @@ Online status verifies identity and may refresh; offline status reports cache on
 | `--token`       | Publish token (overrides `MOTE_TOKEN`)                              |
 | `--auth-mode`   | Select `token`, `oauth` or `service`; no implicit fallback          |
 | `--api`         | API base URL (overrides `MOTE_API_URL`)                             |
-| `--no-assets`   | Publish Markdown only; skip local images                            |
+| `--no-assets`   | Skip local-image uploads; preserve the original Markdown references |
 | `--verbose`     | Show progress even when stderr is redirected; ignored with `--json` |
 | `-h, --help`    | Show help                                                           |
 | `-v, --version` | Show version                                                        |
@@ -140,6 +142,8 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```
 
 The summary appears after scanning and validation, before the upload starts.
+The terminal currently labels binary sizes as KB/MB; the limits in this reference
+use KiB/MiB to make the byte values explicit.
 `Assets` counts local images after content deduplication; remote images are not
 included. `Total` is the Markdown plus those image bytes, excluding multipart and
 manifest overhead. `--no-assets` shows `0 (skipped)` and a Markdown-only total.
@@ -163,14 +167,20 @@ URL=$(mote report.md --json | jq -r .url)
 
 ## How assets are handled
 
-The CLI parses the Markdown **AST** (never regex) and collects local image references — inline (`![a](./a.png)`), reference-style (`![a][img]`), shortcut (`![img]`), and images nested in links.
+The CLI parses the Markdown **AST** and collects local image references — inline (`![a](./a.png)`), reference-style (`![a][img]`), shortcut (`![img]`), and images nested in links. An HTML tokenizer also collects `img src`, `img srcset` and `source srcset`, including images inside `picture` and `details`.
 
-For each referenced file it then: resolves the absolute path → checks existence → requires a regular file → detects MIME **by magic bytes** → checks size → computes SHA-256 → **deduplicates by content** (the same image under different names uploads once; every spelling is recorded).
+Paths resolve relative to the Markdown file's directory. Unicode, spaces and percent-encoded references are supported. Recognized front matter and mathematical source do not contribute image references. See [Markdown compatibility](markdown.md#images-and-html).
 
-- Remote URLs (`https://…`) are left untouched
+Each referenced file must exist, be a regular file and have a supported MIME type detected **by magic bytes**. Images are hashed and **deduplicated by content**: the same image under different names uploads once, with every reference spelling recorded. The resulting bundle is checked against size and count limits before upload.
+
+- Remote HTTP(S) URLs are retained, not downloaded or bundled
 - Only files actually referenced are read — directories are never scanned
 - Unsupported formats (SVG, etc.) fail with a clear error
 - The public asset URL never contains the original file name
+
+`--no-assets` skips local image collection and upload but does not remove or replace image references. Those local images generally will not resolve for online readers; use remote HTTP(S) images or upload the local assets when readers need them. Links to other local Markdown files do not publish those files.
+
+Upload limits use binary units: Markdown ≤ 2 MiB, each image ≤ 10 MiB, the bundle ≤ 20 MiB and at most 50 uploaded assets. The count is after CLI deduplication; remote images do not count. Byte values and server errors are defined in the [publish protocol](protocol.md#大小与数量限额).
 
 Publishing prepares authentication before reading the input bundle. It never opens a browser. Successful publish `--json` stdout remains exactly `{id,url}`; failures use stderr and exit code 1. Do not automatically retry unknown write outcomes.
 
@@ -181,11 +191,11 @@ Publishing prepares authentication before reading the input bundle. It never ope
 | `no publish token configured`     | Set `MOTE_TOKEN`, pass `--token`, or add `"token"` to the config file |
 | `asset not found: <path>`         | A referenced image does not exist; fix the relative path              |
 | `unsupported image type`          | SVG or non-image referenced; convert to png/webp                      |
-| `markdown is … bytes, limit is …` | Markdown over 2 MB — split the document                               |
+| `markdown is … bytes, limit is …` | Markdown over 2 MiB — split the document                              |
 | `UNAUTHORIZED`                    | Wrong or expired token                                                |
 | `BUNDLE_TOO_LARGE`                | Bundle exceeds a size limit (see README limits)                       |
 
-- **Login required / refresh pending**: explicitly run `mote auth login --api <your-instance-origin>` for the same API. Omitting `--api` selects `https://mote.pub`. Do not delete metadata to reactivate an old token.
+- **Login required / refresh pending**: explicitly run `mote auth login --api <your-instance-origin> --auth-mode oauth` for the same API. This works across the stable and unreleased login selection rules. Do not delete metadata to reactivate an old token.
 - **Service mode requires matching variables**: set all three service variables, explicitly select `service`, and match the API origin. Do not paste secrets into bug reports.
 - **Keyring or permissions error**: fix the system credential store or use an explicitly chosen private file backend after logout; no silent fallback is performed.
 - **Callback mismatch / port occupied**: reuse the exact registered URI and available fixed port, or register a new client. Start a fresh login instead of replaying a previous code.
