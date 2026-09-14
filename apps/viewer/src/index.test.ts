@@ -1,5 +1,5 @@
 import { env, exports } from 'cloudflare:workers';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import type { DocumentManifest } from '@mote/protocol';
 import { tocDocumentSecurityHeaders, TOC_SCRIPT } from '@mote/renderer';
@@ -43,6 +43,29 @@ async function seedBundle(): Promise<void> {
 beforeAll(seedBundle);
 
 describe('GET /{document-id}', () => {
+  it('logs the stored UTF-8 byte size for Chinese and emoji content', async () => {
+    const id = 'R8wQr4TmK2aX9NsV';
+    const source = '# 中文文档 🌱\n\n你好，世界。\n';
+    const size = new TextEncoder().encode(source).length;
+    await env.DOCUMENTS.put(`documents/${id}/document.md`, source);
+    await env.DOCUMENTS.put(
+      `documents/${id}/manifest.json`,
+      JSON.stringify({ ...MANIFEST, id, source: { ...MANIFEST.source, size }, assets: [] }),
+    );
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      const response = await viewer.fetch(new Request(`http://localhost/${id}`), env);
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain('中文文档 🌱');
+      expect(size).toBeGreaterThan(source.length);
+      expect(log).toHaveBeenCalledWith(
+        JSON.stringify({ event: 'render', documentId: id, markdownBytes: size, assetCount: 0 }),
+      );
+    } finally {
+      log.mockRestore();
+    }
+  });
+
   it('renders static math and diagrams with only the trusted TOC script', async () => {
     const id = 'Q9vLm2NkR7xB4PaS';
     const source =

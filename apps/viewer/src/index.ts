@@ -126,7 +126,7 @@ async function handleDocument(env: Env, id: string, method: string): Promise<Res
     JSON.stringify({
       event: 'render',
       documentId: id,
-      markdownBytes: markdown.length,
+      markdownBytes: manifest.source.size,
       assetCount: manifest.assets.length,
     }),
   );

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- Reject protocol-relative image URLs, including backslash variants, in Markdown and allowlisted HTML. Use explicit `https://` or `http://` URLs for remote images.
+- Return `413 BUNDLE_TOO_LARGE` instead of `422 INVALID_DOCUMENT` when a publish manifest exceeds 50 assets, rejecting the count before processing image bytes.
+- Report the stored Markdown's UTF-8 byte size in Viewer render logs, including documents containing Chinese text or emoji.
+
 ## [0.6.0] - 2026-09-11
 
 ### Added

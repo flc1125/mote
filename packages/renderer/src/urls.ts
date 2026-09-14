@@ -9,10 +9,14 @@ const STRIP_RE = /[\t\n\r]+/g;
 // eslint-disable-next-line no-control-regex -- control characters are the whole point
 const LEFTOVER_CONTROL_RE = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/;
 
-/** Returns the URL with browser-ignored characters removed, or null. */
+/** Normalize before classification, rejecting ambiguous network-path references. */
 function cleanUrl(url: string): string | null {
   const clean = url.replace(STRIP_RE, '');
-  return LEFTOVER_CONTROL_RE.test(clean) ? null : clean;
+  if (LEFTOVER_CONTROL_RE.test(clean)) return null;
+  const trimmed = clean.trim();
+  // HTTP(S) URL parsing treats backslashes as slashes: //, /\, \/ and \\
+  // all introduce an external host rather than a same-origin asset path.
+  return /^[\\/]{2}/.test(trimmed) ? null : trimmed;
 }
 
 /**
@@ -39,7 +43,7 @@ export function safeLinkUrl(url: string): string | null {
  * Images may point to http(s) (remote assets, baseline §32), to public
  * asset URLs (root-absolute, produced by the asset rewrite), or keep an
  * unresolved relative reference. Anything with another scheme (notably
- * javascript: and data:) is rejected.
+ * javascript: and data:) or a protocol-relative host is rejected.
  *
  * Returns the normalized URL to emit, or null when the URL is unsafe.
  */

@@ -10,6 +10,7 @@ import {
 } from '@mote/core';
 
 import { MANIFEST_VERSION, type DocumentManifest, type PublishManifest } from './manifest.js';
+import { ErrorCode } from './errors.js';
 import { parseAssetFieldIndex } from './publish.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -30,11 +31,30 @@ function checkReferences(value: unknown, where: string, issues: string[]): void 
   }
 }
 
-/** Validates the client-supplied publish manifest (baseline §16). */
-export function validatePublishManifest(value: unknown): ValidationResult {
+export type PublishManifestValidationResult =
+  | { ok: true }
+  | {
+      ok: false;
+      code: typeof ErrorCode.InvalidDocument | typeof ErrorCode.BundleTooLarge;
+      issues: string[];
+    };
+
+/** Validates the client-supplied manifest, distinguishing limits from structure. */
+export function validatePublishManifest(value: unknown): PublishManifestValidationResult {
   const issues: string[] = [];
 
-  if (!isRecord(value)) return validationFail(['manifest must be an object']);
+  if (!isRecord(value)) {
+    return { ok: false, code: ErrorCode.InvalidDocument, issues: ['manifest must be an object'] };
+  }
+
+  // Reject count overruns before traversing entries or reading any image bytes.
+  if (Array.isArray(value.assets) && value.assets.length > MAX_ASSET_COUNT) {
+    return {
+      ok: false,
+      code: ErrorCode.BundleTooLarge,
+      issues: [`assets has ${value.assets.length} entries, limit is ${MAX_ASSET_COUNT}`],
+    };
+  }
 
   if (value.version !== MANIFEST_VERSION) {
     issues.push(`version must be ${MANIFEST_VERSION}`);
@@ -45,9 +65,6 @@ export function validatePublishManifest(value: unknown): ValidationResult {
   if (!Array.isArray(value.assets)) {
     issues.push('assets must be an array');
   } else {
-    if (value.assets.length > MAX_ASSET_COUNT) {
-      issues.push(`assets has ${value.assets.length} entries, limit is ${MAX_ASSET_COUNT}`);
-    }
     const seenFields = new Set<string>();
     value.assets.forEach((asset, index) => {
       const where = `assets[${index}]`;
@@ -66,7 +83,9 @@ export function validatePublishManifest(value: unknown): ValidationResult {
     });
   }
 
-  return issues.length === 0 ? validationOk() : validationFail(issues);
+  return issues.length === 0
+    ? { ok: true }
+    : { ok: false, code: ErrorCode.InvalidDocument, issues };
 }
 
 /** Validates the stored document manifest (baseline §10). */
