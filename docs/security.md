@@ -1,6 +1,6 @@
 # Mote 安全模型
 
-> 本文定义 Mote 的权限模型、防护机制与运维红线；整体设计见[架构](architecture.md)，部署鉴权见[鉴权与迁移](authentication.md)。
+> 本文定义 Mote 的权限模型、防护机制与运维红线；整体设计见[架构](architecture.md)，部署鉴权见[鉴权指南（英文）](authentication.md)。
 
 ## 1. Capability URL 权限模型
 
@@ -85,7 +85,7 @@ CLI 侧：通过 Markdown AST 和 HTML tokenizer 收集图片引用，包含 `im
 
 ## 5. 发布鉴权与凭据管理
 
-服务端 `MOTE_AUTH_MODE=token|cloudflare-access`，省略时兼容回退到 token，未知模式拒绝；仓库中的生产部署配置显式选择 `cloudflare-access`。客户端选择 `token|oauth|service`，不可与服务端枚举混用；客户端版本要求、配置与兼容性见[鉴权与迁移](authentication.md)。
+服务端 `MOTE_AUTH_MODE=token|cloudflare-access`，省略时兼容回退到 token，未知模式拒绝；仓库中的生产部署配置显式选择 `cloudflare-access`。客户端选择 `token|oauth|service`，不可与服务端枚举混用；客户端要求、配置与兼容性见[鉴权指南（英文）](authentication.md)。
 
 Access 模式由 Cloudflare 校验 OAuth 或 Service Token 双凭据、注入 `Cf-Access-Jwt-Assertion`；Worker 仅接受配置的 HTTPS API 主机并校验签名、issuer、AUD、时间、类型与明确身份。用户为非空 sub；机器为合法 common_name 且空 sub，无歧义混用。旧 `MOTE_TOKEN`、邮箱头、Cookie、客户端自报身份及管理 API token 均不能绕过校验。公开阅读仍是 capability URL，不因发布者鉴权升级而要求读者登录。
 

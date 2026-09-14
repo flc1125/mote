@@ -4,7 +4,7 @@
 
 ## 总览
 
-以下 Bearer 示例表示你自己的静态 token 部署，请替换示例域名。Access 模式使用相同的发布载荷与结果：OAuth 使用 opaque Bearer，机器使用 `CF-Access-Client-Id` / `CF-Access-Client-Secret`；Access 校验后由 Worker 验证签名断言。两种服务端模式不混用，配置见[鉴权与迁移](authentication.md)。
+以下 Bearer 示例表示你自己的静态 token 部署，请替换示例域名。Access 模式使用相同的发布载荷与结果：OAuth 使用 opaque Bearer，机器使用 `CF-Access-Client-Id` / `CF-Access-Client-Secret`；Access 校验后由 Worker 验证签名断言。两种服务端模式不混用，配置见[鉴权指南（英文）](authentication.md)。
 
 ```text
 POST https://mote.example.com/api/v1/publish

@@ -192,7 +192,7 @@ MOTE_ACCESS_HOSTNAME = "mote.example.com"
 
 Access issues opaque client tokens; Mote validates the signed identity assertion supplied by Access rather than decoding that token. The API requires HTTPS and its configured host, validates the assertion signature/issuer/AUD/time/type/identity, and fails closed. It does not trust an email header, Cookie, client ID or management API token as identity. See [security](security.md#5-发布鉴权与凭据管理).
 
-For an existing token deployment, use the ordered [migration and rollback steps](authentication.md#migrate-an-existing-instance). OAuth approval does not grant permission to deploy or change production.
+For an existing token deployment, use the ordered [migration and rollback steps](migrations.md#migrate-an-existing-instance-to-access). OAuth approval does not grant permission to deploy or change production.
 
 ## Deployment automation
 

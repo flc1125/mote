@@ -23,6 +23,7 @@
 <p align="center">
   <a href="#-quick-start">Quick Start</a> •
   <a href="https://mote.pub/MxNfTmvTNxMnrbkU">Live Demo</a> •
+  <a href="docs/README.md">Documentation</a> •
   <a href="docs/self-hosting.md">Self-hosting</a> •
   <a href="README.zh-CN.md">简体中文</a>
 </p>
@@ -45,37 +46,27 @@ Use Mote from the terminal, from an AI agent, or both — pick what fits your wo
 
 ### CLI
 
+With Node.js 20+ and publishing permission on `https://mote.pub`, create a file named `hello.md` containing `# Hello, Mote`, then run from its folder:
+
 ```bash
 npm install -g mote-cli
 mote login
-mote README.md
+mote hello.md
 ```
 
 ```text
 Published:
 
-https://mote.example.com/7Vk3mQ9x2NFaP4Ls
+https://mote.pub/7Vk3mQ9x2NFaP4Ls
 ```
 
 <sub>Live sample → [a project update with images, tables, and code](https://mote.pub/MxNfTmvTNxMnrbkU) · [Markdown source](docs/examples/weekly-report.md)</sub>
 
-The default instance, `https://mote.pub`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Details: [authentication guide](docs/authentication.md).
+Open the returned URL to read your page. The URL above illustrates the output; each publication gets a new ID.
 
-Login uses `--api` when supplied, otherwise `https://mote.pub`. A successful login remembers that instance for publishing; explicit environment and configuration overrides still take precedence. See [configuration selection](docs/authentication.md#configuration-selection).
+Need an instance or help signing in? Follow [Publish your first document](docs/quick-start.md). For your own Access-enabled instance, log in with `mote login --api https://mote.example.com --auth-mode oauth`. Instance selection and other authentication modes are covered in [authentication](docs/authentication.md).
 
-Full options (`--json`, `--no-assets`, `--api`, `--token`, …), configuration and scripting: [docs/cli.md](docs/cli.md).
-
-<details><summary><strong>From source</strong> (recommended: Node.js 24 and the repository's pinned pnpm)</summary>
-
-```bash
-git clone https://github.com/flc1125/mote.git
-cd mote
-pnpm install --frozen-lockfile
-pnpm --filter @mote/cli build
-cd apps/cli && npm install -g .
-```
-
-</details>
+Full options, configuration, scripting and source installation: [CLI reference](docs/cli.md).
 
 ### MCP
 
@@ -134,17 +125,12 @@ use separately sanitized, generated SVG.
 
 ## 📚 Documentation
 
-- [Markdown compatibility](docs/markdown.md)
-- [CLI reference](docs/cli.md)
-- [Authentication and migration](docs/authentication.md)
-- [MCP guide](docs/mcp.md)
-- [Skill](docs/skill.md)
-- [Self-hosting](docs/self-hosting.md)
-- [Deployment operations](docs/deployment.md)
-- [Architecture](docs/architecture.md)
-- [Publish protocol](docs/protocol.md)
-- [Security model](docs/security.md)
-- [Security policy](SECURITY.md)
+- [Documentation index](docs/README.md) — guides and references organized by task.
+- [First publication](docs/quick-start.md) — install, sign in and publish your own file.
+- [CLI](docs/cli.md) · [Authentication](docs/authentication.md) · [MCP](docs/mcp.md) · [Skill](docs/skill.md) · [Markdown compatibility](docs/markdown.md)
+- [Self-hosting](docs/self-hosting.md) · [Deployment operations](docs/deployment.md)
+- [Migration notes](docs/migrations.md) · [Changelog](CHANGELOG.md)
+- [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)
 
 > Production Workers deploy from `main` through Cloudflare Workers Builds. GitHub Actions handles CI and stable-tag CLI/GitHub releases; see [deployment operations](docs/deployment.md).
 

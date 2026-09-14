@@ -1,4 +1,6 @@
-# Authentication and migration
+<a id="authentication-and-migration"></a>
+
+# Authentication
 
 Mote supports browser login for interactive publishing, Service Tokens for automation and static tokens for token-mode instances. Production `mote.pub` uses Cloudflare Access and permits only approved publishers. Examples below use your own instance.
 
@@ -7,19 +9,6 @@ Mote supports browser login for interactive publishing, Service Tokens for autom
 OAuth login requires an Access-enabled API with OAuth discovery and `/api/auth/session`. The CLI and local stdio server share Mote's credential store; remote MCP clients manage their own credentials.
 
 CLI installation, local stdio builds and Worker deployment are separate operations. Installing the CLI does not upgrade a self-hosted Viewer or API. Release history and version-specific upgrade instructions are in the [changelog](../CHANGELOG.md).
-
-## Moving to mote.pub
-
-The default production origin is now `https://mote.pub`. Existing saved instances and explicit environment/configuration values are not rewritten when upgrading. Update any old `MOTE_API_URL` or `apiUrl` value, then log in to the new origin:
-
-```bash
-mote login --api https://mote.pub --auth-mode oauth
-mote auth status --api https://mote.pub --json
-```
-
-Plain `mote login` selects `https://mote.pub`, even when a previous login remembered another domain. Successful login replaces the remembered default; it does not rewrite explicit environment or config API overrides.
-
-Remote MCP clients must use `https://mote.pub/api/mcp` and authorize that connection separately. Local stdio clients must also update any pinned API origin and restart their process. Service clients must update both their API origin and `MOTE_SERVICE_API_URL` (or `serviceToken.apiUrl`). Do not copy credentials between origins or rely on redirects: OAuth discovery and publication reject redirects. Old-domain availability is not guaranteed; use new-domain document links directly.
 
 ## Choose a mode
 
@@ -101,13 +90,14 @@ Validation limits: production revocation/recovery and rollback, and full 7/30-da
 
 `mote auth logout` removes local Mote OAuth secrets for the selected origin only. It does not revoke Cloudflare grants, disable Service Tokens, remove static-token configuration, log out Codex, or delete published documents. `codex mcp logout <server>` similarly targets that Codex MCP login, not the Codex account. An administrator must separately revoke the appropriate Access user/application sessions or disable the machine token. Application-wide revocation affects other users of that application; verify its scope before acting. Already published capability URLs remain readable.
 
-## Migrate an existing instance
-
-1. Inventory all publishers and secret sources without recording values. Prepare a working token-mode rollback configuration and a maintenance window.
-2. Follow [self-hosting](self-hosting.md#access-enabled-deployments) to prepare Access on an isolated hostname first. Test discovery, CLI login/status/publish/logout, stdio, Codex, service credentials and anonymous reads.
-3. Obtain separate approval for the production Access policy and Worker switch. Do not copy the repository's test account, client IDs, AUD, routes or bucket into a new deployment.
-4. Select OAuth for interactive publishers and service mode for unattended publishers. Remove old `MOTE_TOKEN`, `--token`, config `token`, and remote MCP Bearer settings from each migrated publisher. Update the actual parent process environment and restart stdio clients when necessary.
-5. Verify old credentials cannot publish in Access mode and anonymous reading still works. Keep rollback secrets in an operator-controlled store until the approved rollback window closes; do not keep them as a hidden client fallback.
-6. Revoke retired credentials only after accounting for their remaining users. For rollback, restore a working token-mode Worker first, then remove Access protection and explicitly restore clients; never expose an unauthenticated publishing interval.
-
 Every publish is immutable and creates a new document. Do not retry timeouts, 5xx responses or uncertain outcomes automatically: a write may already have succeeded. Resolve the outcome before deciding to publish again.
+
+## Migration notes
+
+<a id="moving-to-motepub"></a>
+
+- [Moving to mote.pub](migrations.md#moving-to-motepub) — for clients still targeting the former default domain.
+
+<a id="migrate-an-existing-instance"></a>
+
+- [Migrate an existing instance to Access](migrations.md#migrate-an-existing-instance-to-access) — publisher migration, validation and rollback.

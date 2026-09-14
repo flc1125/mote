@@ -1,6 +1,6 @@
 # Mote 架构
 
-> 本文记录当前架构与核心决策；接口契约以[发布协议](protocol.md)为准，安全约束以[安全模型](security.md)为准，鉴权配置以[鉴权与迁移](authentication.md)为准。理解与维护项目不依赖未随仓库发布的内部计划文档。
+> 本文记录当前架构与核心决策；接口契约以[发布协议](protocol.md)为准，安全约束以[安全模型](security.md)为准，鉴权配置以[鉴权指南（英文）](authentication.md)为准。理解与维护项目不依赖未随仓库发布的内部计划文档。
 
 ## 总览
 
@@ -114,7 +114,7 @@ documents/
 | §13–§18                    | [协议](protocol.md)的请求、服务端处理与响应；[安全模型](security.md)的上传侧防护                                                             |
 | §20–§23                    | [CLI](cli.md)的 Configuration、Options 与 How assets are handled                                                                             |
 | §24、§26–§36、§42          | 本文的渲染与缓存；[协议](protocol.md)的公开访问；[安全模型](security.md)的防泄露与 XSS 防护；渲染细节由 `packages/renderer/src` 及其测试维护 |
-| §38                        | [鉴权与迁移](authentication.md)及[安全模型](security.md)的发布鉴权与凭据管理                                                                 |
+| §38                        | [鉴权指南（英文）](authentication.md)及[安全模型](security.md)的发布鉴权与凭据管理                                                           |
 | §43、§45、plan 002 Phase 1 | [MCP](mcp.md)的远程无状态协议、本地工具与共享发布管线                                                                                        |
 | §47、§52、§53、§65.14      | [自托管](self-hosting.md)的健康检查与部署配置；本文的渲染与缓存；当前兼容日期以 Worker 配置为准                                              |
 | §57–§59                    | [安全模型](security.md)的 XSS 回归测试；`apps/api/src/m3.integration.test.ts` 与 `apps/cli/test/e2e.test.ts` 的集成测试契约                  |
