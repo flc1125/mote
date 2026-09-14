@@ -1,5 +1,7 @@
 # Publish your first document
 
+[简体中文](zh-CN/quick-start.md)
+
 This tutorial takes you from a local Markdown file to a browser-readable page using the CLI. You need Node.js 20 or newer, npm, an interactive terminal and a browser on the same computer. You do not need a repository checkout.
 
 ## 1. Choose an instance

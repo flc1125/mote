@@ -4,7 +4,7 @@
 
 Mote 运行在 Cloudflare 上：两个 Worker + 一个 R2 bucket，无需管理数据库或服务器。本指南带你从零部署到自己的 `https://<your-domain>`。小规模负载可能在免费额度内运行，详见下方[成本](#成本)与渲染容量说明。
 
-步骤 1–8 部署使用 **token** 鉴权的实例。需要浏览器登录或 Service Token 时，按下方 [Access 部署](#access-部署)及[鉴权指南](../authentication.md)操作。安装 npm 包不会部署 Worker；仓库工作流见[部署自动化](#部署自动化)。
+步骤 1–8 部署使用 **token** 鉴权的实例。需要浏览器登录或 Service Token 时，按下方 [Access 部署](#access-部署)及[鉴权指南](authentication.md)操作。安装 npm 包不会部署 Worker；仓库工作流见[部署自动化](#部署自动化)。
 
 > 下文命令中的 `<your-domain>` 是占位符——替换成你自己的（子）域名，如 `mote.example.com`。
 
@@ -159,7 +159,7 @@ Header: Authorization: Bearer <你的 token>
 
 小规模负载可能在免费额度内运行。按账号当前的 Worker 请求/CPU 限额和 R2 存储/操作额度规划容量；域名注册及超出免费额度的用量可能产生费用。缓存命中在 Viewer 执行前返回，未命中会产生 Worker 计算与 R2 读取。不可变发布会持续增加存储的文档包，远程图片可用性由外部站点决定。
 
-公式和图表布局有[渲染预算](../markdown.md#rendering-budgets)，但这不保证每篇支持的文档都满足免费计划的 CPU 限额。选择容量时应检查代表性文档的缓存未命中请求。
+公式和图表布局有[渲染预算](markdown.md#渲染预算)，但这不保证每篇支持的文档都满足免费计划的 CPU 限额。选择容量时应检查代表性文档的缓存未命中请求。
 
 <a id="access-部署尚未发布"></a>
 
@@ -170,9 +170,9 @@ Header: Authorization: Bearer <你的 token>
 配置目标为 `mote-test-api`、`mote-test-viewer`、`mote-test-documents` 和 `mote-test.flc.io`，使用独立的 `mote-test` Access 应用；逻辑环境名为 `access-test`。`apps/auth-probe` 使用虚拟账户/身份配置且无路由，仅用于本地回归测试和 dry-run 构建，不得指向真实云端资源。
 
 1. 配置 Zero Trust 登录源及明确的发布者 Allow 策略。同一应用仅保护 `<your-domain>/api/mcp`、`<your-domain>/api/v1/publish`、`<your-domain>/api/auth/*`；阅读页面、图片、健康检查和必要 OAuth 发现元数据保持公开，不保护整个 Viewer 域名。
-2. 启用 Managed OAuth 与实际客户端需要的 localhost/loopback 回调，不添加任意公网回调通配。核对完整 `/api/mcp` resource 和 issuer。Codex 沿用预注册 public client 与精确回调，见 [MCP 指南](../mcp.md#codex)。
+2. 启用 Managed OAuth 与实际客户端需要的 localhost/loopback 回调，不添加任意公网回调通配。核对完整 `/api/mcp` resource 和 issuer。Codex 沿用预注册 public client 与精确回调，见 [MCP 指南（英文）](../mcp.md#codex)。
 3. 按实例风险选择 token 和授权会话时长，在 `oauth_configuration` 下设置 `grant.access_token_lifetime` 和 `grant.session_duration`，不是应用普通会话时长。API 更新必须先 GET、保留其他配置再 PUT，最后独立 GET 比对精确时长，不能只 PUT 局部片段。参考 [Managed OAuth](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/managed-oauth/)。
-4. 机器发布另加 Service Auth 策略，仅选指定令牌且只关联目标应用；不要允许任意服务令牌。创建、轮换、禁用及环境配置见[机器发布](../authentication.md#machine-publishing)。
+4. 机器发布另加 Service Auth 策略，仅选指定令牌且只关联目标应用；不要允许任意服务令牌。创建、轮换、禁用及环境配置见[机器发布](authentication.md#机器发布)。
 5. 保留 API Worker 的路由与绑定，在相应部署配置中替换鉴权变量（不是直接追加第二个 `[vars]`）：
 
 ```toml
@@ -190,9 +190,9 @@ MOTE_ACCESS_HOSTNAME = "mote.example.com"
 `MOTE_ACCESS_HOSTNAME` 是受保护的 API 主机，不是另一个 Viewer 主机。Access 签发 opaque token，Worker 校验 Access 注入的签名断言，不把客户端 token 当 JWT。错误签名、issuer/AUD/时间/身份/主机均拒绝；不信任邮箱头、Cookie、Client ID 或管理 API token。
 
 6. 人工确认部署环境、Worker、路由优先级、R2 后再部署选定配置；测试不可误用默认生产 deploy。已有生产迁移必须另行批准。
-7. 按[CLI 登录/状态/发布/退出](../authentication.md#user-login-cli-and-local-stdio)及 Codex 指南复核。匿名发布应拒绝、发现 resource 精确匹配、用户与机器发布成功、无效凭据拒绝、阅读和图片匿名可用、备用主机不能发布。记录版本和结果，不记录秘密值。
+7. 按[CLI 登录/状态/发布/退出](authentication.md#用户登录cli-与本地-stdio)及 Codex 指南复核。匿名发布应拒绝、发现 resource 精确匹配、用户与机器发布成功、无效凭据拒绝、阅读和图片匿名可用、备用主机不能发布。记录版本和结果，不记录秘密值。
 
-已有 token 实例请按[迁移与回退步骤（英文）](../migrations.md#migrate-an-existing-instance-to-access)操作，不留无鉴权窗口。凭据存储、兼容性与会话限制见[鉴权指南（英文）](../authentication.md)。OAuth 登录授权不等于生产部署或配置变更授权。
+已有 token 实例请按[迁移与回退步骤](migrations.md#将已有实例迁移到-access)操作，不留无鉴权窗口。凭据存储、兼容性与会话限制见[鉴权指南](authentication.md)。OAuth 登录授权不等于生产部署或配置变更授权。
 
 ## 部署自动化
 
@@ -207,6 +207,6 @@ MOTE_ACCESS_HOSTNAME = "mote.example.com"
 ## 下一步
 
 - [部署操作手册](deployment.md)——失败处理、重跑与人工恢复
-- [CLI 参考](../cli.md)——参数、配置、脚本化
-- [MCP 指南](../mcp.md)——远程与 stdio 集成
+- [CLI 参考](cli.md)——参数、配置、脚本化
+- [MCP 指南（英文）](../mcp.md)——远程与 stdio 集成
 - [架构](../architecture.md)——整体设计

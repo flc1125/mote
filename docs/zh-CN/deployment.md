@@ -79,4 +79,4 @@ Release 失败时，检查原 Actions 运行并保留 manifest、tarball 和结�
 
 <a id="生产域名切换"></a>
 
-迁至 `mote.pub` 的过程见[生产域名切换记录（英文）](../migrations.md#production-domain-cutover)。仍使用旧默认域名的客户端请按[迁移到 mote.pub（英文）](../migrations.md#moving-to-motepub)更新地址并重新授权。
+迁至 `mote.pub` 的过程见[生产域名切换记录](migrations.md#生产域名切换)。仍使用旧默认域名的客户端请按[迁移到 mote.pub](migrations.md#迁移到-motepub)更新地址并重新授权。

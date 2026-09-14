@@ -2,6 +2,8 @@
 
 # Authentication
 
+[简体中文](zh-CN/authentication.md)
+
 Mote supports browser login for interactive publishing, Service Tokens for automation and static tokens for token-mode instances. Production `mote.pub` uses Cloudflare Access and permits only approved publishers. Examples below use your own instance.
 
 ## Requirements

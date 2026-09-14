@@ -1,5 +1,7 @@
 # Migration notes
 
+[简体中文](zh-CN/migrations.md)
+
 Use this guide when updating an existing installation affected by a domain or authentication change. For a new setup, start with [first publication](quick-start.md) or [self-hosting](self-hosting.md). Release-specific details remain in the [changelog](../CHANGELOG.md).
 
 ## Moving to mote.pub

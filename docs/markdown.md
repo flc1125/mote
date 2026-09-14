@@ -1,5 +1,7 @@
 # Markdown compatibility
 
+[简体中文](zh-CN/markdown.md)
+
 Mote renders CommonMark-style Markdown with selected GFM and document extensions.
 The supported format is defined below; Mote does not claim complete compatibility
 with every Markdown editor or every Mermaid feature.
