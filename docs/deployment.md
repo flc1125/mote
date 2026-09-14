@@ -51,7 +51,7 @@ Neither production connection deploys `access-test`. Test resources and the loca
 1. Record the expected full `main` SHA and its GitHub CI result.
 2. Open **Deployments** for both Workers. Record each Build ID, source SHA, outcome, resulting Worker version and active traffic percentage. Both must match the expected commit and serve the intended production traffic.
 3. Check `/health` and `/api/health`, then an existing document and its image. Verify successful responses, expected cache behavior, security headers and unchanged image bytes.
-4. For authentication or publishing changes, also verify anonymous publication rejection, OAuth discovery and authorized user/service publication as applicable. A real publish creates a permanent public URL; use an explicitly approved non-sensitive sample. Routine documentation-only rollouts can reuse read-only samples and the established authentication baseline.
+4. For authentication or publishing changes, also verify anonymous publication rejection, OAuth discovery and authorized user/service publication as applicable. A real publish creates a new immutable document readable by anyone with its URL; use an explicitly approved non-sensitive sample. Routine documentation-only rollouts can reuse read-only samples and the established authentication baseline.
 
 The Workers deploy independently: a temporary mixed-version window is expected, and one successful Build is not acceptance of the pair. Cross-API/CLI/Viewer changes need two-stage compatibility: first support old and new behavior, then remove old behavior only after both Workers and supported clients have migrated. Server deployment may precede the matching CLI release.
 

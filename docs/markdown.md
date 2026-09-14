@@ -101,7 +101,9 @@ historical filenames containing literal percent signs.
 
 Only images are bundled. A link to another local Markdown file does not publish
 that file; use a published URL when readers need to open another document.
-Remote images retain their remote URLs and depend on the remote host's availability.
+Remote HTTP(S) images retain their URLs, are not downloaded into the bundle and depend on the remote host's content and availability. `--no-assets` skips local-image uploads while preserving the source references; those images generally will not resolve for online readers.
+
+Protocol-relative image URLs such as `//example.com/image.png`, including slash/backslash variants, are rejected in Markdown images and HTML `src`/`srcset`. Use an explicit URL such as `https://example.com/image.png`. Normal relative asset references and same-origin asset URLs are supported.
 
 HTML passes through an allowlist. Scripts, event handlers, iframes, arbitrary
 style/class/id attributes and active embeds are removed. Put blank lines around

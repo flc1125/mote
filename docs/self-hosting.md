@@ -2,39 +2,79 @@
 
 [简体中文](zh-CN/self-hosting.md)
 
-Mote runs entirely on Cloudflare's free tier: two Workers + one R2 bucket, no database, no servers. This guide takes you from zero to your own instance at `https://<your-domain>`.
+Mote runs on Cloudflare: two Workers + one R2 bucket, no database or server to manage. This guide takes you from zero to your own instance at `https://<your-domain>`. Small workloads may fit the free tier; see [costs](#costs) and rendering capacity below.
 
-Steps 1–8 describe the compatible **token** deployment. For Access, use the reviewed v0.2.0 server/source revision with mote-cli v0.2.0 or a matching build, and follow the [Access section](#access-enabled-deployments) before changing authentication. Installing or publishing an npm package alone does not deploy Workers; repository workflows are described under [deployment automation](#deployment-automation).
+Steps 1–8 deploy an instance with **token** authentication. For browser login or Service Tokens, follow the [Access section](#access-enabled-deployments) and [authentication guide](authentication.md). Installing an npm package does not deploy Workers; repository workflows are described under [deployment automation](#deployment-automation).
 
 > Commands below use `<your-domain>` as a placeholder — replace it with your own (sub)domain, e.g. `mote.example.com`.
 
 ## Prerequisites
 
 - A [Cloudflare account](https://dash.cloudflare.com/sign-up) with a domain added as a **zone** (nameservers pointing to Cloudflare)
-- Node.js ≥ 20 and pnpm 11
+- Node.js 24 (the CI development baseline) and pnpm 11.23.0, pinned in the root `package.json`
 - A checkout of this repository:
 
 ```bash
 git clone https://github.com/flc1125/mote.git
 cd mote
-pnpm install
+pnpm install --frozen-lockfile
 ```
 
-## 1. Log in to Cloudflare
+The steps below use the **top-level configuration**, selected explicitly by `--env=""`; the repository's `access-test` environment belongs to a separate project-specific deployment.
+
+## 1. Configure your deployment targets
+
+Choose your Worker names, hostname and R2 bucket before creating resources or setting secrets. The examples use `mote-api`, `mote-viewer` and `mote-documents` in your own Cloudflare account; substitute your chosen names consistently if those names are already in use.
+
+In `apps/viewer/wrangler.toml`, edit the existing top-level fields and R2 binding, keeping `[cache]` enabled:
+
+```toml
+name = "mote-viewer"
+routes = [{ pattern = "<your-domain>/*", zone_name = "<your-zone>" }]
+
+[[r2_buckets]]
+binding = "DOCUMENTS"
+bucket_name = "mote-documents"
+```
+
+In `apps/api/wrangler.toml`, edit the existing top-level fields, `[vars]` and R2 binding. Replace `MOTE_AUTH_MODE` with `token` and remove `MOTE_ACCESS_ISSUER`, `MOTE_ACCESS_AUD` and `MOTE_ACCESS_HOSTNAME`, which belong to the project's Access deployment:
+
+```toml
+name = "mote-api"
+routes = [{ pattern = "<your-domain>/api/*", zone_name = "<your-zone>" }]
+
+[vars]
+VIEWER_BASE_URL = "https://<your-domain>"
+MOTE_AUTH_MODE = "token"
+
+[[r2_buckets]]
+binding = "DOCUMENTS"
+bucket_name = "mote-documents"
+```
+
+These are excerpts to replace existing values, not complete files or extra TOML tables to append. Keep each file's `main` and compatibility date. Both Workers must bind the same bucket.
+
+`<your-zone>` is the DNS zone name (for example `example.com`). The API owns `/api/*`; the Viewer owns the remaining paths. Both use Routes with proxied DNS, and the most specific route wins. Cloudflare Routes take precedence over Custom Domains on the same hostname.
+
+**Fork build checks:** `pnpm build` validates this project's exact production and test configuration. To use that command and CI in your fork, adapt `scripts/workers/targets.json` for your resource names, hostname, zone and account; adapt `scripts/workers/config.mjs` for your chosen auth vars and environments as well. Its API expectation is currently fixed to Access mode, so changing only Wrangler's domain or token mode will fail the check. Step 5's app-specific Wrangler dry-runs can validate bundling independently of those project allowlists.
+
+Token-only staging may use `workers_dev = true` without routes, with the API's `VIEWER_BASE_URL` pointing at the Viewer hostname. Access mode requires a protected hostname with workers.dev and preview URLs disabled.
+
+## 2. Log in to Cloudflare
 
 ```bash
 pnpm --filter @mote/api exec wrangler login
 ```
 
-This opens a browser to authorize wrangler.
+This opens a browser to authorize Wrangler. Select the account containing your DNS zone and intended Worker resources; configure `account_id` in both top-level Worker configs if you need to disambiguate accounts.
 
-## 2. Create the R2 bucket
+## 3. Create the R2 bucket
 
 ```bash
 pnpm --filter @mote/api exec wrangler r2 bucket create mote-documents
 ```
 
-## 3. Generate and store your publish token
+## 4. Generate and store your publish token
 
 ```bash
 openssl rand -hex 32
@@ -43,38 +83,25 @@ openssl rand -hex 32
 Save the output somewhere safe — it becomes your `MOTE_TOKEN` for the CLI/MCP. Then set it as the API Worker's secret (paste it when prompted):
 
 ```bash
-pnpm --filter @mote/api exec wrangler secret put MOTE_TOKEN
+pnpm --filter @mote/api exec wrangler secret put MOTE_TOKEN --env=""
 ```
 
-> Token rules: never commit it, never print it to logs. Rotate anytime by running the same command again.
-
-## 4. Point the Workers at your domain
-
-Edit `apps/viewer/wrangler.toml`:
-
-```toml
-routes = [{ pattern = "<your-domain>/*", zone_name = "<your-zone>" }]
-```
-
-Edit the existing routes and `[vars]` in `apps/api/wrangler.toml` (do not append a second `[vars]` table). This tutorial uses token mode: replace the checked-in production `MOTE_AUTH_MODE` with `token` and remove `MOTE_ACCESS_ISSUER`, `MOTE_ACCESS_AUD`, and `MOTE_ACCESS_HOSTNAME`. Those values belong to the project's Access deployment, not your instance. Preserve your unrelated settings:
-
-```toml
-routes = [{ pattern = "<your-domain>/api/*", zone_name = "<your-zone>" }]
-
-[vars]
-VIEWER_BASE_URL = "https://<your-domain>"
-MOTE_AUTH_MODE = "token"
-```
-
-`<your-zone>` is the zone name of your domain (e.g. `example.com`). Both Workers share one host: the API owns `/api/*`, everything else goes to the viewer (most specific route wins). This deployment uses Routes for both Workers with proxied DNS. Cloudflare Routes take precedence over Custom Domains on the same hostname.
-
-> Token-only staging can use `workers_dev = true` without routes. **Do not do this in Access mode**: use a protected custom hostname and disable both workers.dev and preview URLs. The API rejects alternate hosts in Access mode.
+The secret command uses the API Worker name and account selected above. If Wrangler prompts to create that Worker, confirm the selected name. Rotate by setting a replacement and updating the clients that use it; keep the value out of Git and shared logs.
 
 ## 5. Deploy
 
+First check that each configured Worker bundles successfully. These commands do not upload a Worker or validate live DNS/Access settings:
+
 ```bash
-pnpm --filter @mote/api deploy
-pnpm --filter @mote/viewer deploy
+pnpm --filter @mote/api exec wrangler deploy --dry-run --env=""
+pnpm --filter @mote/viewer exec wrangler deploy --dry-run --env=""
+```
+
+Then deploy the selected top-level configuration:
+
+```bash
+pnpm --filter @mote/api exec wrangler deploy --env=""
+pnpm --filter @mote/viewer exec wrangler deploy --env=""
 ```
 
 ## 6. Add the DNS record
@@ -95,16 +122,19 @@ curl https://<your-domain>/health          # viewer: {"status":"ok"}
 curl https://<your-domain>/api/health      # API:    {"status":"ok"}
 ```
 
-Then publish a real document:
+From the repository root, publish a small synthetic document using the token you saved in step 4:
 
 ```bash
 export MOTE_TOKEN="<your-token>"
 export MOTE_API_URL="https://<your-domain>"
+export MOTE_AUTH_MODE="token"
 pnpm --filter @mote/cli build
-node apps/cli/dist/cli.js README.md
+node apps/cli/dist/cli.js docs/examples/weekly-report.md
 ```
 
-Open the printed URL — the page renders; images (if any) resolve. A second `curl -I` of the URL should show `cf-cache-status: HIT`.
+Open the printed URL and confirm the report and its remote image render. To check local-image uploads, publish `docs/examples/markdown-compatibility.md` and check that both logo references resolve to one uploaded asset. Each publish creates a new document.
+
+Check document headers with `curl -I <published-url>`: browser `Cache-Control` should specify `max-age=300`, and the Cloudflare CDN policy should specify `max-age=31536000`. Repeated requests reaching the same edge can show `cf-cache-status: HIT`; the first miss after a new Worker version is expected. A dry-run alone does not verify this deployed cache behavior.
 
 ## 8. Configure your clients
 
@@ -113,6 +143,7 @@ CLI (`~/.config/mote/config.json`):
 ```json
 {
   "apiUrl": "https://<your-domain>",
+  "authMode": "token",
   "token": "<your-token>"
 }
 ```
@@ -126,7 +157,9 @@ Header: Authorization: Bearer <your-token>
 
 ## Costs
 
-Personal-scale usage fits Cloudflare's free tier: 100k Worker requests/day, 10 GB R2 storage, free egress. Long-lived CDN cache means repeat reads don't touch the Worker or R2.
+Small workloads may fit the free tier. Plan against your account's current Worker request/CPU limits and R2 storage/operation allowances; domain registration and usage beyond included quotas may add costs. Cache hits are served before the Viewer executes, while misses incur Worker work and R2 reads. Immutable publishing continually adds stored bundles, and remote image availability is outside your instance's control.
+
+Formulas and diagram layout have [rendering budgets](markdown.md#rendering-budgets), but those budgets do not guarantee that every supported document fits a free plan's CPU allowance. Check representative cache misses when choosing capacity.
 
 <a id="access-enabled-deployments-unreleased"></a>
 
@@ -167,7 +200,7 @@ Production `mote-api` and `mote-viewer` deploy independently through Cloudflare 
 
 Connect each production Worker to your repository only after its resources, routes and authentication have been reviewed. Use the [Workers Builds settings](deployment.md#expected-workers-builds-settings): workspace root `/`, an empty build command, and the app-specific filtered Wrangler deploy command. Configure build credentials and build-only variables in Cloudflare; runtime secrets remain separate. The commands in step 5 remain available for initial self-hosting and explicitly approved manual work.
 
-Forks must adapt both Wrangler configs and the configuration checks in `scripts/workers/targets.json` and `scripts/workers/config.mjs` to their own resources and auth mode. These checks intentionally pin this project's production and test configuration; changing only the domain will make `pnpm build` fail the allowlist check. The CLI release code also pins `flc1125/mote` and `mote-cli`; review `scripts/release/` and npm Trusted Publishing before enabling package releases in a fork.
+Adapt the fork build checks described in step 1 before enabling CI. The CLI release code also pins `flc1125/mote` and `mote-cli`; review `scripts/release/` and npm Trusted Publishing before enabling package releases in a fork.
 
 Both Workers must converge on the same expected source SHA. Use backward-compatible changes while they roll out independently, and follow [deployment operations](deployment.md) for verification, failures, retries and rollback. Workers Builds does not provision your DNS, R2 or Access policies. This production setup does not automatically deploy the separate `access-test` environment.
 

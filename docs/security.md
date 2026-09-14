@@ -45,14 +45,16 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 | `<meta name="robots">`   | `noindex,nofollow,noarchive`   |
 | `/robots.txt`            | `User-agent: * Disallow: /`    |
 
-注意：robots.txt 只是君子协定，真正防枚举的是高熵 ID；真正防收录的是 noindex 头。
+`robots.txt` 和 `noindex` 都依赖爬虫遵守，不能保证所有搜索引擎或爬虫不收录，也不是访问控制。高熵 ID 用于抵抗猜测；知道链接的人仍可读取和转发内容。
+
+不可变指已存储的 Markdown 和已上传资产不可通过发布接口更新；Viewer 升级可以改变呈现效果，远程图片的内容与可用性由来源站点决定。文档持续可用还依赖实例与存储正常运行。
 
 ## 3. XSS 与内容安全
 
 渲染管线（`@mote/renderer`）的多层防护：
 
 1. **Raw HTML 白名单净化**：Markdown 中的 HTML 经 `packages/renderer/src/sanitize.ts` 的允许名单净化器（基于 htmlparser2 真实词法解析）处理——仅保留展示性标签（`p[align]`、`picture/source/img`、`details/summary`、`sub/sup/kbd` 等）与逐标签审核过的属性；`script/iframe/svg/form/style/on*/class/id` 等一律剥除。未配对标签在 token 流级别保持嵌套正确；
-2. **危险协议拦截**：`javascript:`、`data:`、`vbscript:`、`file:`、协议相对 URL 不会成为链接 `href` 或图片 `src`（markdown-it 解析期拒绝 + 渲染期二次拦截）；
+2. **危险协议拦截**：`javascript:`、`data:`、`vbscript:`、`file:`、协议相对 URL 及其反斜杠变体被拦截，覆盖 Markdown 链接和图片，以及 HTML `href`、`src` 与 `srcset`；
 3. **仅可信目录脚本**：正文、公式和图表仍在服务端生成。含标题的文档附带固定的 `TOC_SCRIPT`，只增强目录折叠、章节定位和键盘/焦点管理；不插入用户输入、不发起网络请求、不使用外部依赖。禁用脚本时，静态目录锚点仍可使用；
 4. **严格 CSP**：
 
@@ -75,11 +77,11 @@ Viewer 在首次请求时计算固定脚本的哈希并复用，GET 与 HEAD 的
 | 发布鉴权   | token 模式使用原生 HMAC 验证避免直接字符串比较；Access 模式验证受信签名断言，均先于正文读取 |
 | 图片白名单 | 仅 png/jpeg/webp/gif/avif，**按 Magic Bytes 判定**，不信任扩展名                            |
 | 排除 SVG   | SVG 可携带脚本（Active Content），V1 直接拒绝（415）                                        |
-| 大小限额   | Markdown ≤ 2 MB、单图 ≤ 10 MB、包 ≤ 20 MB、≤ 50 个（413）                                   |
+| 大小限额   | Markdown ≤ 2 MiB、单图 ≤ 10 MiB、包 ≤ 20 MiB、上传资产 ≤ 50 个（413）                       |
 | 原子发布   | `manifest.json` 最后写入；写入中途失败不会产生半可见文档（Viewer 只认 manifest）            |
 | ID 冲突    | Document ID 撞库时服务端内部重试，不对客户端暴露 409                                        |
 
-CLI 侧：只读取 Markdown **实际引用**的文件（AST 解析，非正则），绝不扫描整个目录；逐文件做 存在 → regular file → MIME → 大小 → SHA-256 检查；同内容图片按哈希去重。
+CLI 侧：通过 Markdown AST 和 HTML tokenizer 收集图片引用，包含 `img src`、`img srcset` 与 `source srcset`；已识别 front matter 和数学源码中的图片语法不参与收集。只读取实际引用的文件，不扫描整个目录。图片须存在、为 regular file 且通过 MIME 检测，随后按 SHA-256 去重；上传前统一验证文档包限额。1 MiB = 1,048,576 字节，精确限额见[协议](protocol.md#大小与数量限额)。
 
 ## 5. 发布鉴权与凭据管理
 

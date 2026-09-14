@@ -6,11 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** `mote login` and `mote auth login` select the API origin from `--api` or the built-in default `https://mote.pub`, independently of remembered instances, `MOTE_API_URL` and config `apiUrl`. Other commands retain their existing selection priority. ([#54](https://github.com/flc1125/mote/pull/54))
+
 ### Fixed
 
 - Reject protocol-relative image URLs, including backslash variants, in Markdown and allowlisted HTML. Use explicit `https://` or `http://` URLs for remote images.
 - Return `413 BUNDLE_TOO_LARGE` instead of `422 INVALID_DOCUMENT` when a publish manifest exceeds 50 assets, rejecting the count before processing image bytes.
 - Report the stored Markdown's UTF-8 byte size in Viewer render logs, including documents containing Chinese text or emoji.
+
+### Upgrade notes
+
+- Self-hosted users must pass `--api <your-instance-origin>` when logging in instead of relying on saved publishing settings. Explicit auth-mode settings still apply. Successful login remembers the selected instance; explicit environment/config API overrides still control subsequent publishing and are reported after login. This login change is not included in v0.6.0. ([#54](https://github.com/flc1125/mote/pull/54))
 
 ## [0.6.0] - 2026-09-11
 
