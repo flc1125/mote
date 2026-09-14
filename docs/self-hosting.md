@@ -4,7 +4,7 @@
 
 Mote runs on Cloudflare: two Workers + one R2 bucket, no database or server to manage. This guide takes you from zero to your own instance at `https://<your-domain>`. Small workloads may fit the free tier; see [costs](#costs) and rendering capacity below.
 
-Steps 1–8 describe a **token** deployment from the current stable v0.6.0 checkout. For Access, follow the [Access section](#access-enabled-deployments) and [version compatibility](authentication.md#version-compatibility). Installing an npm package does not deploy Workers; repository workflows are described under [deployment automation](#deployment-automation).
+Steps 1–8 deploy an instance with **token** authentication. For browser login or Service Tokens, follow the [Access section](#access-enabled-deployments) and [authentication guide](authentication.md). Installing an npm package does not deploy Workers; repository workflows are described under [deployment automation](#deployment-automation).
 
 > Commands below use `<your-domain>` as a placeholder — replace it with your own (sub)domain, e.g. `mote.example.com`.
 
@@ -17,11 +17,10 @@ Steps 1–8 describe a **token** deployment from the current stable v0.6.0 check
 ```bash
 git clone https://github.com/flc1125/mote.git
 cd mote
-git switch --detach v0.6.0
 pnpm install --frozen-lockfile
 ```
 
-The tag provides a reproducible stable checkout. To deploy unreleased fixes, choose a reviewed `main` commit and use its version notes. The steps below use the **top-level configuration**, selected explicitly by `--env=""`; the repository's `access-test` environment belongs to a separate project-specific deployment.
+The steps below use the **top-level configuration**, selected explicitly by `--env=""`; the repository's `access-test` environment belongs to a separate project-specific deployment.
 
 ## 1. Configure your deployment targets
 
@@ -133,7 +132,7 @@ pnpm --filter @mote/cli build
 node apps/cli/dist/cli.js docs/examples/weekly-report.md
 ```
 
-Open the printed URL and confirm the report and its remote image render. For a local-image check with your chosen release, publish `docs/examples/markdown-compatibility.md` and check that both logo references resolve to one uploaded asset. Each publish creates a new document.
+Open the printed URL and confirm the report and its remote image render. To check local-image uploads, publish `docs/examples/markdown-compatibility.md` and check that both logo references resolve to one uploaded asset. Each publish creates a new document.
 
 Check document headers with `curl -I <published-url>`: browser `Cache-Control` should specify `max-age=300`, and the Cloudflare CDN policy should specify `max-age=31536000`. Repeated requests reaching the same edge can show `cf-cache-status: HIT`; the first miss after a new Worker version is expected. A dry-run alone does not verify this deployed cache behavior.
 

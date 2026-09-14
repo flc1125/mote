@@ -17,7 +17,7 @@ mote login
 mote README.md
 ```
 
-The default instance is `https://mote.pub`, which permits only approved publishers. For your own instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Login remembers the instance; explicit environment/config overrides still take precedence when publishing. See [version compatibility](https://github.com/flc1125/mote/blob/main/docs/authentication.md#version-compatibility) for stable and unreleased login selection rules. The original `mote auth login`, status and logout commands remain supported. The [authentication guide](https://github.com/flc1125/mote/blob/main/docs/authentication.md) covers secure storage and machine mode. Installing this package does not deploy Workers.
+The default instance is `https://mote.pub`, which permits only approved publishers. For your own instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Login remembers the instance; explicit environment/config overrides still take precedence when publishing. `mote auth login` is an alias for `mote login`; use `mote auth status` to check credentials and `mote auth logout` to remove local OAuth credentials. The [authentication guide](https://github.com/flc1125/mote/blob/main/docs/authentication.md) covers configuration selection, secure storage and machine mode. Installing this package does not deploy Workers.
 
 For your own static-token instance, explicitly select token mode:
 

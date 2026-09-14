@@ -1,10 +1,10 @@
 # Mote 发布协议
 
-> 本文定义当前 main 的 Upload API 协议。`@mote/protocol` 包是该协议的代码实现，CLI、MCP 与 Skill 共用同一协议；整体设计见[架构](architecture.md)。#55 修正了资产数量超限的响应阶段和错误码，版本差异见下文。
+> 本文定义 Upload API 协议。`@mote/protocol` 包是该协议的代码实现，CLI、MCP 与 Skill 共用同一协议；整体设计见[架构](architecture.md)。
 
 ## 总览
 
-以下 Bearer 示例表示你自己的静态 token 部署，请替换示例域名。生产已启用的 Access 模式保持相同发布载荷与结果：OAuth 使用 opaque Bearer，机器使用 `CF-Access-Client-Id` / `CF-Access-Client-Secret`；Access 校验后由 Worker 验证签名断言。两种服务端模式不混用，客户端要求见[版本兼容表](authentication.md#version-compatibility)，配置见[鉴权与迁移](authentication.md)。
+以下 Bearer 示例表示你自己的静态 token 部署，请替换示例域名。Access 模式使用相同的发布载荷与结果：OAuth 使用 opaque Bearer，机器使用 `CF-Access-Client-Id` / `CF-Access-Client-Secret`；Access 校验后由 Worker 验证签名断言。两种服务端模式不混用，配置见[鉴权与迁移](authentication.md)。
 
 ```text
 POST https://mote.example.com/api/v1/publish
@@ -108,7 +108,7 @@ curl --fail-with-body --silent --show-error \
 13. 201 Created
 ```
 
-**版本差异：**v0.6.0 服务端源码把超过 50 个 manifest 资产条目作为普通结构错误返回 `422 INVALID_DOCUMENT`。#55 之后的 main 在遍历资产条目和读取图片字节之前返回 `413 BUNDLE_TOO_LARGE`；这是第 6 步的检查，不代表 multipart 请求体尚未解析。数量超限优先于 manifest 的其他结构检查。
+第 6 步在遍历资产条目和读取图片字节之前检查数量，超限返回 `413 BUNDLE_TOO_LARGE`。此时 multipart 请求体已解析；数量超限优先于 manifest 的其他结构检查。
 
 ### R2 Bundle 结构
 

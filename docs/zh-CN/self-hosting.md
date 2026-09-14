@@ -4,7 +4,7 @@
 
 Mote 运行在 Cloudflare 上：两个 Worker + 一个 R2 bucket，无需管理数据库或服务器。本指南带你从零部署到自己的 `https://<your-domain>`。小规模负载可能在免费额度内运行，详见下方[成本](#成本)与渲染容量说明。
 
-步骤 1–8 使用当前稳定版 v0.6.0 源码部署 **token** 模式。Access 模式请按下方 [Access 部署](#access-部署)及[版本兼容表](../authentication.md#version-compatibility)操作。安装 npm 包不会部署 Worker；仓库工作流见[部署自动化](#部署自动化)。
+步骤 1–8 部署使用 **token** 鉴权的实例。需要浏览器登录或 Service Token 时，按下方 [Access 部署](#access-部署)及[鉴权指南](../authentication.md)操作。安装 npm 包不会部署 Worker；仓库工作流见[部署自动化](#部署自动化)。
 
 > 下文命令中的 `<your-domain>` 是占位符——替换成你自己的（子）域名，如 `mote.example.com`。
 
@@ -17,11 +17,10 @@ Mote 运行在 Cloudflare 上：两个 Worker + 一个 R2 bucket，无需管理�
 ```bash
 git clone https://github.com/flc1125/mote.git
 cd mote
-git switch --detach v0.6.0
 pnpm install --frozen-lockfile
 ```
 
-稳定标签提供可复现的检出。部署尚未发布的修复时，选择已审核的 `main` 提交并按其版本说明操作。下文通过 `--env=""` 显式使用**顶层配置**；仓库的 `access-test` 是本项目独立测试部署的环境。
+下文通过 `--env=""` 显式使用**顶层配置**；仓库的 `access-test` 是本项目独立测试部署的环境。
 
 ## 1. 配置部署目标
 
@@ -133,7 +132,7 @@ pnpm --filter @mote/cli build
 node apps/cli/dist/cli.js docs/examples/weekly-report.md
 ```
 
-打开返回的 URL，确认报告及远程图片正常显示。需要验证所选版本的本地图片上传时，发布 `docs/examples/markdown-compatibility.md`，检查两个 logo 引用是否对应同一已上传资产。每次发布都会创建新文档。
+打开返回的 URL，确认报告及远程图片正常显示。验证本地图片上传时，发布 `docs/examples/markdown-compatibility.md`，检查两个 logo 引用是否对应同一已上传资产。每次发布都会创建新文档。
 
 用 `curl -I <published-url>` 检查文档响应头：浏览器 `Cache-Control` 应包含 `max-age=300`，Cloudflare CDN 策略应包含 `max-age=31536000`。重复请求命中同一边缘节点时可能看到 `cf-cache-status: HIT`，Worker 新版本的首次缓存未命中属于预期。dry-run 本身不能证明部署后的缓存行为。
 

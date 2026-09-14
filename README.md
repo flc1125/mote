@@ -61,7 +61,7 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 The default instance, `https://mote.pub`, permits only approved publishers. For your own Access-enabled instance, use `mote login --api https://mote.example.com --auth-mode oauth`. Details: [authentication guide](docs/authentication.md).
 
-**Unreleased:** source builds after #54 make `mote login` select the built-in default instance unless `--api` is supplied. The stable v0.6.0 CLI still uses saved and explicit API settings for login. Use explicit `--api` for self-hosted login in either version; see [version compatibility](docs/authentication.md#version-compatibility).
+Login uses `--api` when supplied, otherwise `https://mote.pub`. A successful login remembers that instance for publishing; explicit environment and configuration overrides still take precedence. See [configuration selection](docs/authentication.md#configuration-selection).
 
 Full options (`--json`, `--no-assets`, `--api`, `--token`, …), configuration and scripting: [docs/cli.md](docs/cli.md).
 
@@ -70,15 +70,12 @@ Full options (`--json`, `--no-assets`, `--api`, `--token`, …), configuration a
 ```bash
 git clone https://github.com/flc1125/mote.git
 cd mote
-git switch --detach v0.6.0
 pnpm install --frozen-lockfile
 pnpm --filter @mote/cli build
 cd apps/cli && npm install -g .
 ```
 
 </details>
-
-The source commands use the current stable tag. Build `main` instead to try the explicitly marked unreleased changes.
 
 ### MCP
 

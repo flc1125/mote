@@ -2,7 +2,7 @@
 
 The `mote` CLI publishes a local Markdown file to a Mote instance and prints its URL.
 
-This reference targets **mote-cli v0.6.0**, the current stable release. Unreleased differences are labeled explicitly. Use an Access-enabled deployment for OAuth/service authentication. See [version compatibility](authentication.md#version-compatibility) and [authentication and migration](authentication.md) for setup, secure storage and mode selection.
+Use an Access-enabled deployment for OAuth/service authentication. See [authentication and migration](authentication.md) for setup, secure storage and mode selection, and the [changelog](../CHANGELOG.md) for version-specific upgrade notes.
 
 ```bash
 mote <markdown-file>
@@ -21,13 +21,12 @@ npm install -g mote-cli
 ```bash
 git clone https://github.com/flc1125/mote.git
 cd mote
-git switch --detach v0.6.0
 pnpm install --frozen-lockfile
 pnpm --filter @mote/cli build
 cd apps/cli && npm install -g .
 ```
 
-The tag matches this reference. To try unreleased changes, build `main` instead and follow the source-only notes below. Verify:
+Verify:
 
 ```bash
 mote --help
@@ -35,16 +34,15 @@ mote --help
 
 ## Configuration
 
-Resolution order in **v0.6.0** (highest priority first):
+Resolution order (highest priority first):
 
 ```text
-All commands API URL: CLI arguments > environment variables > config file > remembered instance > default
+Login API URL: --api > built-in default (https://mote.pub)
+Other commands API URL: CLI arguments > environment variables > config file > remembered instance > default
 Other settings: CLI arguments > environment variables > config file > defaults
 ```
 
-**Unreleased (#54):** `mote login` and `mote auth login` use `--api` → built-in default (`https://mote.pub`), ignoring `MOTE_API_URL`, config `apiUrl` and the remembered instance when choosing the login target. Other commands keep the priority above. The new login output warns when environment/config API overrides select a different publishing instance.
-
-Use `--api` to log in to a self-hosted instance in either version. Successful login remembers that target for subsequent commands; environment and config overrides still take precedence when publishing. See [version compatibility](authentication.md#version-compatibility).
+`mote login` and `mote auth login` ignore `MOTE_API_URL`, config `apiUrl` and the remembered instance when choosing the login target. Use `--api` to log in to a self-hosted instance. Successful login remembers that target for subsequent commands; environment and config overrides still take precedence when publishing. Login warns when those overrides select a different publishing instance.
 
 | Setting        | CLI argument         | Environment variable         | Config file key             | Default                                     |
 | -------------- | -------------------- | ---------------------------- | --------------------------- | ------------------------------------------- |
@@ -81,7 +79,7 @@ mote auth logout --api https://mote.example.com --json
 `mote login` is an alias for `mote auth login`; both remain supported. After credentials are saved successfully, login remembers the API origin in `auth/default-api.json`. You can then run `mote README.md` without `--api`, unless environment or config overrides select another instance. Explicit auth-mode settings still apply; a one-off `--api` publish does not change the saved default. Logout retains the default and OAuth selection marker but removes the selected target's OAuth credentials.
 
 Login requires an interactive terminal and rejects `--json`. It displays the full
-authorization URL and waits for you to choose an action; it no longer opens a
+authorization URL and waits for you to choose an action; it does not open a
 browser automatically. Press `o` to open the link, `c` to copy it, or `Ctrl+C` to
 cancel. Opening or copying failures leave the link available for manual use.
 `--no-browser` selects manual link mode without keyboard actions. Output redirected
@@ -195,7 +193,7 @@ Publishing prepares authentication before reading the input bundle. It never ope
 | `UNAUTHORIZED`                    | Wrong or expired token                                                |
 | `BUNDLE_TOO_LARGE`                | Bundle exceeds a size limit (see README limits)                       |
 
-- **Login required / refresh pending**: explicitly run `mote auth login --api <your-instance-origin> --auth-mode oauth` for the same API. This works across the stable and unreleased login selection rules. Do not delete metadata to reactivate an old token.
+- **Login required / refresh pending**: explicitly run `mote auth login --api <your-instance-origin> --auth-mode oauth` for the same API. Do not delete metadata to reactivate an old token.
 - **Service mode requires matching variables**: set all three service variables, explicitly select `service`, and match the API origin. Do not paste secrets into bug reports.
 - **Keyring or permissions error**: fix the system credential store or use an explicitly chosen private file backend after logout; no silent fallback is performed.
 - **Callback mismatch / port occupied**: reuse the exact registered URI and available fixed port, or register a new client. Start a fresh login instead of replaying a previous code.

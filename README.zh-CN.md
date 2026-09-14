@@ -61,7 +61,7 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 默认实例 `https://mote.pub` 仅允许获准的发布者。自有 Access 实例使用 `mote login --api https://mote.example.com --auth-mode oauth`。详见[鉴权指南](docs/authentication.md)。
 
-**尚未发布：**#54 之后的源码构建中，`mote login` 未指定 `--api` 时使用内置默认实例。稳定版 v0.6.0 登录仍使用已保存和显式配置的 API 地址。两个版本的自托管登录都建议显式传入 `--api`，详见[版本兼容表](docs/authentication.md#version-compatibility)。
+登录使用 `--api` 指定的实例，未指定时使用 `https://mote.pub`。登录成功后会记住该实例用于发布，显式环境变量和配置文件仍有更高优先级。详见[配置选择规则](docs/authentication.md#configuration-selection)。
 
 完整参数（`--json`、`--no-assets`、`--api`、`--token` 等）、配置文件与脚本用法见 [docs/cli.md](docs/cli.md)。
 
@@ -70,15 +70,12 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 ```bash
 git clone https://github.com/flc1125/mote.git
 cd mote
-git switch --detach v0.6.0
 pnpm install --frozen-lockfile
 pnpm --filter @mote/cli build
 cd apps/cli && npm install -g .
 ```
 
 </details>
-
-上述命令使用当前稳定标签；体验标注为“尚未发布”的功能时，改为构建 `main`。
 
 ### MCP
 
