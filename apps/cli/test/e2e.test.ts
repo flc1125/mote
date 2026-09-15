@@ -247,6 +247,8 @@ describe('E2E (§59)', () => {
     expect(html.match(/<details id="mote-admonition-/g)).toHaveLength(4);
     expect(html.match(/class="markdown-alert markdown-alert-success" open=""/g)).toHaveLength(1);
     expect(html).toContain('<h3 id="nested-details">Nested details</h3>');
+    expect(html).toContain('<summary>Show the command (HTML)</summary>');
+    expect(html).toContain('<details open><summary>Checks completed (HTML)</summary>');
     const paths = assetPaths(html);
     expect(paths).toHaveLength(3);
     expect(new Set(paths).size).toBe(1);

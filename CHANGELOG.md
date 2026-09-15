@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Extended admonitions with `!!!`, `???` and `???+`: seven types, plain-text custom titles, bounded nesting and native disclosures. They share the existing GitHub alert presentation. CLI and Viewer use the same structure rules for nested images; links reveal closed ancestors, and printing includes folded bodies.
+- Extended admonitions with `!!!`, `???` and `???+`: seven types, plain-text custom titles, bounded nesting and native disclosures. They share a tinted title band and page-colored body with GitHub alerts and native HTML disclosures. CLI and Viewer use the same structure rules for nested images; links reveal closed ancestors, and printing includes folded bodies.
 
 - Fenced-code copy controls, plain-text titles, optional line numbers and highlighted line ranges. Bounded enhancements preserve parser-normalized code text and fall back to ordinary code on budget overruns. Titles and line emphasis work without JavaScript; the fixed copy script is authorized by its exact CSP hash, with matching GET/HEAD policies.
 

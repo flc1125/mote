@@ -12,7 +12,10 @@ function page(hash = '') {
     addEventListener: (_: string, handler: typeof click) => {
       click = handler;
     },
-    querySelectorAll: () => [outer, inner, initiallyOpen].filter((node) => !node.open),
+    querySelectorAll: (selector: string) =>
+      [outer, inner, rawClosed, initiallyOpen].filter(
+        (node) => !node.open && (!selector.includes('.markdown-alert') || node !== rawClosed),
+      ),
   };
   const outer = { tagName: 'DETAILS', open: false, parentElement: article };
   const inner = {
@@ -21,6 +24,7 @@ function page(hash = '') {
     parentElement: outer,
     scrollIntoView: vi.fn(),
   };
+  const rawClosed = { open: false };
   const initiallyOpen = { open: true };
   const location = new URL(`https://example.com/document${hash}`);
   new Script(TOC_SCRIPT).runInNewContext({
@@ -38,6 +42,7 @@ function page(hash = '') {
     outer,
     inner,
     initiallyOpen,
+    rawClosed,
     location,
     fire: (name: string) => windowEvents.get(name)?.(),
     click: (href: string, options: Record<string, unknown> = {}) => {
@@ -92,9 +97,11 @@ describe('disclosure navigation without a TOC', () => {
   it('opens closed bodies for printing and restores only their previous closed state', () => {
     const p = page();
     p.fire('beforeprint');
+    expect(p.rawClosed.open).toBe(true);
     expect([p.outer.open, p.inner.open, p.initiallyOpen.open]).toEqual([true, true, true]);
     p.fire('beforeprint');
     p.fire('afterprint');
+    expect(p.rawClosed.open).toBe(false);
     expect([p.outer.open, p.inner.open, p.initiallyOpen.open]).toEqual([false, false, true]);
     p.fire('afterprint');
     expect(p.initiallyOpen.open).toBe(true);

@@ -66,7 +66,30 @@ The first block starts closed and works with the keyboard. The second starts ope
 
 [icon]: ../assets/favicon-32.png
 
-## 5. Ordinary Markdown fallback
+## 5. HTML disclosures
+
+HTML disclosures use the same title band and reading surface. Their summary text and initial open state are preserved:
+
+<details><summary>Show the command (HTML)</summary>
+
+### HTML disclosure content
+
+This body uses the normal page background. **Formatting** and code remain readable.
+
+```bash
+echo "Ready to restart"
+```
+
+</details>
+
+<details open><summary>Checks completed (HTML)</summary>
+
+- The configuration is backed up.
+- Printing includes the body of both HTML disclosures, even if closed.
+
+</details>
+
+## 6. Ordinary Markdown fallback
 
 The unknown type below stays ordinary Markdown; its indented image example must not be uploaded:
 

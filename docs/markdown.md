@@ -172,7 +172,9 @@ Use `???` for a block that starts closed or `???+` for one that starts open:
 Readers toggle these native disclosures by clicking the title or using Enter or
 Space while it has keyboard focus. Folding works without JavaScript. A missing,
 empty or whitespace-only disclosure title uses the type's label so the control
-stays named. Printing includes the folded body as well as the title.
+stays named. Native HTML `<details><summary>…</summary>…</details>` uses the same
+tinted title band and page-colored body, preserving its summary content and `open`
+attribute. Printing includes the folded body as well as the title for both forms.
 
 With JavaScript enabled, following a link to a heading inside a closed block opens
 its enclosing disclosures before positioning the page. This works with the table

@@ -40,7 +40,7 @@ export const TOC_SCRIPT = String.raw`(() => {
   let printClosed = null;
   window.addEventListener('beforeprint', () => {
     if (printClosed !== null) return;
-    printClosed = [...article.querySelectorAll('details.markdown-alert:not([open])')];
+    printClosed = [...article.querySelectorAll('details:not([open])')];
     for (const detail of printClosed) detail.open = true;
   });
   window.addEventListener('afterprint', () => {

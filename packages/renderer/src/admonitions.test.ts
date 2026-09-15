@@ -80,6 +80,21 @@ describe('shared admonition presentation', () => {
   it('keeps an ordinary heading-free static admonition script-free', () => {
     expect(render('!!! note\n\n    Body.', manifest, id)).not.toContain('<script>');
   });
+  it('preserves native HTML summary content and open state without accepting custom attributes', () => {
+    const page = render(
+      '<details class="custom" style="color:red"><summary><strong>HTML title</strong></summary>\n\nBody.\n\n</details>\n\n<details open><summary>Already open</summary>\n\nMore.\n\n</details>',
+      manifest,
+      id,
+    );
+    expect(page).toContain('<details><summary><strong>HTML title</strong></summary>');
+    expect(page).toContain('<details open><summary>Already open</summary>');
+    expect(page).not.toContain('class="custom"');
+    expect(page).not.toContain('style="color:red"');
+    expect(page).not.toContain('<aside');
+    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      TOC_SCRIPT,
+    ]);
+  });
   it('preserves nested math, diagrams, code and headings', () => {
     const result = renderMarkdown(
       '!!! note\n\n    ??? tip\n\n        ## Inner\n\n        $x^2$\n\n        ```mermaid\n        graph LR\n        A-->B\n        ```\n\n        ```ts title="config.ts" linenums="1" hl_lines="1"\n        const x = 1;\n        ```',
