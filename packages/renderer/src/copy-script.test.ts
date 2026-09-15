@@ -14,7 +14,15 @@ function setup(writeText?: (text: string) => Promise<void>) {
     },
   };
   const toolbar = { hidden: true };
-  const status = { textContent: '', classList: { add: vi.fn() } };
+  const classes = new Set<string>();
+  const status = {
+    textContent: '',
+    classList: {
+      add: (name: string) => classes.add(name),
+      remove: (name: string) => classes.delete(name),
+      contains: (name: string) => classes.has(name),
+    },
+  };
   const code = { textContent: '<script>literal</script>\n\n' };
   const elements: Record<string, unknown> = {
     '.code-copy': button,
@@ -56,7 +64,7 @@ describe('fixed copy enhancement', () => {
     expect(ui.button.hidden).toBe(true);
     expect(ui.toolbar.hidden).toBe(false);
     expect(ui.status.textContent).toContain('Clipboard unavailable');
-    expect(ui.status.classList.add).toHaveBeenCalledWith('is-unavailable');
+    expect(ui.status.classList.contains('is-error')).toBe(true);
   });
   it('announces rejection and preserves manual copying', async () => {
     const ui = setup(async () => {
@@ -65,8 +73,38 @@ describe('fixed copy enhancement', () => {
     await ui.click();
     expect(ui.button.textContent).toBe('Copy failed');
     expect(ui.status.textContent).toContain('Select the code');
+    expect(ui.status.classList.contains('is-error')).toBe(true);
+    ui.reset();
+    expect(ui.status.textContent).toContain('Select the code');
     expect(ui.button.disabled).toBe(false);
     expect(ui.code.textContent).toBe('<script>literal</script>\n\n');
+  });
+  it('clears persistent failure feedback when retrying and announces success', async () => {
+    let finish!: () => void;
+    const write = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Permission denied'))
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            finish = resolve;
+          }),
+      );
+    const ui = setup(write);
+    await ui.click();
+    expect(ui.status.classList.contains('is-error')).toBe(true);
+    const retry = ui.click();
+    expect(ui.status.classList.contains('is-error')).toBe(false);
+    expect(ui.status.textContent).toBe('');
+    expect(ui.button.disabled).toBe(true);
+    finish();
+    await retry;
+    expect(write).toHaveBeenNthCalledWith(2, ui.code.textContent);
+    expect(ui.button.textContent).toBe('Copied');
+    expect(ui.status.textContent).toBe('Code copied to clipboard.');
+    ui.reset();
+    expect(ui.button.textContent).toBe('Copy');
+    expect(ui.status.textContent).toBe('');
   });
   it('prevents overlapping clipboard writes', async () => {
     let finish!: () => void;

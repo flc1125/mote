@@ -78,6 +78,33 @@ describe('code block enhancements', () => {
       highlights: 0,
     });
   });
+  it.each([
+    [1, 1],
+    [9, 2],
+    [99, 3],
+    [999, 4],
+    [9999, 5],
+    [99999, 6],
+    [999999, 7],
+    [1000000, 7],
+  ])('sizes the gutter for the last displayed line starting at %i', (start, digits) => {
+    const source = 'first\nsecond\nthird\n';
+    const result = render(fence(`text linenums="${start}"`, source));
+    expect(result.html).toContain(`data-line-digits="${digits}"`);
+    expect(inspect(result.html)).toEqual({
+      codes: [source],
+      numbered: [start, start + 1, start + 2].map(String),
+      highlights: 0,
+    });
+  });
+  it('omits the number gutter for unnumbered and empty blocks', () => {
+    for (const input of [
+      fence('text hl_lines="1"', 'plain\n'),
+      fence('text linenums="1" title="empty"', ''),
+    ]) {
+      expect(render(input).html).not.toContain('data-line-digits');
+    }
+  });
   it('escapes title text and ignores a malformed metadata tail atomically', () => {
     const result = render(fence('js title="</script><img src=x onerror=bad>"', 'const x = 1;\n'));
     expect(result.html).toContain('&lt;/script&gt;&lt;img src=x onerror=bad&gt;');

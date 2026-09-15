@@ -11,7 +11,7 @@ export const COPY_SCRIPT = String.raw`(() => {
     if (!button || !code || !toolbar || !status) continue;
     if (!available) {
       status.textContent = 'Clipboard unavailable. Select the code and copy it manually.';
-      status.classList.add('is-unavailable');
+      status.classList.add('is-error');
       toolbar.hidden = false;
       continue;
     }
@@ -20,17 +20,20 @@ export const COPY_SCRIPT = String.raw`(() => {
       if (button.disabled) return;
       clearTimeout(timer);
       button.disabled = true;
+      button.textContent = 'Copy';
       status.textContent = '';
+      status.classList.remove('is-error');
       try {
         await navigator.clipboard.writeText(code.textContent);
         button.textContent = 'Copied';
         status.textContent = 'Code copied to clipboard.';
+        timer = setTimeout(() => { button.textContent = 'Copy'; status.textContent = ''; }, 2500);
       } catch {
         button.textContent = 'Copy failed';
         status.textContent = 'Could not copy. Select the code and copy it manually.';
+        status.classList.add('is-error');
       } finally {
         button.disabled = false;
-        timer = setTimeout(() => { button.textContent = 'Copy'; status.textContent = ''; }, 2500);
       }
     });
     button.hidden = false;
