@@ -146,6 +146,61 @@ function expectTocPolicy(response: Response, html: string, copy = false): void {
 }
 
 describe('E2E (§59)', () => {
+  it('publishes images in multi-paragraph footnotes without uploading code examples (DEF-01)', async () => {
+    const source = [
+      '# Footnote assets',
+      '',
+      'Read[^note] and read again[^note].',
+      '',
+      '[^note]: ![first][asset]',
+      '',
+      '    ![alias](alias.png)',
+      '',
+      '    <picture><source srcset="dark.webp 2x"><img src="foot.png"></picture>',
+      '',
+      '    ```md',
+      '    ![literal](missing-fence.png)',
+      '    <img src="missing-html.png">',
+      '    ```',
+      '',
+      '        ![literal](missing-indent.png)',
+      '',
+      '    $\\text{![literal](missing-math.png)}$',
+      '',
+      '[asset]: foot.png',
+      '',
+      '[^unused]: ![not rendered](missing-unused.png)',
+      '',
+    ].join('\r\n');
+    const file = await makeDoc({
+      'README.md': source,
+      'foot.png': PNG,
+      'alias.png': PNG,
+      'dark.webp': WEBP,
+    });
+    const { id } = await publishDoc(file);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const html = await (await view(`/${id}`)).text();
+    expect(html).toContain('footnote-ref');
+    expect(html).toContain('footnote-item');
+    const images = assetPaths(html);
+    expect(images).toHaveLength(3);
+    expect(new Set(images).size).toBe(1);
+    const png = await view(images[0]!);
+    expect(new Uint8Array(await png.arrayBuffer())).toEqual(PNG);
+    const webp = html.match(/srcset="(\/[^" ]+\/a\/[^" ]+) 2x"/)?.[1];
+    expect(webp).toBeDefined();
+    expect(new Uint8Array(await (await view(webp!)).arrayBuffer())).toEqual(WEBP);
+    const manifest = JSON.parse(
+      (await (await bucket.get(`documents/${id}/manifest.json`))?.text()) ?? '{}',
+    ) as { assets: { references: string[] }[] };
+    expect(manifest.assets).toHaveLength(2);
+    expect(manifest.assets.map((asset) => asset.references)).toEqual([
+      ['foot.png', 'alias.png'],
+      ['dark.webp'],
+    ]);
+  });
+
   it('publishes code metadata without reading literal image examples and keeps GET/HEAD policy identical', async () => {
     const file = fileURLToPath(
       new URL('../../../docs/examples/markdown-code-blocks.md', import.meta.url),

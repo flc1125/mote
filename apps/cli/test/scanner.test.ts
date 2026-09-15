@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { FOOTNOTE_CASES } from '../../../packages/core/src/fixtures/footnotes.js';
+
 import { extractLocalImageReferences } from '../src/scanner.js';
 
 describe('extractLocalImageReferences (§22)', () => {
@@ -102,5 +104,16 @@ describe('extractLocalImageReferences (§22)', () => {
       'a/1x.png',
       'a/2x.png',
     ]);
+  });
+});
+
+describe('shared footnote structures (DEF-01)', () => {
+  it.each(FOOTNOTE_CASES)('$name', ({ source, images }) => {
+    expect(extractLocalImageReferences(source)).toEqual(images);
+  });
+
+  it('does not retain footnotes between documents', () => {
+    extractLocalImageReferences(FOOTNOTE_CASES[0].source);
+    expect(extractLocalImageReferences('A[^note]')).toEqual([]);
   });
 });

@@ -1,8 +1,6 @@
 import type { MarkdownIt } from 'markdown-it';
-// Both plugins ship no type declarations; @ts-expect-error keeps the
-// imports honest while the wrappers below give them precise local types.
-// @ts-expect-error -- untyped plugin
-import footnotePlugin from 'markdown-it-footnote';
+// The plugin ships no type declarations; @ts-expect-error keeps the
+// import honest while the wrapper below gives it a precise local type.
 // @ts-expect-error -- untyped plugin
 import taskListsPlugin from 'markdown-it-task-lists';
 
@@ -15,5 +13,4 @@ export interface TaskListsOptions {
   labelAfter?: boolean;
 }
 
-export const footnote = footnotePlugin as (md: MarkdownIt) => void;
 export const taskLists = taskListsPlugin as (md: MarkdownIt, options?: TaskListsOptions) => void;
