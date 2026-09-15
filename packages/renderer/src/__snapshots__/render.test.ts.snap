@@ -191,7 +191,7 @@ pre code {
 .code-block pre:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: -3px; }
 .code-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0.5rem 0.75rem; padding: 0.5rem 1.15rem; border-bottom: 1px solid var(--mote-border); min-width: 0; }
 .code-toolbar[hidden], .code-copy[hidden] { display: none; }
-.code-title { grid-column: 1; grid-row: 1; min-width: 0; overflow-wrap: anywhere; font-family: monospace; font-size: 0.8em; color: var(--mote-muted); }
+.code-title { grid-column: 1; grid-row: 1; align-self: center; min-width: 0; overflow-wrap: anywhere; font-family: monospace; font-size: 0.8em; color: var(--mote-muted); }
 .code-copy { grid-column: 2; grid-row: 1; margin-left: auto; padding: 0.3em 0.65em; border: 1px solid var(--mote-border); border-radius: 5px; color: var(--mote-fg); background: var(--mote-bg); font: inherit; font-size: 0.75em; cursor: pointer; }
 .code-copy:hover { border-color: var(--mote-accent); }
 .code-copy:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
