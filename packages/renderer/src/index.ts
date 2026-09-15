@@ -16,10 +16,10 @@ export function render(markdown: string, manifest: DocumentManifest, documentId:
   }
 
   const assetUrls = buildAssetUrlMap(manifest, documentId);
-  const { html, headings } = renderMarkdown(markdown, assetUrls);
+  const { html, headings, codeCopy } = renderMarkdown(markdown, assetUrls);
   const title = headings.find((heading) => heading.level === 1)?.text ?? manifest.source.name;
 
-  return renderHtmlPage({ title, tocHtml: renderToc(headings), contentHtml: html });
+  return renderHtmlPage({ title, tocHtml: renderToc(headings), contentHtml: html, codeCopy });
 }
 
 export * from './assets.js';
@@ -31,3 +31,4 @@ export * from './styles.js';
 export * from './template.js';
 export * from './toc.js';
 export { TOC_SCRIPT } from './toc-script.js';
+export { COPY_SCRIPT } from './copy-script.js';

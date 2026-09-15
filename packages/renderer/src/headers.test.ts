@@ -25,19 +25,22 @@ describe('documentSecurityHeaders', () => {
   });
 });
 
-describe('trusted TOC script policy', () => {
+describe('trusted document script policy', () => {
   it('authorizes only the exact emitted script, preserving all other restrictions', async () => {
     const { createHash } = await import('node:crypto');
     const { TOC_SCRIPT } = await import('./toc-script.js');
+    const { COPY_SCRIPT } = await import('./copy-script.js');
     const { tocDocumentSecurityHeaders } = await import('./headers.js');
     const { renderHtmlPage } = await import('./template.js');
     const html = renderHtmlPage({ title: 'TOC', tocHtml: '<nav></nav>', contentHtml: '' });
     const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
     expect(scripts).toEqual([TOC_SCRIPT]);
-    const hash = createHash('sha256').update(scripts[0]!).digest('base64');
+    const hashes = [TOC_SCRIPT, COPY_SCRIPT].map(
+      (script) => `'sha256-${createHash('sha256').update(script).digest('base64')}'`,
+    );
     const headers = await tocDocumentSecurityHeaders();
     expect(headers['Content-Security-Policy']).toBe(
-      CONTENT_SECURITY_POLICY.replace("script-src 'none'", `script-src 'sha256-${hash}'`),
+      CONTENT_SECURITY_POLICY.replace("script-src 'none'", `script-src ${hashes.join(' ')}`),
     );
     headers['Content-Security-Policy'] = 'tampered';
     expect((await tocDocumentSecurityHeaders())['Content-Security-Policy']).not.toBe('tampered');

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { TOC_SCRIPT } from '../../../packages/renderer/src/toc-script.js';
+import { COPY_SCRIPT } from '../../../packages/renderer/src/copy-script.js';
 import { execFile } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -131,18 +132,47 @@ function assetPaths(html: string): string[] {
   );
 }
 
-function expectTocPolicy(response: Response, html: string): void {
+function expectTocPolicy(response: Response, html: string, copy = false): void {
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
-  expect(scripts).toEqual([TOC_SCRIPT]);
-  const hash = createHash('sha256').update(scripts[0]!).digest('base64');
+  expect(scripts).toEqual(copy ? [TOC_SCRIPT, COPY_SCRIPT] : [TOC_SCRIPT]);
+  const hashes = [TOC_SCRIPT, COPY_SCRIPT].map(
+    (script) => `'sha256-${createHash('sha256').update(script).digest('base64')}'`,
+  );
   const policy = response.headers.get('Content-Security-Policy')!;
   expect(policy.split('; ').find((directive) => directive.startsWith('script-src '))).toBe(
-    `script-src 'sha256-${hash}'`,
+    `script-src ${hashes.join(' ')}`,
   );
   expect(policy).toContain("connect-src 'none'");
 }
 
 describe('E2E (§59)', () => {
+  it('publishes code metadata without reading literal image examples and keeps GET/HEAD policy identical', async () => {
+    const file = fileURLToPath(
+      new URL('../../../docs/examples/markdown-code-blocks.md', import.meta.url),
+    );
+    const source = await readFile(file, 'utf8');
+    const { id } = await publishDoc(file);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const manifest = JSON.parse(
+      (await (await bucket.get(`documents/${id}/manifest.json`))?.text()) ?? '{}',
+    ) as { assets: unknown[] };
+    expect(manifest.assets).toEqual([]);
+    const page = await view(`/${id}`);
+    const html = await page.text();
+    expectTocPolicy(page, html, true);
+    expect(html).toContain('class="code-title">config.ts</span>');
+    expect(html).toContain('data-line="10"');
+    expect(html.match(/code-line is-highlighted/g)).toHaveLength(3);
+    expect(assetPaths(html)).toEqual([]);
+    const head = await viewerWorker.fetch(new Request(`${VIEWER_BASE}/${id}`, { method: 'HEAD' }), {
+      DOCUMENTS: bucket,
+    });
+    expect(head.status).toBe(200);
+    expect(await head.text()).toBe('');
+    expect(head.headers.get('Content-Security-Policy')).toBe(
+      page.headers.get('Content-Security-Policy'),
+    );
+  });
   it('publishes the committed mixed specimen with one deduplicated image and unchanged source', async () => {
     const file = fileURLToPath(
       new URL('../../../docs/examples/markdown-compatibility.md', import.meta.url),
@@ -153,7 +183,7 @@ describe('E2E (§59)', () => {
     const page = await view(`/${id}`);
     expect(page.status).toBe(200);
     const html = await page.text();
-    expectTocPolicy(page, html);
+    expectTocPolicy(page, html, true);
     expect(html.match(/aria-label="Mermaid diagram"/g)).toHaveLength(4);
     expect(html.match(/<math\b/g)).toHaveLength(6);
     const paths = assetPaths(html);
@@ -173,7 +203,7 @@ describe('E2E (§59)', () => {
     expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
     const response = await view(`/${id}`);
     const html = await response.text();
-    expectTocPolicy(response, html);
+    expectTocPolicy(response, html, true);
     expect(html).toContain('<title>Body title</title>');
     expect(html).not.toContain('Hidden metadata');
     expect(html).not.toContain('missing.png');

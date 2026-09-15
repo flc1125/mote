@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { render, TOC_SCRIPT } from './index.js';
 import { renderMarkdown } from './markdown.js';
+import { COPY_SCRIPT } from './copy-script.js';
 
 const specimen = (name: string) =>
   readFileSync(new URL(`../../../docs/examples/${name}.md`, import.meta.url), 'utf8');
@@ -68,10 +69,13 @@ describe('committed compatibility specimens', () => {
     expect(html).not.toContain('暂以源码显示');
     expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
       TOC_SCRIPT,
+      COPY_SCRIPT,
     ]);
-    expect(html.replace(`<script>${TOC_SCRIPT}</script>`, '')).not.toMatch(
-      /<(?:script|iframe|foreignObject)\b/,
-    );
+    expect(
+      html
+        .replace(`<script>${TOC_SCRIPT}</script>`, '')
+        .replace(`<script>${COPY_SCRIPT}</script>`, ''),
+    ).not.toMatch(/<(?:script|iframe|foreignObject)\b/);
   });
   it('renders supplementary charts with all relationship labels and series', () => {
     const html = renderMarkdown(specimen('markdown-diagrams'), new Map()).html;

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Fenced-code copy controls, plain-text titles, optional line numbers and highlighted line ranges. Bounded enhancements preserve parser-normalized code text and fall back to ordinary code on budget overruns. Titles and line emphasis work without JavaScript; the fixed copy script is authorized by its exact CSP hash, with matching GET/HEAD policies.
+
 ### Changed
 
 - **Breaking:** `mote login` and `mote auth login` select the API origin from `--api` or the built-in default `https://mote.pub`, independently of remembered instances, `MOTE_API_URL` and config `apiUrl`. Other commands retain their existing selection priority. ([#54](https://github.com/flc1125/mote/pull/54))

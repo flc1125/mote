@@ -87,7 +87,7 @@ describe('allowlisted raw HTML (§26)', () => {
   it('keeps <details> open across Markdown blocks (GitHub-style)', () => {
     const html = render('<details><summary>More</summary>\n\n```sh\nls\n```\n\n</details>');
     expect(html).toMatch(
-      /<details><summary>More<\/summary>[\s\S]*<pre>[\s\S]*<\/pre>[\s\S]*<\/details>/,
+      /<details><summary>More<\/summary>[\s\S]*<pre tabindex="0" aria-label="Code">[\s\S]*<\/pre>[\s\S]*<\/details>/,
     );
   });
 

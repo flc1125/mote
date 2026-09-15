@@ -48,7 +48,8 @@ describe('static code highlighting', () => {
       );
       expect(html).not.toContain('<script>');
       expect(html).not.toContain('class="hljs-');
-      expect(textContent(html).trim()).toBe('<script>alert("x")</script> & **text**');
+      const code = html.match(/<code[^>]*>([\s\S]*?)<\/code>/)![1]!;
+      expect(textContent(code)).toBe('<script>alert("x")</script> & **text**\n');
     },
   );
 
