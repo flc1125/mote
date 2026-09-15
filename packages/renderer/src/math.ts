@@ -1,11 +1,8 @@
 import type { MarkdownIt } from 'markdown-it';
 import katex from 'katex';
 
-import { mathSyntax } from '@mote/core';
-
-/** Native MathML needs no web fonts, client script or external requests. */
+/** Render the shared documentSyntax math tokens as native MathML. */
 export function math(md: MarkdownIt): void {
-  md.use(mathSyntax);
   let remaining = 16_384;
   let remainingOutput = 262_144;
   let count = 0;

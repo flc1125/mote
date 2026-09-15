@@ -16,12 +16,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Discover local images in multi-paragraph footnotes using the same Markdown structure rules as the Viewer, while keeping code and mathematical source out of asset uploads.
 - Reject protocol-relative image URLs, including backslash variants, in Markdown and allowlisted HTML. Use explicit `https://` or `http://` URLs for remote images.
 - Return `413 BUNDLE_TOO_LARGE` instead of `422 INVALID_DOCUMENT` when a publish manifest exceeds 50 assets, rejecting the count before processing image bytes.
 - Report the stored Markdown's UTF-8 byte size in Viewer render logs, including documents containing Chinese text or emoji.
 
 ### Upgrade notes
 
+- The footnote image-scanning fix requires an updated CLI or a rebuilt local stdio MCP server. Updating the Viewer alone cannot upload assets omitted by an older client. To include missing assets in an existing publication, publish the original document again with the updated client; existing documents remain immutable.
 - Self-hosted users must pass `--api <your-instance-origin>` when logging in instead of relying on saved publishing settings. Explicit auth-mode settings still apply. Successful login remembers the selected instance; explicit environment/config API overrides still control subsequent publishing and are reported after login. This login change is not included in v0.6.0. ([#54](https://github.com/flc1125/mote/pull/54))
 
 ## [0.6.0] - 2026-09-11

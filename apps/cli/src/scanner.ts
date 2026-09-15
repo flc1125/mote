@@ -1,7 +1,7 @@
 import { Parser } from 'htmlparser2';
 import MarkdownIt from 'markdown-it';
 
-import { isLocalReference, mathSyntax, stripFrontMatter } from '@mote/core';
+import { documentSyntax, isLocalReference, stripFrontMatter } from '@mote/core';
 
 interface TokenLike {
   type: string;
@@ -13,7 +13,7 @@ interface TokenLike {
 // html: true so raw HTML surfaces as html_block / html_inline tokens
 // (with html: false it degrades to inert text and could not be scanned).
 const md = new MarkdownIt({ html: true, linkify: true, breaks: false, typographer: false });
-md.use(mathSyntax);
+md.use(documentSyntax);
 
 function collect(url: string, into: string[], seen: Set<string>): void {
   if (url !== '' && isLocalReference(url) && !seen.has(url)) {
@@ -66,7 +66,8 @@ function collectImages(tokens: TokenLike[], into: string[], seen: Set<string>): 
  * (baseline §22 — never regex). Covers inline images, reference-style
  * images, images nested inside links, and images in raw HTML (<img>,
  * <picture>/<source>). Remote URLs and non-file schemes are skipped. Each
- * distinct spelling is returned once, in order of first appearance.
+ * distinct spelling is returned once in rendered token order (body, then
+ * footnotes). Unreferenced footnote definitions and code remain unscanned.
  */
 export function extractLocalImageReferences(markdown: string): string[] {
   const tokens = md.parse(stripFrontMatter(markdown), {}) as unknown as TokenLike[];
