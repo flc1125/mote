@@ -423,7 +423,7 @@ article details.markdown-alert {
 }
 /* Keep deeply nested content usable on narrow screens. */
 .markdown-alert .markdown-alert { padding-inline: 0.65em; }
-article details.markdown-alert > summary {
+article details.markdown-alert > summary.markdown-alert-title {
   margin: 0;
   list-style: none;
 }
