@@ -8,7 +8,7 @@ import { mathSyntax } from './math-syntax.js';
 const footnote = footnotePlugin as (md: MarkdownIt) => void;
 
 export interface DocumentSyntaxOptions {
-  /** Internal opt-in until the phase-2 renderer and publishing UX are ready. */
+  /** Disable container syntax only for baseline comparisons and isolated parsing. */
   containers?: boolean;
 }
 
@@ -16,5 +16,5 @@ export interface DocumentSyntaxOptions {
 export function documentSyntax(md: MarkdownIt, options: DocumentSyntaxOptions = {}): void {
   md.use(mathSyntax);
   md.use(footnote);
-  if (options.containers) md.use(containerSyntax);
+  if (options.containers !== false) md.use(containerSyntax);
 }

@@ -8,7 +8,7 @@ export const CONTAINER_LIMITS = {
   source: 128 * 1024,
 } as const;
 
-const LABELS = {
+export const ADMONITION_LABELS = {
   note: 'Note',
   tip: 'Tip',
   important: 'Important',
@@ -19,7 +19,7 @@ const LABELS = {
 } as const;
 
 export interface ContainerMeta {
-  type: keyof typeof LABELS;
+  type: keyof typeof ADMONITION_LABELS;
   mode: 'static' | 'closed' | 'open';
   title: string;
 }
@@ -39,9 +39,10 @@ function opener(line: string): ContainerMeta | null {
   if (!match) return null;
   const type = match[2] as ContainerMeta['type'];
   const mode = match[1] === '!!!' ? 'static' : match[1] === '???' ? 'closed' : 'open';
-  let title = match[3] === undefined ? LABELS[type] : match[3].replace(/\\(["\\])/g, '$1');
+  let title =
+    match[3] === undefined ? ADMONITION_LABELS[type] : match[3].replace(/\\(["\\])/g, '$1');
   if (title.length > CONTAINER_LIMITS.title) return null;
-  if (mode !== 'static' && title.trim() === '') title = LABELS[type];
+  if (mode !== 'static' && title.trim() === '') title = ADMONITION_LABELS[type];
   return { type, mode, title };
 }
 
@@ -54,7 +55,7 @@ function hasIndent(state: StateBlock, line: number, indent: number): boolean {
 }
 
 /**
- * Opt-in structural tokens for phase-2 admonitions. Default rendering is static
+ * Shared structural tokens for admonitions. Default rendering is static
  * and readable; presentation may override these rules without reparsing text.
  * Tab groups belong to the subsequent phase and are not recognized here.
  */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { ADMONITION_CASES } from '../../../packages/core/src/fixtures/admonitions.js';
 import { FOOTNOTE_CASES } from '../../../packages/core/src/fixtures/footnotes.js';
 
 import { extractLocalImageReferences } from '../src/scanner.js';
@@ -115,5 +116,33 @@ describe('shared footnote structures (DEF-01)', () => {
   it('does not retain footnotes between documents', () => {
     extractLocalImageReferences(FOOTNOTE_CASES[0].source);
     expect(extractLocalImageReferences('A[^note]')).toEqual([]);
+  });
+});
+
+describe('shared admonition structures', () => {
+  it.each(ADMONITION_CASES)('$name', ({ source, images }) => {
+    expect(extractLocalImageReferences(source)).toEqual(images);
+  });
+
+  it('shares source, component and nesting fallbacks with the renderer', () => {
+    const oversized =
+      '!!! note\n\n    ' + 'x'.repeat(128 * 1024) + '\n\n    ![hidden](missing.png)';
+    expect(extractLocalImageReferences(oversized)).toEqual([]);
+    const source = Array.from(
+      { length: 257 },
+      (_, i) => `!!! note\n\n    ![image](image-${i}.png)\n\n`,
+    ).join('');
+    const images = extractLocalImageReferences(source);
+    expect(images).toHaveLength(256);
+    expect(images).not.toContain('image-256.png');
+    let nested = '![hidden](missing.png)';
+    for (let i = 0; i < 9; i++)
+      nested =
+        '!!! note\n\n' +
+        nested
+          .split('\n')
+          .map((line) => '    ' + line)
+          .join('\n');
+    expect(extractLocalImageReferences(nested)).toEqual([]);
   });
 });
