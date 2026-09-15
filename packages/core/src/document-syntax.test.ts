@@ -30,7 +30,15 @@ function nested(depth: number, body = 'content'): string {
 }
 
 describe('documentSyntax', () => {
-  it('keeps new containers disabled until their presentation is ready', () => {
+  it('enables shared containers by default for both publishing and rendering', () => {
+    const tokens = new MarkdownIt()
+      .use(documentSyntax)
+      .parse('??? note\n\n    ![inside](image.png)\n', {});
+    expect(tokens.some((token) => token.type === 'mote_container_open')).toBe(true);
+    expect(imageSources(tokens)).toEqual(['image.png']);
+  });
+
+  it('supports explicitly disabling containers for baseline comparisons', () => {
     const source = '!!! note\n\n    ![inside](image.png)\n';
     const md = parser(false);
     const tokens = md.parse(source, {});
@@ -39,7 +47,7 @@ describe('documentSyntax', () => {
     expect(md.render(source)).toContain('<pre><code>![inside](image.png)');
   });
 
-  it('does not let container opt-in reinterpret math or footnote bodies', () => {
+  it('does not let containers reinterpret math or footnote bodies', () => {
     const source =
       'A[^n]\n\n[^n]: Note.\n\n    !!! warning\n\n        ![code](missing.png)\n\n    ![real](foot.png)\n\n$$\n!!! tip\n\n    ![math](math.png)\n$$\n';
     const tokens = parser().parse(source, {});
@@ -48,7 +56,7 @@ describe('documentSyntax', () => {
   });
 });
 
-describe('opt-in container structures', () => {
+describe('container structures', () => {
   it.each(['note', 'tip', 'important', 'warning', 'caution', 'example', 'success'])(
     'recognizes the controlled %s type with a default title',
     (type) => {

@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Extended admonitions with `!!!`, `???` and `???+`: seven types, plain-text custom titles, bounded nesting and native disclosures. They share the existing GitHub alert presentation. CLI and Viewer use the same structure rules for nested images; links reveal closed ancestors, and printing includes folded bodies.
+
 - Fenced-code copy controls, plain-text titles, optional line numbers and highlighted line ranges. Bounded enhancements preserve parser-normalized code text and fall back to ordinary code on budget overruns. Titles and line emphasis work without JavaScript; the fixed copy script is authorized by its exact CSP hash, with matching GET/HEAD policies.
 
 ### Changed
@@ -22,6 +24,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Report the stored Markdown's UTF-8 byte size in Viewer render logs, including documents containing Chinese text or emoji.
 
 ### Upgrade notes
+
+- Publishing local images inside extended admonitions requires the matching updated CLI or rebuilt local stdio MCP server, together with the updated Viewer. Older clients treat those indented bodies as code and may omit images; republish with the updated client to include omitted assets. Existing publications remain immutable.
 
 - The footnote image-scanning fix requires an updated CLI or a rebuilt local stdio MCP server. Updating the Viewer alone cannot upload assets omitted by an older client. To include missing assets in an existing publication, publish the original document again with the updated client; existing documents remain immutable.
 - Self-hosted users must pass `--api <your-instance-origin>` when logging in instead of relying on saved publishing settings. Explicit auth-mode settings still apply. Successful login remembers the selected instance; explicit environment/config API overrides still control subsequent publishing and are reported after login. This login change is not included in v0.6.0. ([#54](https://github.com/flc1125/mote/pull/54))

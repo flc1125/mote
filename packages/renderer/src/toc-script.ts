@@ -3,7 +3,56 @@ export const TOC_SCRIPT = String.raw`(() => {
   const panel = document.getElementById('mote-toc');
   const trigger = document.querySelector('.toc-trigger');
   const article = document.querySelector('article');
-  if (!panel || !trigger || !article) return;
+  if (!article) return;
+
+  function plainClick(event) {
+    return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+  }
+  function hashTarget(hash = location.hash) {
+    if (!hash || hash === '#') return null;
+    try { return document.getElementById(decodeURIComponent(hash.slice(1))); } catch { return null; }
+  }
+  function revealTarget(target) {
+    if (!target || !article.contains(target)) return false;
+    let unfolded = false;
+    for (let parent = target; parent && parent !== article; parent = parent.parentElement) {
+      if (parent.tagName === 'DETAILS' && !parent.open) { parent.open = true; unfolded = true; }
+    }
+    return unfolded;
+  }
+  function revealFragment() {
+    const target = hashTarget();
+    if (revealTarget(target)) target.scrollIntoView();
+    return target;
+  }
+  // Opening before the native jump also handles repeat clicks on the same hash.
+  article.addEventListener('click', event => {
+    if (!plainClick(event) || event.defaultPrevented) return;
+    const link = event.target.closest('a[href]');
+    if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
+    let url;
+    try { url = new URL(link.href, location.href); } catch { return; }
+    if (url.origin !== location.origin || url.pathname !== location.pathname || url.search !== location.search) return;
+    const target = hashTarget(url.hash);
+    if (revealTarget(target)) target.scrollIntoView();
+  });
+  // CSS covers no-JS printing; this also supports engines without ::details-content.
+  let printClosed = null;
+  window.addEventListener('beforeprint', () => {
+    if (printClosed !== null) return;
+    printClosed = [...article.querySelectorAll('details.markdown-alert:not([open])')];
+    for (const detail of printClosed) detail.open = true;
+  });
+  window.addEventListener('afterprint', () => {
+    for (const detail of printClosed || []) detail.open = false;
+    printClosed = null;
+  });
+  if (!panel || !trigger) {
+    window.addEventListener('hashchange', revealFragment);
+    window.addEventListener('pageshow', revealFragment);
+    revealFragment();
+    return;
+  }
   const body = document.body;
   const nav = panel.querySelector('.toc-nav');
   const close = panel.querySelector('.toc-close');
@@ -168,9 +217,6 @@ export const TOC_SCRIPT = String.raw`(() => {
     schedule(true);
   }
 
-  function plainClick(event) {
-    return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
-  }
 
   trigger.addEventListener('click', event => {
     if (!plainClick(event)) return;
@@ -195,13 +241,11 @@ export const TOC_SCRIPT = String.raw`(() => {
     entry.link.addEventListener('click', event => {
       if (!plainClick(event)) return;
       // Keep native anchors and history, including repeat clicks on the same hash.
+      revealTarget(entry.heading);
       if (!desktop.matches) {
         closePanel(false);
         entry.heading.setAttribute('tabindex', '-1');
         entry.heading.focus({ preventScroll: true });
-      }
-      for (let parent = entry.heading.parentElement; parent && parent !== article; parent = parent.parentElement) {
-        if (parent.tagName === 'DETAILS') parent.open = true;
       }
       selectNavigation(entry);
       schedule(true);
@@ -229,16 +273,8 @@ export const TOC_SCRIPT = String.raw`(() => {
   function onHashChange() {
     if (location.hash === '#mote-toc') { openPanel(); return; }
     if (mobileOpen) closePanel(false);
-    let target;
-    try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch { return; }
+    const target = revealFragment();
     selectNavigation(entries.find(entry => entry.heading === target) || null);
-    if (target && article.contains(target)) {
-      let unfolded = false;
-      for (let parent = target.parentElement; parent && parent !== article; parent = parent.parentElement) {
-        if (parent.tagName === 'DETAILS' && !parent.open) { parent.open = true; unfolded = true; }
-      }
-      if (unfolded) target.scrollIntoView();
-    }
     schedule(true);
     return target;
   }

@@ -228,6 +228,46 @@ describe('E2E (§59)', () => {
       page.headers.get('Content-Security-Policy'),
     );
   });
+  it('publishes nested admonition images with unchanged source and matching GET/HEAD policy', async () => {
+    const file = fileURLToPath(
+      new URL('../../../docs/examples/markdown-admonitions.md', import.meta.url),
+    );
+    const source = await readFile(file, 'utf8');
+    // The specimen includes nonexistent images in code and an unsupported container.
+    const { id } = await publishDoc(file);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const manifest = JSON.parse(
+      (await (await bucket.get(`documents/${id}/manifest.json`))?.text()) ?? '{}',
+    ) as { assets: unknown[] };
+    expect(manifest.assets).toHaveLength(1);
+    const response = await view(`/${id}`);
+    const html = await response.text();
+    expect(response.status).toBe(200);
+    expectTocPolicy(response, html, true);
+    expect(html.match(/<details id="mote-admonition-/g)).toHaveLength(4);
+    expect(html.match(/class="markdown-alert markdown-alert-success" open=""/g)).toHaveLength(1);
+    expect(html).toContain('<h3 id="nested-details">Nested details</h3>');
+    const paths = assetPaths(html);
+    expect(paths).toHaveLength(3);
+    expect(new Set(paths).size).toBe(1);
+    expect(html).toContain(`srcset="${paths[0]} 2x"`);
+    const image = await view(paths[0]!);
+    expect(image.status).toBe(200);
+    expect(new Uint8Array(await image.arrayBuffer())).toEqual(
+      new Uint8Array(
+        await readFile(new URL('../../../docs/assets/favicon-32.png', import.meta.url)),
+      ),
+    );
+    const head = await viewerWorker.fetch(new Request(`${VIEWER_BASE}/${id}`, { method: 'HEAD' }), {
+      DOCUMENTS: bucket,
+    });
+    expect(head.status).toBe(200);
+    expect(await head.text()).toBe('');
+    expect(head.headers.get('Content-Security-Policy')).toBe(
+      response.headers.get('Content-Security-Policy'),
+    );
+  });
+
   it('publishes the committed mixed specimen with one deduplicated image and unchanged source', async () => {
     const file = fileURLToPath(
       new URL('../../../docs/examples/markdown-compatibility.md', import.meta.url),

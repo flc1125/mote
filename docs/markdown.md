@@ -8,7 +8,7 @@ with every Markdown editor or every Mermaid feature.
 
 Published Markdown and document IDs stay unchanged. Server-side rendering produces
 static HTML, MathML and sanitized diagram SVG. Fixed scripts, authorized by exact
-CSP hashes, enhance the contents navigation and code copying where needed.
+CSP hashes, enhance contents navigation, disclosure links and code copying where needed.
 Document content cannot execute scripts; static contents links and readable code
 remain available when JavaScript is disabled.
 
@@ -23,6 +23,7 @@ remain available when JavaScript is disabled.
 | Local Markdown and HTML images                   | Supported                   | CLI uploads referenced assets, including encoded paths; identical assets are deduplicated.   |
 | Presentational HTML                              | Allowlisted                 | Includes details/summary, picture, tables, kbd, sub and sup. Arbitrary HTML/CSS is excluded. |
 | GitHub-style alerts                              | Supported at document level | NOTE, TIP, IMPORTANT, WARNING and CAUTION. Nested list/quote markers remain ordinary quotes. |
+| Extended admonitions                             | Bounded enhancement         | Custom titles, seven types, nested content and native folding with `!!!`, `???` and `???+`.  |
 | Code highlighting                                | Selected languages          | Static coloring for explicitly named languages; otherwise escaped source.                    |
 | Code titles, line numbers and copying            | Bounded enhancement         | Optional titles and physical-line emphasis; browser copy controls exclude decorative text.   |
 | YAML front matter                                | Conservative recognition    | Valid metadata at the start is hidden; malformed or ambiguous content stays visible.         |
@@ -39,11 +40,13 @@ From a repository checkout, publish one of these files using your configured CLI
 mote docs/examples/markdown-compatibility.md
 mote docs/examples/markdown-diagrams.md
 mote docs/examples/markdown-fallbacks.md
+mote docs/examples/markdown-admonitions.md
 ```
 
 Publishing requires an instance and publisher authorization; see the
 [CLI reference](cli.md) and [authentication guide](authentication.md).
 
+- [Admonitions](examples/markdown-admonitions.md): ordinary alerts, titles, nesting, folding and bundled images.
 - [Main specimen](examples/markdown-compatibility.md): numbered checks for mixed
   prose, lists, tables, alerts, code, local images, HTML, formulas, four diagram
   types, footnotes and heading collisions.
@@ -115,16 +118,92 @@ reinterpreted as Markdown.
 
 ## Alerts
 
-Place a standalone marker on the first quoted line:
+### Ordinary notes
+
+For a simple note, place a standalone marker on the first quoted line:
 
 ```markdown
 > [!NOTE]
 > **说明：**Alert content can contain formatting, lists and code.
 ```
 
-The five markers are case-insensitive. Unknown markers, escaped markers and markers
+The five markers are `NOTE`, `TIP`, `IMPORTANT`, `WARNING` and `CAUTION`, and are case-insensitive. Unknown markers, escaped markers and markers
 nested inside a list or another quote stay ordinary quoted text. Alerts inside an
 HTML disclosure follow the same Markdown blank-line rules as other content.
+
+### Custom titles
+
+Use `!!!` when a note needs a custom title or nested content. It uses the same
+colors and icons as a GitHub-style alert:
+
+```markdown
+!!! warning "Back up before upgrading"
+
+    Save the current configuration before changing it.
+```
+
+The seven supported types are `note`, `tip`, `important`, `warning`, `caution`,
+`example` and `success`. These names are lowercase and case-sensitive. Omitting the
+title uses the type's label; `!!! tip ""` hides the title row. Titles are plain text,
+not Markdown or HTML. Double quotes are required; only `\"` and `\\` escapes are
+accepted.
+
+Put a blank line after the opener and indent every nonblank body line with four
+spaces relative to it. The opener must start at column zero of the document or its
+containing admonition. Body content supports ordinary Markdown, including lists,
+images, tables, code, math, footnotes and other admonitions. Local images inside
+closed blocks are bundled like visible images. Code and math examples remain
+literal and do not upload images.
+
+### Foldable content
+
+Use `???` for a block that starts closed or `???+` for one that starts open:
+
+```markdown
+??? tip "Show the command"
+
+    Run `mote auth status --offline` to check the selected instance.
+
+???+ success "Checks completed"
+
+    The document is ready to share.
+```
+
+Readers toggle these native disclosures by clicking the title or using Enter or
+Space while it has keyboard focus. Folding works without JavaScript. A missing,
+empty or whitespace-only disclosure title uses the type's label so the control
+stays named. Printing includes the folded body as well as the title.
+
+With JavaScript enabled, following a link to a heading inside a closed block opens
+its enclosing disclosures before positioning the page. This works with the table
+of contents and browser back/forward navigation. Heading-free blocks also receive
+unique IDs such as `mote-admonition-1`; prefer heading links when a section has a
+heading, since inserting earlier components can change generated component IDs.
+Without JavaScript, open closed ancestors manually to reach hidden content.
+
+### Nesting and fallback
+
+Indent each nested level by another four spaces:
+
+```markdown
+??? example "More information"
+
+    !!! note "Before you begin"
+
+        Keep the document and its images together.
+```
+
+New openers do not activate inside lists, blockquotes, footnote definitions, code,
+math or raw HTML blocks, and cannot interrupt a paragraph. Existing GitHub markers
+inside an admonition stay ordinary quotes. Unknown types, malformed titles,
+missing blank lines, empty bodies and budget overruns follow ordinary Markdown
+rules. That fallback can be a paragraph or indented code depending on the source;
+it does not broadly reinterpret indented image examples as uploadable assets.
+
+Publish the [admonition specimen](examples/markdown-admonitions.md) to try both
+syntaxes, custom titles, nesting, image discovery and disclosure navigation.
+Chrome reference screenshots: [desktop](assets/markdown-admonitions-desktop.png) and
+[narrow dark view](assets/markdown-admonitions-mobile.png).
 
 ## Code highlighting
 
@@ -234,6 +313,7 @@ see the README for Markdown and asset upload byte limits.
 | Front matter      | Closing delimiter within the first 16,384 text units                   | Opening block only                                                              |
 | Code highlighting | 16,384 input units; 4,096 per line; 262,144 output units               | 64 processed blocks; 65,536 input and 524,288 output units                      |
 | Code enhancements | 16,384 input units; 512 lines; 32 KiB additional markup                | 64 processed blocks; 65,536 input units; 4,096 lines; 256 KiB additional markup |
+| Admonitions       | 512 opener units; 160 title units; 8 levels of nesting                 | 256 components; 131,072 source units, counting nested source once               |
 | Mathematics       | 4,096 input units; 65,536 output units; 100 macro expansions           | 128 processed formulas; 16,384 input and 262,144 output units                   |
 | Mermaid           | 4,096 input units; 64 lines; 256 word tokens; 262,144 SVG output units | Up to 4 diagram attempts, in source order                                       |
 

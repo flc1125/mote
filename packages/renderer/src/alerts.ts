@@ -1,15 +1,7 @@
 import type { MarkdownIt, Token } from 'markdown-it';
 
-const ALERTS: Record<string, { title: string; icon: string }> = {
-  NOTE: { title: 'Note', icon: '<circle cx="8" cy="8" r="6"/><path d="M8 7v4M8 4.5v.5"/>' },
-  TIP: {
-    title: 'Tip',
-    icon: '<path d="M5.5 11C5.5 9 3 9 3 6a5 5 0 0 1 10 0c0 3-2.5 3-2.5 5M5.5 12h5M6 14h4"/>',
-  },
-  IMPORTANT: { title: 'Important', icon: '<path d="M3 2h10v9H8l-4 3v-3H3zM8 4v3M8 8.5v.5"/>' },
-  WARNING: { title: 'Warning', icon: '<path d="m8 2 7 12H1zM8 6v3M8 10.5v.5"/>' },
-  CAUTION: { title: 'Caution', icon: '<path d="m5 1-4 4v6l4 4h6l4-4V5l-4-4zM8 4v5M8 11v1"/>' },
-};
+import { renderAlertTitle } from './alert-presentation.js';
+import type { ContainerMeta } from '@mote/core';
 
 /** Recognize a standalone alert marker before inline links consume it. */
 export function alerts(md: MarkdownIt): void {
@@ -48,8 +40,6 @@ export function alerts(md: MarkdownIt): void {
     state.tokens = output;
   });
 
-  md.renderer.rules.mote_alert_title = (tokens, index) => {
-    const alert = ALERTS[tokens[index]!.content]!;
-    return `<p class="markdown-alert-title"><svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${alert.icon}</svg>${alert.title}</p>\n`;
-  };
+  md.renderer.rules.mote_alert_title = (tokens, index) =>
+    renderAlertTitle(tokens[index]!.content.toLowerCase() as ContainerMeta['type']);
 }

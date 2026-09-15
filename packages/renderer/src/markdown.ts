@@ -2,6 +2,7 @@ import MarkdownIt from 'markdown-it';
 
 import { documentSyntax, stripFrontMatter } from '@mote/core';
 
+import { admonitions } from './admonitions.js';
 import { alerts } from './alerts.js';
 import { resolveAssetUrl } from './assets.js';
 import { cjkEmphasis } from './cjk-emphasis.js';
@@ -129,6 +130,9 @@ export function renderMarkdown(
 
     (state.env as { headings?: Heading[] }).headings = headings;
   });
+
+  // Heading IDs are allocated first, so component IDs cannot steal their anchors.
+  md.use(admonitions);
 
   // Local asset rewrite (§31) + dangerous image src stripping (§57).
   // Delegates to the default rule afterwards so alt text is still rendered.

@@ -17,6 +17,7 @@ Mote 渲染 CommonMark 风格的 Markdown，并提供部分 GFM 和文档扩展�
 | Markdown 与 HTML 本地图片    | 支持         | CLI 上传引用的资产，包括编码路径；相同资产去重。                               |
 | 展示类 HTML                  | 白名单       | 包括 details/summary、picture、表格、kbd、sub 和 sup；不支持任意 HTML/CSS。    |
 | GitHub 风格提示块            | 支持文档层级 | NOTE、TIP、IMPORTANT、WARNING 和 CAUTION；列表或引用中的嵌套标记仍是普通引用。 |
+| 扩展提示块                   | 有限增强     | 自定义标题、七种类型、嵌套内容，以及 `!!!`、`???` 和 `???+` 原生折叠。         |
 | 代码高亮                     | 指定语言     | 显式指定支持的语言时静态着色，否则保留转义后的源码。                           |
 | 代码标题、行号与复制         | 有限增强     | 可选标题与物理行强调；浏览器复制控件不包含装饰文字。                           |
 | YAML front matter            | 保守识别     | 隐藏文档开头的有效元数据，格式错误或含义不明确的内容仍可见。                   |
@@ -33,10 +34,12 @@ Mote 渲染 CommonMark 风格的 Markdown，并提供部分 GFM 和文档扩展�
 mote docs/examples/markdown-compatibility.md
 mote docs/examples/markdown-diagrams.md
 mote docs/examples/markdown-fallbacks.md
+mote docs/examples/markdown-admonitions.md
 ```
 
 发布需要实例和发布者授权，参阅 [CLI 参考](cli.md)与[鉴权指南](authentication.md)。
 
+- [提示块示例（英文）](../examples/markdown-admonitions.md)：普通提示、自定义标题、嵌套、折叠与图片打包。
 - [主要示例（英文）](../examples/markdown-compatibility.md)：按编号检查混合正文、列表、表格、提示块、代码、本地图片、HTML、公式、四类图表、脚注与标题冲突。
 - [补充图表（英文）](../examples/markdown-diagrams.md)：ER、XY、紧凑连线语法与分组。为遵守单文档图表预算，单独存放。
 - [回退示例（英文）](../examples/markdown-fallbacks.md)：无效元数据、未知语言与提示块、无效公式和不支持的图表。
@@ -79,14 +82,64 @@ HTML 经过白名单过滤。脚本、事件处理器、iframe、任意 style/cl
 
 ## 提示块
 
-在引用的第一行单独放置标记：
+### 普通提示
+
+简单提示可以在引用的第一行单独放置标记：
 
 ```markdown
 > [!NOTE]
 > **说明：**Alert content can contain formatting, lists and code.
 ```
 
-五种标记不区分大小写。未知标记、转义标记，以及嵌套在列表或其他引用中的标记，仍显示为普通引用文本。HTML 折叠容器中的提示块与其他内容遵循相同的 Markdown 空行规则。
+支持 `NOTE`、`TIP`、`IMPORTANT`、`WARNING` 和 `CAUTION` 五种标记，不区分大小写。未知标记、转义标记，以及嵌套在列表或其他引用中的标记，仍显示为普通引用文本。HTML 折叠容器中的提示块与其他内容遵循相同的 Markdown 空行规则。
+
+### 自定义标题
+
+需要自定义标题或嵌套内容时，使用 `!!!`。它与 GitHub 风格提示共用颜色和图标：
+
+```markdown
+!!! warning "升级前先备份"
+
+    修改配置前，先保存当前配置。
+```
+
+支持 `note`、`tip`、`important`、`warning`、`caution`、`example` 和 `success` 七种类型，必须使用小写，区分大小写。省略标题时显示类型名称；`!!! tip ""` 隐藏标题行。标题为纯文本，不解析 Markdown 或 HTML，必须使用双引号，仅接受 `\"` 和 `\\` 转义。
+
+起始行后必须空一行，正文的每个非空行相对起始行缩进四个空格。起始行位于文档或父提示块正文的第零列。正文支持列表、图片、表格、代码、数学、脚注及其他提示块等 Markdown 内容。折叠块内的本地图片同样会被打包；代码和数学示例仍保留为字面文本，不触发图片上传。
+
+### 折叠内容
+
+`???` 默认收起，`???+` 默认展开：
+
+```markdown
+??? tip "查看命令"
+
+    运行 `mote auth status --offline` 检查选中的实例。
+
+???+ success "检查完成"
+
+    文档已准备好分享。
+```
+
+读者可点击标题，或聚焦标题后按 Enter、空格键展开与收起。折叠使用浏览器原生控件，无需 JavaScript。折叠标题省略、为空或仅含空白时，使用类型名称，保证控件有可读名称。打印时同时显示标题和折叠正文。
+
+启用 JavaScript 时，链接到折叠块内的标题会先展开所有必要的祖先，再定位页面，支持目录跳转与浏览器前进、后退。无标题的块也会分配 `mote-admonition-1` 等唯一 ID；若内容已有标题，优先链接标题，因为插入更早的组件可能改变自动组件 ID。禁用 JavaScript 时，需要手动展开祖先才能阅读隐藏内容。
+
+### 嵌套与回退
+
+每层嵌套再增加四个空格：
+
+```markdown
+??? example "更多信息"
+
+    !!! note "开始之前"
+
+        将文档与图片保存在一起。
+```
+
+新起始标记不会在列表、引用、脚注定义、代码、数学或原始 HTML 块内激活，也不能打断段落。提示块内的 GitHub 标记仍显示为普通引用。未知类型、非法标题、缺少空行、空正文或超出预算时，按普通 Markdown 规则处理，可能显示为段落或缩进代码；不会把所有缩进图片示例重新解释为可上传资产。
+
+可发布[提示块验证示例（英文）](../examples/markdown-admonitions.md)，体验两种语法、自定义标题、嵌套、图片扫描与折叠定位。Chrome 参考截图：[桌面](../assets/markdown-admonitions-desktop.png)与[窄屏深色](../assets/markdown-admonitions-mobile.png)。
 
 ## 代码高亮
 
@@ -166,6 +219,7 @@ flowchart LR
 | Front matter | 闭合分隔符位于前 16,384 个文本单位内                            | 仅文档开头的块                                             |
 | 代码高亮     | 输入 16,384 单位；每行 4,096；输出 262,144 单位                 | 处理 64 个块；输入 65,536、输出 524,288 单位               |
 | 代码增强     | 输入 16,384 单位；512 行；新增标记 32 KiB                       | 处理 64 个块；输入 65,536 单位；4,096 行；新增标记 256 KiB |
+| 提示块       | 起始行 512 个文本单位；标题 160 个；嵌套最多 8 层               | 256 个组件；131,072 个源码单位，嵌套源码不重复计数         |
 | 数学公式     | 输入 4,096 单位；输出 65,536 单位；100 次宏展开                 | 处理 128 个公式；输入 16,384、输出 262,144 单位            |
 | Mermaid      | 输入 4,096 单位；64 行；256 个词法 token；SVG 输出 262,144 单位 | 按源码顺序最多尝试 4 张图表                                |
 
