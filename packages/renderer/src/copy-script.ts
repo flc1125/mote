@@ -6,13 +6,11 @@ export const COPY_SCRIPT = String.raw`(() => {
   for (const block of article.querySelectorAll('.code-block')) {
     const button = block.querySelector('.code-copy');
     const code = block.querySelector('pre > code');
-    const toolbar = block.querySelector('.code-toolbar');
     const status = block.querySelector('.code-copy-status');
-    if (!button || !code || !toolbar || !status) continue;
+    if (!button || !code || !status) continue;
     if (!available) {
       status.textContent = 'Clipboard unavailable. Select the code and copy it manually.';
       status.classList.add('is-error');
-      toolbar.hidden = false;
       continue;
     }
     let timer;
@@ -37,6 +35,5 @@ export const COPY_SCRIPT = String.raw`(() => {
       }
     });
     button.hidden = false;
-    toolbar.hidden = false;
   }
 })();`;

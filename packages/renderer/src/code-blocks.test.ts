@@ -35,6 +35,28 @@ const fence = (info: string, source: string) => `\`\`\`${info}\n${source}\`\`\`\
 const render = (input: string) => renderMarkdown(input, new Map());
 
 describe('code block enhancements', () => {
+  it.each(['text', 'text title=""', 'js title="discarded" linenums="0"'])(
+    'places untitled controls after intact code without a toolbar: %s',
+    (info) => {
+      const source = 'const unchanged = true;\n';
+      const result = render(fence(info, source));
+      expect(result.html).toContain('class="code-block is-compact"');
+      expect(result.html).not.toContain('code-toolbar');
+      expect(result.html).toContain('</code></pre><button');
+      expect(inspect(result.html).codes).toEqual([source]);
+      expect(result.codeCopy).toBe(true);
+    },
+  );
+  it('keeps titled controls before the code, including empty titled blocks', () => {
+    for (const source of ['one\n', '']) {
+      const result = render(fence('text title="config.txt"', source));
+      expect(result.html).not.toContain('is-compact');
+      expect(result.html).toContain('<div class="code-toolbar"><span class="code-title">');
+      expect(result.html.indexOf('code-toolbar')).toBeLessThan(result.html.indexOf('<pre'));
+      expect(inspect(result.html).codes).toEqual([source]);
+      expect(result.codeCopy).toBe(source !== '');
+    }
+  });
   it.each(codeBlockCases)('fulfills frozen case $id with parser-exact text', (fixture) => {
     const result = render(fixture.input);
     const token = new MarkdownIt().parse(fixture.input, {})[0]!;

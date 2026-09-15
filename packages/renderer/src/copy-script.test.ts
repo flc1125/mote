@@ -13,7 +13,6 @@ function setup(writeText?: (text: string) => Promise<void>) {
       click = fn;
     },
   };
-  const toolbar = { hidden: true };
   const classes = new Set<string>();
   const status = {
     textContent: '',
@@ -26,7 +25,6 @@ function setup(writeText?: (text: string) => Promise<void>) {
   const code = { textContent: '<script>literal</script>\n\n' };
   const elements: Record<string, unknown> = {
     '.code-copy': button,
-    '.code-toolbar': toolbar,
     '.code-copy-status': status,
     'pre > code': code,
   };
@@ -43,15 +41,14 @@ function setup(writeText?: (text: string) => Promise<void>) {
       return 1;
     },
   });
-  return { button, toolbar, status, code, click: () => click?.(), reset: () => reset?.() };
+  return { button, status, code, click: () => click?.(), reset: () => reset?.() };
 }
 describe('fixed copy enhancement', () => {
-  it('writes only on activation, preserving exact code text and restoring feedback', async () => {
+  it('copies without a toolbar, preserving exact code text and restoring feedback', async () => {
     const write = vi.fn(async () => {});
     const ui = setup(write);
     expect(write).not.toHaveBeenCalled();
     expect(ui.button.hidden).toBe(false);
-    expect(ui.toolbar.hidden).toBe(false);
     await ui.click();
     expect(write).toHaveBeenCalledExactlyOnceWith(ui.code.textContent);
     expect(ui.button.textContent).toBe('Copied');
@@ -62,7 +59,6 @@ describe('fixed copy enhancement', () => {
   it('keeps the button hidden and explains manual copying without Clipboard API', () => {
     const ui = setup();
     expect(ui.button.hidden).toBe(true);
-    expect(ui.toolbar.hidden).toBe(false);
     expect(ui.status.textContent).toContain('Clipboard unavailable');
     expect(ui.status.classList.contains('is-error')).toBe(true);
   });

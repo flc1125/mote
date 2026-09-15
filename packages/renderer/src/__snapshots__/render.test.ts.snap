@@ -198,6 +198,10 @@ pre code {
 .code-copy:disabled { opacity: 0.6; cursor: wait; }
 .code-copy-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .code-copy-status.is-error { grid-column: 1 / -1; position: static; width: auto; height: auto; clip-path: none; white-space: normal; font-size: 0.75em; color: var(--mote-muted); }
+.code-block.is-compact { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+.code-block.is-compact pre { grid-column: 1; grid-row: 1; min-width: 0; }
+.code-block.is-compact > .code-copy { margin: 0.75rem 1.15rem 0.75rem 0; }
+.code-block.is-compact > .code-copy-status.is-error { grid-row: 2; padding: 0.5rem 1.15rem 0.75rem; border-top: 1px solid var(--mote-border); }
 .has-code-lines pre { padding: 1rem 0; }
 .has-code-lines code { display: block; width: max-content; min-width: 100%; }
 .code-line { display: inline-block; position: relative; box-sizing: border-box; min-width: 100%; min-height: 1.6em; padding: 0 1.15rem; vertical-align: top; }
@@ -214,7 +218,6 @@ pre code {
 .code-line-number::before { content: attr(data-line); }
 @media print {
   .code-copy, .code-copy-status { display: none !important; }
-  .code-toolbar:not(:has(.code-title)) { display: none !important; }
   .code-block { overflow: visible; }
   .code-block pre { overflow: visible; white-space: pre-wrap; }
   .has-code-lines code { width: auto; }
@@ -712,8 +715,8 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 </tbody>
 </table>
 </div>
-<div class="code-block"><div class="code-toolbar" hidden><button type="button" class="code-copy" aria-label="Copy code" hidden>Copy</button><span class="code-copy-status" role="status"></span></div><pre tabindex="0" aria-label="Code"><code class="language-ts"><span class="hljs-keyword">const</span> x = <span class="hljs-number">1</span>;
-</code></pre></div>
+<div class="code-block is-compact"><pre tabindex="0" aria-label="Code"><code class="language-ts"><span class="hljs-keyword">const</span> x = <span class="hljs-number">1</span>;
+</code></pre><button type="button" class="code-copy" aria-label="Copy code" hidden>Copy</button><span class="code-copy-status" role="status"></span></div>
 <h2 id="小结">小结</h2>
 <blockquote>
 <p>完。</p>
@@ -1011,13 +1014,11 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
   for (const block of article.querySelectorAll('.code-block')) {
     const button = block.querySelector('.code-copy');
     const code = block.querySelector('pre > code');
-    const toolbar = block.querySelector('.code-toolbar');
     const status = block.querySelector('.code-copy-status');
-    if (!button || !code || !toolbar || !status) continue;
+    if (!button || !code || !status) continue;
     if (!available) {
       status.textContent = 'Clipboard unavailable. Select the code and copy it manually.';
       status.classList.add('is-error');
-      toolbar.hidden = false;
       continue;
     }
     let timer;
@@ -1042,7 +1043,6 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
       }
     });
     button.hidden = false;
-    toolbar.hidden = false;
   }
 })();</script>
 </body>

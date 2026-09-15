@@ -128,6 +128,10 @@ pre code {
 .code-copy:disabled { opacity: 0.6; cursor: wait; }
 .code-copy-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .code-copy-status.is-error { grid-column: 1 / -1; position: static; width: auto; height: auto; clip-path: none; white-space: normal; font-size: 0.75em; color: var(--mote-muted); }
+.code-block.is-compact { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+.code-block.is-compact pre { grid-column: 1; grid-row: 1; min-width: 0; }
+.code-block.is-compact > .code-copy { margin: 0.75rem 1.15rem 0.75rem 0; }
+.code-block.is-compact > .code-copy-status.is-error { grid-row: 2; padding: 0.5rem 1.15rem 0.75rem; border-top: 1px solid var(--mote-border); }
 .has-code-lines pre { padding: 1rem 0; }
 .has-code-lines code { display: block; width: max-content; min-width: 100%; }
 .code-line { display: inline-block; position: relative; box-sizing: border-box; min-width: 100%; min-height: 1.6em; padding: 0 1.15rem; vertical-align: top; }
@@ -144,7 +148,6 @@ pre code {
 .code-line-number::before { content: attr(data-line); }
 @media print {
   .code-copy, .code-copy-status { display: none !important; }
-  .code-toolbar:not(:has(.code-title)) { display: none !important; }
   .code-block { overflow: visible; }
   .code-block pre { overflow: visible; white-space: pre-wrap; }
   .has-code-lines code { width: auto; }

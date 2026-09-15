@@ -92,13 +92,10 @@ export function codeBlocks(md: MarkdownIt): void {
       source === ''
         ? ''
         : '<button type="button" class="code-copy" aria-label="Copy code" hidden>Copy</button><span class="code-copy-status" role="status"></span>';
-    const toolbar =
-      title || copy
-        ? `<div class="code-toolbar"${title ? '' : ' hidden'}>${title}${copy}</div>`
-        : '';
+    const toolbar = title ? `<div class="code-toolbar">${title}${copy}</div>` : '';
     const lineDigits =
       meta.start !== undefined && count ? String(meta.start + count - 1).length : 0;
-    const result = `<div class="code-block${count && (meta.start !== undefined || meta.ranges?.length) ? ' has-code-lines' : ''}${lineDigits ? ' has-line-numbers' : ''}"${lineDigits ? ` data-line-digits="${lineDigits}"` : ''}>${toolbar}<pre tabindex="0" aria-label="Code"><code${match[1]}>${code}</code></pre></div>\n`;
+    const result = `<div class="code-block${title ? '' : ' is-compact'}${count && (meta.start !== undefined || meta.ranges?.length) ? ' has-code-lines' : ''}${lineDigits ? ' has-line-numbers' : ''}"${lineDigits ? ` data-line-digits="${lineDigits}"` : ''}>${toolbar}<pre tabindex="0" aria-label="Code"><code${match[1]}>${code}</code></pre>${title ? '' : copy}</div>\n`;
     const extra = Math.max(0, encoder.encode(result).length - encoder.encode(original).length);
     if (extra > 32768 || addedBytes + extra > 262144) return original;
     addedBytes += extra;
