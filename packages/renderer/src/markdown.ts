@@ -5,6 +5,7 @@ import { stripFrontMatter } from '@mote/core';
 import { alerts } from './alerts.js';
 import { resolveAssetUrl } from './assets.js';
 import { cjkEmphasis } from './cjk-emphasis.js';
+import { codeBlocks } from './code-blocks.js';
 import { diagrams } from './diagrams.js';
 import { slugify, type Heading } from './headings.js';
 import { createCodeHighlighter } from './highlight.js';
@@ -16,6 +17,7 @@ import { safeImageUrl, safeLinkUrl } from './urls.js';
 export interface MarkdownRenderResult {
   html: string;
   headings: Heading[];
+  codeCopy: boolean;
 }
 
 interface InlineTokenLike {
@@ -39,8 +41,7 @@ function inlineTextContent(token: InlineTokenLike): string {
  * (see sanitize.ts) — only presentational tags with vetted attributes
  * survive; scriptable vectors are stripped. GFM extensions come from
  * markdown-it core (tables, strikethrough, linkify) plus the footnote
- * and task-lists plugins (task lists render as disabled checkboxes,
- * keeping pages JavaScript-free).
+ * and task-lists plugins (task lists render as disabled checkboxes).
  */
 export function renderMarkdown(
   markdown: string,
@@ -57,6 +58,7 @@ export function renderMarkdown(
   md.use(cjkEmphasis);
   md.use(alerts);
   md.use(math);
+  md.use(codeBlocks);
   md.use(diagrams);
   md.use(footnote);
   // Wrap the parsed inline tokens instead of labelAfter, which reinserts raw
@@ -165,7 +167,7 @@ export function renderMarkdown(
       : self.renderToken(tokens, idx, options);
   };
 
-  const env: { headings?: Heading[] } = {};
+  const env: { headings?: Heading[]; codeCopy?: boolean } = {};
   const html = md.render(stripFrontMatter(markdown), env);
-  return { html, headings: env.headings ?? [] };
+  return { html, headings: env.headings ?? [], codeCopy: env.codeCopy ?? false };
 }

@@ -185,6 +185,36 @@ pre code {
   font-size: inherit;
 }
 
+/* Generated code controls; user HTML cannot opt into these classes. */
+.code-block { margin: 1.25em 0; border: 1px solid var(--mote-border); border-radius: 10px; background: var(--mote-pre-bg); overflow: hidden; }
+.code-block pre { margin: 0; border: 0; border-radius: 0; }
+.code-block pre:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: -3px; }
+.code-toolbar { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1.15rem; border-bottom: 1px solid var(--mote-border); min-width: 0; }
+.code-toolbar[hidden], .code-copy[hidden] { display: none; }
+.code-title { min-width: 0; overflow-wrap: anywhere; font-family: monospace; font-size: 0.8em; color: var(--mote-muted); }
+.code-copy { flex: none; margin-left: auto; padding: 0.3em 0.65em; border: 1px solid var(--mote-border); border-radius: 5px; color: var(--mote-fg); background: var(--mote-bg); font: inherit; font-size: 0.75em; cursor: pointer; }
+.code-copy:hover { border-color: var(--mote-accent); }
+.code-copy:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.code-copy:disabled { opacity: 0.6; cursor: wait; }
+.code-copy-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.code-copy-status.is-unavailable { position: static; width: auto; height: auto; clip-path: none; white-space: normal; font-size: 0.75em; color: var(--mote-muted); }
+.has-code-lines pre { padding: 1rem 0; }
+.has-code-lines code { display: block; width: max-content; min-width: 100%; }
+.code-line { display: inline-block; position: relative; box-sizing: border-box; min-width: 100%; min-height: 1.6em; padding: 0 1.15rem; vertical-align: top; }
+.code-line.is-highlighted { background: var(--mote-tint); box-shadow: inset 3px 0 var(--mote-accent); }
+.has-line-numbers .code-line { padding-left: 6.5em; }
+.code-line-number { position: absolute; left: 1em; width: 4.5em; text-align: right; color: var(--mote-muted); user-select: none; }
+.code-line-number::before { content: attr(data-line); }
+@media print {
+  .code-copy, .code-copy-status { display: none !important; }
+  .code-toolbar:not(:has(.code-title)) { display: none !important; }
+  .code-block { overflow: visible; }
+  .code-block pre { overflow: visible; white-space: pre-wrap; }
+  .has-code-lines code { width: auto; }
+  .code-line { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .code-line.is-highlighted { print-color-adjust: exact; }
+}
+
 /* Server-generated syntax tokens only; source HTML cannot supply classes. */
 pre .hljs-comment, pre .hljs-quote { color: #6b7280; }
 pre .hljs-keyword, pre .hljs-selector-tag, pre .hljs-literal, pre .hljs-doctag { color: #a6263c; }
@@ -675,8 +705,8 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 </tbody>
 </table>
 </div>
-<pre><code class="language-ts"><span class="hljs-keyword">const</span> x = <span class="hljs-number">1</span>;
-</code></pre>
+<div class="code-block"><div class="code-toolbar" hidden><button type="button" class="code-copy" aria-label="Copy code" hidden>Copy</button><span class="code-copy-status" role="status"></span></div><pre tabindex="0" aria-label="Code"><code class="language-ts"><span class="hljs-keyword">const</span> x = <span class="hljs-number">1</span>;
+</code></pre></div>
 <h2 id="小结">小结</h2>
 <blockquote>
 <p>完。</p>
@@ -966,6 +996,44 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
     openPanel();
   }
   schedule(true);
+})();</script>
+<script>(() => {
+  const article = document.querySelector('article');
+  if (!article) return;
+  const available = navigator.clipboard && typeof navigator.clipboard.writeText === 'function';
+  for (const block of article.querySelectorAll('.code-block')) {
+    const button = block.querySelector('.code-copy');
+    const code = block.querySelector('pre > code');
+    const toolbar = block.querySelector('.code-toolbar');
+    const status = block.querySelector('.code-copy-status');
+    if (!button || !code || !toolbar || !status) continue;
+    if (!available) {
+      status.textContent = 'Clipboard unavailable. Select the code and copy it manually.';
+      status.classList.add('is-unavailable');
+      toolbar.hidden = false;
+      continue;
+    }
+    let timer;
+    button.addEventListener('click', async () => {
+      if (button.disabled) return;
+      clearTimeout(timer);
+      button.disabled = true;
+      status.textContent = '';
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'Copied';
+        status.textContent = 'Code copied to clipboard.';
+      } catch {
+        button.textContent = 'Copy failed';
+        status.textContent = 'Could not copy. Select the code and copy it manually.';
+      } finally {
+        button.disabled = false;
+        timer = setTimeout(() => { button.textContent = 'Copy'; status.textContent = ''; }, 2500);
+      }
+    });
+    button.hidden = false;
+    toolbar.hidden = false;
+  }
 })();</script>
 </body>
 </html>

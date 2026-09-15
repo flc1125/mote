@@ -2,7 +2,7 @@ import { env, exports } from 'cloudflare:workers';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import type { DocumentManifest } from '@mote/protocol';
-import { tocDocumentSecurityHeaders, TOC_SCRIPT } from '@mote/renderer';
+import { tocDocumentSecurityHeaders, TOC_SCRIPT, COPY_SCRIPT } from '@mote/renderer';
 import { HOME_HTML } from './home.js';
 import { FAVICON_BASE64, ICON_SVG } from './brand.generated.js';
 import viewer from './index.js';
@@ -303,12 +303,15 @@ describe('public homepage and branding', () => {
       new TextEncoder().encode(tocScript[0]![1]!),
     );
     const tocHash = btoa(String.fromCharCode(...new Uint8Array(tocDigest)));
+    const copyDigest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(COPY_SCRIPT));
+    const copyHash = btoa(String.fromCharCode(...new Uint8Array(copyDigest)));
     const documentPolicy = document.headers.get('Content-Security-Policy')!;
     expect(
       documentPolicy.split('; ').find((directive) => directive.startsWith('script-src ')),
-    ).toBe(`script-src 'sha256-${tocHash}'`);
+    ).toBe(`script-src 'sha256-${tocHash}' 'sha256-${copyHash}'`);
     expect(documentPolicy).not.toContain(hash);
     expect(policy).not.toContain(tocHash);
+    expect(policy).not.toContain(copyHash);
   });
 
   it('opens document and external links in new tabs while preserving in-page navigation', async () => {

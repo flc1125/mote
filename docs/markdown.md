@@ -7,10 +7,10 @@ The supported format is defined below; Mote does not claim complete compatibilit
 with every Markdown editor or every Mermaid feature.
 
 Published Markdown and document IDs stay unchanged. Server-side rendering produces
-static HTML, MathML and sanitized diagram SVG. A fixed script, authorized by its
-exact CSP hash, enhances the table of contents on pages with headings. Document
-content cannot execute scripts, and static contents links remain usable when
-JavaScript is disabled.
+static HTML, MathML and sanitized diagram SVG. Fixed scripts, authorized by exact
+CSP hashes, enhance the contents navigation and code copying where needed.
+Document content cannot execute scripts; static contents links and readable code
+remain available when JavaScript is disabled.
 
 ## Support matrix
 
@@ -24,6 +24,7 @@ JavaScript is disabled.
 | Presentational HTML                              | Allowlisted                 | Includes details/summary, picture, tables, kbd, sub and sup. Arbitrary HTML/CSS is excluded. |
 | GitHub-style alerts                              | Supported at document level | NOTE, TIP, IMPORTANT, WARNING and CAUTION. Nested list/quote markers remain ordinary quotes. |
 | Code highlighting                                | Selected languages          | Static coloring for explicitly named languages; otherwise escaped source.                    |
+| Code titles, line numbers and copying            | Bounded enhancement         | Optional titles and physical-line emphasis; browser copy controls exclude decorative text.   |
 | YAML front matter                                | Conservative recognition    | Valid metadata at the start is hidden; malformed or ambiguous content stays visible.         |
 | Mathematical formulas                            | TeX subset                  | Inline and display formulas rendered with KaTeX as native MathML.                            |
 | Mermaid diagrams                                 | Static subset               | Six diagram families with rendering budgets; source remains inspectable.                     |
@@ -135,6 +136,31 @@ There is no language auto-detection.
 Unknown languages, rendering errors and budget overruns keep readable escaped code.
 Highlighting adds colors without changing code text or line breaks.
 
+### Code titles, line numbers and copying
+
+Ordinary fenced code blocks provide a Copy button when the browser supports clipboard access. Copying preserves the Markdown parser's code text, including its trailing newline, without adding the title or line numbers. CRLF is normalized to LF by the parser; the uploaded source file remains unchanged. If clipboard access fails, select and copy the code manually. Without JavaScript, code, titles and line emphasis remain readable.
+
+Add optional parameters after an explicit language (`text` for plain code):
+
+````markdown
+```ts title="config.ts" linenums="10" hl_lines="2-3"
+const config = {
+  timeout: 3000,
+  retries: 2,
+};
+```
+````
+
+- `title`: a plain-text file name or label. An empty title is hidden.
+- `linenums`: the starting display number; omitted by default.
+- `hl_lines`: space-separated physical line numbers or inclusive ranges, counted from 1 regardless of `linenums`. Overlapping ranges merge; positions beyond the code are ignored.
+
+Keys are case-sensitive and values require double quotes; only `\"` and `\\` escapes are accepted. Unknown or duplicate keys, invalid values or oversized metadata discard the entire parameter tail while preserving the language and code. Attribute lists and metadata without an explicit language are not supported. Indented code, raw HTML code and Mermaid fences/source disclosures do not receive these controls; `mermaid title="..."` retains the existing source fallback.
+
+Parameters are limited to 1,024 text units in total, titles to 240, and line numbers/range endpoints to positive integers up to 1,000,000 (at most 64 range items). Code controls and line decoration have separate budgets listed below. Empty code may show a title but has no copy control or line numbers. Long code scrolls within its block; print output wraps it and omits copy controls.
+
+Publish the [code-block specimen](examples/markdown-code-blocks.md) to check titles, multiline highlighting, escaped markup, copying, folding and narrow-screen behavior.
+
 ## Front matter
 
 A YAML block is hidden only when it starts the document, closes with `---`, is a
@@ -203,12 +229,13 @@ These are processing limits, not publication size limits. Exceeding a rendering
 budget keeps the affected source readable. Text counts use JavaScript string units;
 see the README for Markdown and asset upload byte limits.
 
-| Feature           | Per item                                                               | Per document                                                  |
-| ----------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Front matter      | Closing delimiter within the first 16,384 text units                   | Opening block only                                            |
-| Code highlighting | 16,384 input units; 4,096 per line; 262,144 output units               | 64 processed blocks; 65,536 input and 524,288 output units    |
-| Mathematics       | 4,096 input units; 65,536 output units; 100 macro expansions           | 128 processed formulas; 16,384 input and 262,144 output units |
-| Mermaid           | 4,096 input units; 64 lines; 256 word tokens; 262,144 SVG output units | Up to 4 diagram attempts, in source order                     |
+| Feature           | Per item                                                               | Per document                                                                    |
+| ----------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Front matter      | Closing delimiter within the first 16,384 text units                   | Opening block only                                                              |
+| Code highlighting | 16,384 input units; 4,096 per line; 262,144 output units               | 64 processed blocks; 65,536 input and 524,288 output units                      |
+| Code enhancements | 16,384 input units; 512 lines; 32 KiB additional markup                | 64 processed blocks; 65,536 input units; 4,096 lines; 256 KiB additional markup |
+| Mathematics       | 4,096 input units; 65,536 output units; 100 macro expansions           | 128 processed formulas; 16,384 input and 262,144 output units                   |
+| Mermaid           | 4,096 input units; 64 lines; 256 word tokens; 262,144 SVG output units | Up to 4 diagram attempts, in source order                                       |
 
 Flowcharts and state diagrams additionally allow at most 32 nodes, 48 edges and
 8 top-level groups. Rendered SVG dimensions must not exceed 5,000 units per side.

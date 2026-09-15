@@ -37,7 +37,7 @@ describe('renderMarkdown — CommonMark & extensions (§27)', () => {
 
   it('renders fenced code with language class and static highlighting', () => {
     const html = render('```go\nfunc main() {}\n```');
-    expect(html).toContain('<pre><code class="language-go">');
+    expect(html).toContain('<pre tabindex="0" aria-label="Code"><code class="language-go">');
     expect(html).toContain('<span class="hljs-keyword">func</span>');
   });
 

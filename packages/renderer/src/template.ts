@@ -1,15 +1,22 @@
 import { escapeHtml } from './escape.js';
 import { PAGE_CSS } from './styles.js';
 import { TOC_SCRIPT } from './toc-script.js';
+import { COPY_SCRIPT } from './copy-script.js';
 
 export interface PageInput {
   title: string;
   tocHtml: string;
   contentHtml: string;
+  codeCopy?: boolean;
 }
 
 /** Static document content with a responsive, progressively enhanced outline. */
-export function renderHtmlPage({ title, tocHtml, contentHtml }: PageInput): string {
+export function renderHtmlPage({
+  title,
+  tocHtml,
+  contentHtml,
+  codeCopy = false,
+}: PageInput): string {
   const safeTitle = escapeHtml(title);
   const tocIcon =
     '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 4.5h8M7 9h8M7 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><g fill="currentColor"><circle cx="3" cy="4.5" r="1"/><circle cx="3" cy="9" r="1"/><circle cx="3" cy="13.5" r="1"/></g></svg>';
@@ -49,6 +56,7 @@ ${contentHtml}</article>
 <span class="mote-colophon-mark" aria-hidden="true"></span><span>Published with <a href="/" target="_blank" rel="noopener noreferrer">Mote</a></span>
 </div></footer>
 ${tocHtml === '' ? '' : `<script>${TOC_SCRIPT}</script>`}
+${codeCopy ? `<script>${COPY_SCRIPT}</script>` : ''}
 </body>
 </html>
 `;

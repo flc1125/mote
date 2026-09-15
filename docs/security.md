@@ -55,16 +55,16 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 1. **Raw HTML 白名单净化**：Markdown 中的 HTML 经 `packages/renderer/src/sanitize.ts` 的允许名单净化器（基于 htmlparser2 真实词法解析）处理——仅保留展示性标签（`p[align]`、`picture/source/img`、`details/summary`、`sub/sup/kbd` 等）与逐标签审核过的属性；`script/iframe/svg/form/style/on*/class/id` 等一律剥除。未配对标签在 token 流级别保持嵌套正确；
 2. **危险协议拦截**：`javascript:`、`data:`、`vbscript:`、`file:`、协议相对 URL 及其反斜杠变体被拦截，覆盖 Markdown 链接和图片，以及 HTML `href`、`src` 与 `srcset`；
-3. **仅可信目录脚本**：正文、公式和图表仍在服务端生成。含标题的文档附带固定的 `TOC_SCRIPT`，只增强目录折叠、章节定位和键盘/焦点管理；不插入用户输入、不发起网络请求、不使用外部依赖。禁用脚本时，静态目录锚点仍可使用；
+3. **仅可信增强脚本**：正文、公式和图表仍在服务端生成。含标题的文档附带固定的 `TOC_SCRIPT`，增强目录折叠、章节定位和键盘/焦点管理；有可复制围栏时附带固定的 `COPY_SCRIPT`，仅在用户激活按钮后复制代码文本。脚本不插入用户输入、不发起网络请求、不使用外部依赖。禁用脚本时，静态目录锚点、代码标题和重点行仍可使用；
 4. **严格 CSP**：
 
 ```text
 default-src 'none'; img-src 'self' https: http:; style-src 'unsafe-inline';
-object-src 'none'; frame-src 'none'; script-src 'sha256-<TOC_SCRIPT 的 SHA-256 Base64>'; connect-src 'none';
+object-src 'none'; frame-src 'none'; script-src 'sha256-<TOC_SCRIPT 的 SHA-256 Base64>' 'sha256-<COPY_SCRIPT 的 SHA-256 Base64>'; connect-src 'none';
 base-uri 'none'; form-action 'none'; frame-ancestors 'none'
 ```
 
-Viewer 在首次请求时计算固定脚本的哈希并复用，GET 与 HEAD 的策略一致。`script-src` 不允许 `self`、`unsafe-inline`、`unsafe-eval` 或外部源；首页的复制脚本使用独立哈希，不与文档页互相授权。基础 `documentSecurityHeaders()` 保留全禁脚本策略，文档响应显式使用 `tocDocumentSecurityHeaders()`。
+Viewer 在首次请求时计算固定脚本集合的哈希并复用，页面按需插入脚本，GET 与 HEAD 的策略一致，HEAD 不必读取正文。`script-src` 不允许 `self`、`unsafe-inline`、`unsafe-eval` 或外部源；首页的复制脚本使用独立哈希，不与文档页互相授权。基础 `documentSecurityHeaders()` 保留全禁脚本策略，文档响应显式使用 `tocDocumentSecurityHeaders()`。
 
 外加 `X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`。
 
