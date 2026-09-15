@@ -295,6 +295,9 @@ blockquote > :last-child { margin-bottom: 0; }
 .markdown-alert-title > span { min-width: 0; }
 .markdown-alert[id] { scroll-margin-top: 88px; }
 .markdown-alert > :first-child:not(.markdown-alert-title) { margin-top: 0; }
+/* Only a heading that starts the body loses its section-leading space. */
+.markdown-alert > .markdown-alert-title:first-child + :is(h1, h2, h3, h4, h5, h6),
+article details > summary:first-child + :is(h1, h2, h3, h4, h5, h6) { margin-top: 0; }
 .markdown-alert > :last-child, article details > :last-child { margin-bottom: 0; }
 @media (prefers-color-scheme: dark) {
   .markdown-alert, article details { --alert-color: #79c0ff; }

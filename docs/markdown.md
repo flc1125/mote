@@ -204,8 +204,8 @@ it does not broadly reinterpret indented image examples as uploadable assets.
 
 Publish the [admonition specimen](examples/markdown-admonitions.md) to try both
 syntaxes, custom titles, nesting, image discovery and disclosure navigation.
-Chrome reference screenshots: [desktop](assets/markdown-admonitions-desktop.png) and
-[narrow dark view](assets/markdown-admonitions-mobile.png).
+Reference screenshots: [desktop](assets/markdown-admonitions-desktop.png) and
+[dark style preview](assets/markdown-admonitions-dark.png).
 
 ## Code highlighting
 

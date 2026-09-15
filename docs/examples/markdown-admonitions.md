@@ -41,6 +41,10 @@ The first block starts closed and works with the keyboard. The second starts ope
     echo "Ready to restart"
     ```
 
+    ### After restarting
+
+    Confirm that the service is healthy before continuing.
+
 ???+ success "Checks completed"
 
     - The configuration is backed up.

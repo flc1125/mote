@@ -46,7 +46,7 @@ mote docs/examples/markdown-admonitions.md
 
 每份示例都说明预期结果。GitHub 预览可能与 Mote 不同，需发布源码来检查 Mote 的呈现。不要用私有文档或私有分享 URL 替换这些合成用例。
 
-Chrome 参考截图：[桌面](../assets/markdown-compatibility-desktop.png)、[移动视口](../assets/markdown-compatibility-mobile.png)和[深色图表](../assets/markdown-compatibility-dark.png)。截图仅展示一种浏览器与字体环境；检查以编号列出的预期为准。
+参考截图：[桌面](../assets/markdown-compatibility-desktop.png)、[移动视口](../assets/markdown-compatibility-mobile.png)和[深色图表](../assets/markdown-compatibility-dark.png)。截图仅展示一种浏览器与字体环境；检查以编号列出的预期为准。
 
 ## 中文强调与换行
 
@@ -139,7 +139,7 @@ HTML 经过白名单过滤。脚本、事件处理器、iframe、任意 style/cl
 
 新起始标记不会在列表、引用、脚注定义、代码、数学或原始 HTML 块内激活，也不能打断段落。提示块内的 GitHub 标记仍显示为普通引用。未知类型、非法标题、缺少空行、空正文或超出预算时，按普通 Markdown 规则处理，可能显示为段落或缩进代码；不会把所有缩进图片示例重新解释为可上传资产。
 
-可发布[提示块验证示例（英文）](../examples/markdown-admonitions.md)，体验两种语法、自定义标题、嵌套、图片扫描与折叠定位。Chrome 参考截图：[桌面](../assets/markdown-admonitions-desktop.png)与[窄屏深色](../assets/markdown-admonitions-mobile.png)。
+可发布[提示块验证示例（英文）](../examples/markdown-admonitions.md)，体验两种语法、自定义标题、嵌套、图片扫描与折叠定位。参考截图：[桌面](../assets/markdown-admonitions-desktop.png)与[深色样式预览](../assets/markdown-admonitions-dark.png)。
 
 ## 代码高亮
 
