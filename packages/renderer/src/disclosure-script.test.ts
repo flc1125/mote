@@ -13,9 +13,11 @@ function page(hash = '') {
       click = handler;
     },
     querySelectorAll: (selector: string) =>
-      [outer, inner, rawClosed, initiallyOpen].filter(
-        (node) => !node.open && (!selector.includes('.markdown-alert') || node !== rawClosed),
-      ),
+      selector === '.content-tabs'
+        ? []
+        : [outer, inner, rawClosed, initiallyOpen].filter(
+            (node) => !node.open && (!selector.includes('.markdown-alert') || node !== rawClosed),
+          ),
   };
   const outer = { tagName: 'DETAILS', open: false, parentElement: article };
   const inner = {

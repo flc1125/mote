@@ -114,7 +114,6 @@ describe('container structures', () => {
     '> !!! note\n>\n>     Body.',
     '- !!! note\n\n      Body.',
     '- Item\n\n  !!! note\n\n      Body.',
-    '=== "Tabs are a later phase"\n\n    Body.',
   ])('returns invalid or unsupported candidates to ordinary Markdown: %s', (source) => {
     expect(containers(source)).toEqual([]);
     expect(parser().render(source)).toBe(parser(false).render(source));

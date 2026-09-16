@@ -1,3 +1,4 @@
+import { TAB_CASES } from '../../../packages/core/src/fixtures/tabs.js';
 import { describe, expect, it } from 'vitest';
 
 import { ADMONITION_CASES } from '../../../packages/core/src/fixtures/admonitions.js';
@@ -144,5 +145,11 @@ describe('shared admonition structures', () => {
           .map((line) => '    ' + line)
           .join('\n');
     expect(extractLocalImageReferences(nested)).toEqual([]);
+  });
+});
+
+describe('shared tab structures', () => {
+  it.each(TAB_CASES)('$name', ({ source, images }) => {
+    expect(extractLocalImageReferences(source)).toEqual(images);
   });
 });

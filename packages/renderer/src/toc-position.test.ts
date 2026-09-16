@@ -92,6 +92,7 @@ function harness(
       heading.scrollIntoView = () => { window.scrollY = Math.max(0, tops[i] - 76); };
       links.push(link); headings.push(heading); items.push(item);
     }
+    article.querySelectorAll = () => [];
     article.contains = target => headings.includes(target);
     nav.contains = () => true;
     nav.querySelectorAll = selector => selector === 'a[href^="#"]' ? links :

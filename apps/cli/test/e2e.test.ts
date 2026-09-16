@@ -270,6 +270,38 @@ describe('E2E (§59)', () => {
     );
   });
 
+  it('publishes every tab panel with one deduplicated image and unchanged source', async () => {
+    const file = fileURLToPath(new URL('../../../docs/examples/markdown-tabs.md', import.meta.url));
+    const source = await readFile(file, 'utf8');
+    const { id } = await publishDoc(file);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const manifest = JSON.parse(
+      (await (await bucket.get(`documents/${id}/manifest.json`))?.text()) ?? '{}',
+    ) as { assets: unknown[] };
+    expect(manifest.assets).toHaveLength(1);
+    const response = await view(`/${id}`);
+    const html = await response.text();
+    expect(response.status).toBe(200);
+    expectTocPolicy(response, html, true);
+    expect(html.match(/<div class="content-tabs">/g)).toHaveLength(7);
+    expect(html.match(/<section class="content-panel"/g)).toHaveLength(12);
+    expect(html).toContain('<h3 id="verify-the-installation">');
+    expect(html).toContain('pnpm add -g mote-cli');
+    expect(html).toContain('aria-label="Mermaid diagram"');
+    const paths = assetPaths(html);
+    expect(paths).toHaveLength(2);
+    expect(new Set(paths).size).toBe(1);
+    expect((await view(paths[0]!)).status).toBe(200);
+    const head = await viewerWorker.fetch(new Request(`${VIEWER_BASE}/${id}`, { method: 'HEAD' }), {
+      DOCUMENTS: bucket,
+    });
+    expect(head.status).toBe(200);
+    expect(await head.text()).toBe('');
+    expect(head.headers.get('Content-Security-Policy')).toBe(
+      response.headers.get('Content-Security-Policy'),
+    );
+  });
+
   it('publishes the committed mixed specimen with one deduplicated image and unchanged source', async () => {
     const file = fileURLToPath(
       new URL('../../../docs/examples/markdown-compatibility.md', import.meta.url),
