@@ -170,6 +170,11 @@ describe('image enhancement scanning', () => {
 });
 
 describe('typography scanning', () => {
+  it('treats abbreviation explanations as plain text and scans real footnote images', () => {
+    const source =
+      'API ![real](real.png)[^n]\n\n*[API]: ![not an asset](explanation.png)\n\n[^n]: API ![footnote](note.png)\n\n    ```md\n    ![literal](code.png)\n    ```';
+    expect(extractLocalImageReferences(source)).toEqual(['real.png', 'note.png']);
+  });
   it('scans definition images and captions while protecting fenced, indented and math examples', () => {
     const source =
       'Term\n: ==![marked](marked.png)==\n\n    ![body](body.png)\n    /// caption\n    Caption ![caption](caption.png)\n    ///\n\n    ```md\n    ![fake](fenced.png)\n    ```\n\n        ![fake](indented.png)\n\n    $![fake](inline-math.png)$\n\n    $$\n    ![fake](block-math.png)\n    $$';

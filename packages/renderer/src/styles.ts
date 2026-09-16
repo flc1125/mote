@@ -732,6 +732,34 @@ hr.footnotes-sep { display: none; }
 .footnote-item > dl:has(+ a.footnote-backref) { margin-bottom: 0.35em; }
 .footnote-item > dl:has(+ a.footnote-backref) > dd:last-child { margin-bottom: 0; }
 a.footnote-ref, a.footnote-backref { border-bottom: 0; }
+abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; cursor: help; }
+.footnote-preview {
+  position: fixed; inset: auto; margin: 0; padding: 0;
+  width: min(28rem, calc(100vw - 24px)); max-height: min(28rem, calc(100vh - 24px));
+  border: 1px solid var(--mote-border); border-radius: 10px;
+  background: var(--mote-bg); color: var(--mote-fg);
+  box-shadow: 0 8px 32px #0002; font-size: 0.9em; line-height: 1.65;
+  overflow: hidden;
+}
+.footnote-preview:popover-open { display: flex; flex-direction: column; }
+.footnote-preview-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.45rem 0.75rem 0.45rem 1rem; border-bottom: 1px solid var(--mote-border);
+}
+.footnote-preview-header strong { font-size: 0.9em; color: var(--mote-muted); }
+.footnote-preview-header button {
+  border: 0; background: transparent; color: var(--mote-muted); cursor: pointer;
+  width: 36px; height: 36px; border-radius: 6px; font-size: 24px; line-height: 1;
+}
+.footnote-preview-header button:hover { background: var(--mote-code-bg); color: var(--mote-fg); }
+.footnote-preview :focus-visible { outline: 2px solid var(--mote-accent); outline-offset: -2px; }
+.footnote-preview-body { overflow: auto; min-height: 0; padding: 0.85rem 1rem; overscroll-behavior: contain; overflow-wrap: anywhere; }
+.footnote-preview-body > :first-child { margin-top: 0; }
+.footnote-preview-body > :last-child { margin-bottom: 0; }
+.footnote-preview-body img { max-width: 100%; height: auto; }
+.footnote-preview-body table { display: block; overflow-x: auto; }
+.footnote-preview-full { align-self: flex-start; margin: 0 1rem 0.8rem; font-size: 0.9em; }
+@media print { .footnote-preview { display: none !important; } }
 
 /* Colophon */
 .mote-colophon { border-top: 1px solid var(--mote-border); }

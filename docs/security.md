@@ -55,12 +55,12 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 1. **Raw HTML 白名单净化**：Markdown 中的 HTML 经 `packages/renderer/src/sanitize.ts` 的允许名单净化器（基于 htmlparser2 真实词法解析）处理——仅保留展示性标签（`p[align]`、`picture/source/img`、`details/summary`、`sub/sup/kbd` 等）与逐标签审核过的属性；`script/iframe/svg/form/style/on*/class/id` 等一律剥除。未配对标签在 token 流级别保持嵌套正确；
 2. **危险协议拦截**：`javascript:`、`data:`、`vbscript:`、`file:`、协议相对 URL 及其反斜杠变体被拦截，覆盖 Markdown 链接和图片，以及 HTML `href`、`src` 与 `srcset`；
-3. **仅可信增强脚本**：正文、公式和图表仍在服务端生成。含标题、折叠区或标签组的文档附带固定的 `TOC_SCRIPT`，增强目录折叠、章节定位、标签切换和键盘/焦点管理，并在链接到隐藏内容时激活目标面板并展开必要的折叠祖先、在打印时展开折叠正文并显示所有标签面板；有可复制围栏时附带固定的 `COPY_SCRIPT`，仅在用户激活按钮后复制代码文本。有图片时附带固定的 `IMAGE_SCRIPT`，为独立大图提供原生 dialog 查看器；图片 URL 复用已有安全地址，用户文本通过 DOM 文本属性赋值，不能拼入脚本或 HTML。查看原图仍受 `img-src` 限制；不使用外部脚本或 fetch。禁用脚本时，全部标签面板可见，静态目录锚点、代码标题和重点行仍可使用；
+3. **仅可信增强脚本**：正文、公式和图表仍在服务端生成。含标题、折叠区或标签组的文档附带固定的 `TOC_SCRIPT`，增强目录折叠、章节定位、标签切换和键盘/焦点管理，并在链接到隐藏内容时激活目标面板并展开必要的折叠祖先、在打印时展开折叠正文并显示所有标签面板；有可复制围栏时附带固定的 `COPY_SCRIPT`，仅在用户激活按钮后复制代码文本。有图片时附带固定的 `IMAGE_SCRIPT`，为独立大图提供原生 dialog 查看器；图片 URL 复用已有安全地址，用户文本通过 DOM 文本属性赋值，不能拼入脚本或 HTML。查看原图仍受 `img-src` 限制；不使用外部脚本或 fetch。含脚注引用时附带固定的 `FOOTNOTE_SCRIPT`：仅用 DOM API 重建已净化正文的静态子集，不复制 ID、ID 引用、控件或运行时状态，不解析 HTML 字符串；复制受节点、深度、文字/属性和图片预算限制，复杂内容保留原脚注跳转。禁用脚本时，全部标签面板可见，静态目录锚点、代码标题和重点行仍可使用；
 4. **严格 CSP**：
 
 ```text
 default-src 'none'; img-src 'self' https: http:; style-src 'unsafe-inline';
-object-src 'none'; frame-src 'none'; script-src 'sha256-<TOC_SCRIPT 的 SHA-256 Base64>' 'sha256-<COPY_SCRIPT 的 SHA-256 Base64>' 'sha256-<IMAGE_SCRIPT 的 SHA-256 Base64>'; connect-src 'none';
+object-src 'none'; frame-src 'none'; script-src 'sha256-<TOC_SCRIPT 的 SHA-256 Base64>' 'sha256-<COPY_SCRIPT 的 SHA-256 Base64>' 'sha256-<IMAGE_SCRIPT 的 SHA-256 Base64>' 'sha256-<FOOTNOTE_SCRIPT 的 SHA-256 Base64>'; connect-src 'none';
 base-uri 'none'; form-action 'none'; frame-ancestors 'none'
 ```
 

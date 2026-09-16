@@ -8,7 +8,7 @@ with every Markdown editor or every Mermaid feature.
 
 Published Markdown and document IDs stay unchanged. Server-side rendering produces
 static HTML, MathML and sanitized diagram SVG. Fixed scripts, authorized by exact
-CSP hashes, enhance contents navigation, disclosure links and code copying where needed.
+CSP hashes, enhance navigation, code copying, image viewing and footnote previews where needed.
 Document content cannot execute scripts; static contents links and readable code
 remain available when JavaScript is disabled.
 
@@ -18,8 +18,9 @@ remain available when JavaScript is disabled.
 | ------------------------------------------------ | --------------------------- | ----------------------------------------------------------------------------------------------- |
 | Headings, paragraphs, emphasis, quotes and lists | Supported                   | Includes nested content, ordered-list starts and explicit hard breaks.                          |
 | Tables, strikethrough and automatic links        | Supported                   | Escaped pipes, alignment and inline formatting; wide content can scroll.                        |
-| Task lists and footnotes                         | Supported                   | Read-only checkboxes; repeated footnote references have return links.                           |
+| Task lists and footnotes                         | Supported                   | Read-only checkboxes; footnote previews retain full notes and return links.                     |
 | Highlights and definition lists                  | Supported                   | `==text==` and term/definition blocks; rendered as static semantic HTML.                        |
+| Abbreviations                                    | Bounded enhancement         | Document-local definitions produce static, case-sensitive abbreviation hints.                   |
 | Chinese emphasis boundaries                      | Limited extension           | Double-asterisk emphasis next to CJK text or East Asian punctuation; details below.             |
 | Local Markdown and HTML images                   | Supported                   | CLI uploads referenced assets, including encoded paths; identical assets are deduplicated.      |
 | Presentational HTML                              | Allowlisted                 | Includes details/summary, picture, tables, kbd, sub and sup. Arbitrary HTML/CSS is excluded.    |
@@ -48,6 +49,7 @@ mote docs/examples/markdown-admonitions.md
 Publishing requires an instance and publisher authorization; see the
 [CLI reference](cli.md) and [authentication guide](authentication.md).
 
+- [Abbreviations and footnote previews](examples/markdown-reading.md): word boundaries, repeated references, rich notes and static fallbacks.
 - [Highlights and definition lists](examples/markdown-typography.md): inline boundaries, rich definitions and mixed components.
 - [Content tabs](examples/markdown-tabs.md): alternatives, independent groups, nested disclosures and static fallbacks.
 - [Admonitions](examples/markdown-admonitions.md): ordinary alerts, titles, nesting, folding and bundled images.
@@ -143,6 +145,74 @@ there. Image widths and captions remain available within definitions.
 Both features render on the server and work without JavaScript, in dark mode
 and in print. The [typography specimen](examples/markdown-typography.md) shows
 mixed content and literal fallbacks. Reference captures: [desktop](assets/markdown-typography-desktop.png), [narrow viewport](assets/markdown-typography-mobile.png) and [dark theme](assets/markdown-typography-dark.png).
+
+## Abbreviations
+
+Define a term once, on an unindented line at document level. Separate the definitions
+from surrounding paragraphs with a blank line:
+
+```markdown
+HTML documents can use an API. The API is documented separately.
+
+*[HTML]: HyperText Markup Language
+*[API]: Application Programming Interface
+```
+
+Definitions apply throughout the document, including text before the definition.
+The first valid definition wins. Terms are case-sensitive and match whole words:
+`API` matches `(API)` but not `APIs`, `API_value`, `中文API` or `API中文`.
+Whitespace and punctuation separate Chinese terms too. When terms overlap, the
+longest match is tried first. Titles are single-line plain text, not Markdown.
+Terms cannot have outer whitespace, square brackets or backslashes.
+
+Code, formulas, links, image alt text and asset paths are not replaced. An inline
+block containing raw HTML is left unchanged. Definitions inside lists, quotes,
+footnotes or components remain ordinary Markdown. Escape the opening asterisk
+(`\*[API]: explanation`) to show a declaration; use code to show a term literally.
+
+Each document accepts up to 64 terms (64 UTF-16 units each), titles of 512 units,
+and 16,384 units of definition source. Matching processes up to 65,536 text units,
+4,096 candidates and 512 replacements; remaining content stays ordinary text.
+Invalid or over-budget definitions follow ordinary Markdown rules.
+
+Abbreviations render as static `<abbr title="…">` with a dotted underline. Hover
+hints depend on the browser and are not consistently available on touch devices,
+with keyboards or in print. Put essential explanations in the prose or a
+[definition list](#highlights-and-definition-lists).
+
+## Footnotes and previews
+
+Use a reference in the text and its definition elsewhere in the document:
+
+```markdown
+A claim with a note.[^source] The same note can be cited again.[^source]
+
+[^source]: The supporting explanation.
+
+    An additional paragraph, indented four spaces.
+```
+
+Click or tap a reference, or focus it and press Enter, to open a preview on
+browsers with native Popover support. Escape or the close button returns focus to
+that reference. Clicking outside or moving focus out closes the preview.
+**Go to footnote** follows the original link to the complete note. Each return
+arrow leads to its own reference, revealing its tab or disclosure when needed.
+Modified clicks retain normal browser link behavior.
+
+Long previews scroll. Text, lists, tables, links and images remain readable;
+code is shown without copy controls or line numbers. The preview is a static
+copy, so tabs and disclosures inside a note are flattened. Formulas, diagrams,
+unsupported content and oversized notes use the original footnote link instead.
+Only the first 64 references are enhanced; each preview is limited to 1,024 DOM
+nodes, depth 32, 16,384 text/attribute units and eight images.
+
+The full footnotes and return links always remain at the end of the document.
+Without JavaScript or Popover support, references navigate there directly.
+Printing uses the full notes and hides the preview. See the
+[reading specimen](examples/markdown-reading.md) for short, repeated, rich and
+long notes, plus references inside tabs and disclosures. Reference captures:
+[desktop](assets/markdown-reading-desktop.png), [narrow viewport](assets/markdown-reading-mobile.png)
+and [dark theme](assets/markdown-reading-dark.png).
 
 ## Heading links
 
