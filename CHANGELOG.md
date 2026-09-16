@@ -6,20 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-16
+
 ### Added
 
-- Document-local abbreviations with `*[term]: explanation`, case-sensitive Unicode word boundaries and bounded static hints. Existing valid declarations now define abbreviations; escape the opening asterisk to keep a literal declaration.
-- Footnote previews with keyboard/touch activation, focus restoration, scrollable static content and links to full notes. Unsupported browsers, complex notes and budget overruns retain native anchors; the fixed preview script shares its exact CSP hash across GET and HEAD.
-
-- Text highlights with `==text==` and definition lists with shared CLI/Viewer parsing, static reading styles and rich definition bodies. Existing unescaped matching syntax now renders as these structures; use escapes or code to preserve literal examples.
-
-- Image widths with a bounded `{ width="640" }` / percentage subset, image-only `/// caption` blocks, and a progressive native-dialog image viewer. Shared parsing preserves asset paths and deduplication; linked/inline images keep their behavior. Later Markdown images use native lazy loading, with a fixed image-script CSP hash shared by GET and HEAD.
-
-- Content tabs with `=== "label"`: independent groups, keyboard navigation, panel and heading deep links, shared CLI/Viewer parsing and bounded nesting. All panels remain readable without JavaScript and in print; initialization failures retain static content.
-
-- Extended admonitions with `!!!`, `???` and `???+`: seven types, plain-text custom titles, bounded nesting and native disclosures. They share a tinted title band and page-colored body with GitHub alerts and native HTML disclosures. CLI and Viewer use the same structure rules for nested images; links reveal closed ancestors, and printing includes folded bodies.
-
-- Fenced-code copy controls, plain-text titles, optional line numbers and highlighted line ranges. Bounded enhancements preserve parser-normalized code text and fall back to ordinary code on budget overruns. Titles and line emphasis work without JavaScript; the fixed copy script is authorized by its exact CSP hash, with matching GET/HEAD policies.
+- Document-local abbreviations with `*[term]: explanation`, case-sensitive Unicode word boundaries and bounded static hints. Existing valid declarations now define abbreviations; escape the opening asterisk to keep a literal declaration. ([#67](https://github.com/flc1125/mote/pull/67))
+- Footnote previews with keyboard/touch activation, focus restoration, scrollable static content and links to full notes. Unsupported browsers, complex notes and budget overruns retain native anchors; the fixed preview script shares its exact CSP hash across GET and HEAD. ([#67](https://github.com/flc1125/mote/pull/67))
+- Text highlights with `==text==` and definition lists with shared CLI/Viewer parsing, static reading styles and rich definition bodies. Existing unescaped matching syntax now renders as these structures; use escapes or code to preserve literal examples. ([#65](https://github.com/flc1125/mote/pull/65))
+- Image widths with a bounded `{ width="640" }` / percentage subset, image-only `/// caption` blocks, and a progressive native-dialog image viewer. Shared parsing preserves asset paths and deduplication; linked/inline images keep their behavior. Later Markdown images use native lazy loading, with a fixed image-script CSP hash shared by GET and HEAD. ([#64](https://github.com/flc1125/mote/pull/64))
+- Content tabs with `=== "label"`: independent groups, keyboard navigation, panel and heading deep links, shared CLI/Viewer parsing and bounded nesting. All panels remain readable without JavaScript and in print; initialization failures retain static content. ([#63](https://github.com/flc1125/mote/pull/63))
+- Extended admonitions with `!!!`, `???` and `???+`: seven types, plain-text custom titles, bounded nesting and native disclosures. They share a tinted title band and page-colored body with GitHub alerts and native HTML disclosures. CLI and Viewer use the same structure rules for nested images; links reveal closed ancestors, and printing includes folded bodies. ([#62](https://github.com/flc1125/mote/pull/62))
+- Fenced-code copy controls, plain-text titles, optional line numbers and highlighted line ranges. Bounded enhancements preserve parser-normalized code text and fall back to ordinary code on budget overruns. Titles and line emphasis work without JavaScript; the fixed copy script is authorized by its exact CSP hash, with matching GET/HEAD policies. ([#60](https://github.com/flc1125/mote/pull/60))
+- Bilingual documentation navigation and usage guides, publishable Markdown specimens, automated documentation checks and a reusable release checklist. ([#56](https://github.com/flc1125/mote/pull/56), [#57](https://github.com/flc1125/mote/pull/57), [#58](https://github.com/flc1125/mote/pull/58), [#59](https://github.com/flc1125/mote/pull/59), [#68](https://github.com/flc1125/mote/pull/68))
 
 ### Changed
 
@@ -27,17 +25,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Discover local images in multi-paragraph footnotes using the same Markdown structure rules as the Viewer, while keeping code and mathematical source out of asset uploads.
-- Reject protocol-relative image URLs, including backslash variants, in Markdown and allowlisted HTML. Use explicit `https://` or `http://` URLs for remote images.
-- Return `413 BUNDLE_TOO_LARGE` instead of `422 INVALID_DOCUMENT` when a publish manifest exceeds 50 assets, rejecting the count before processing image bytes.
-- Report the stored Markdown's UTF-8 byte size in Viewer render logs, including documents containing Chinese text or emoji.
+- Discover local images in multi-paragraph footnotes using the same Markdown structure rules as the Viewer, while keeping code and mathematical source out of asset uploads. ([#61](https://github.com/flc1125/mote/pull/61))
+- Reject protocol-relative image URLs, including backslash variants, in Markdown and allowlisted HTML. Use explicit `https://` or `http://` URLs for remote images. ([#55](https://github.com/flc1125/mote/pull/55))
+- Return `413 BUNDLE_TOO_LARGE` instead of `422 INVALID_DOCUMENT` when a publish manifest exceeds 50 assets, rejecting the count before processing image bytes. ([#55](https://github.com/flc1125/mote/pull/55))
+- Report the stored Markdown's UTF-8 byte size in Viewer render logs, including documents containing Chinese text or emoji. ([#55](https://github.com/flc1125/mote/pull/55))
+- Tighten spacing before return links in footnotes that contain definition lists. ([#66](https://github.com/flc1125/mote/pull/66))
 
 ### Upgrade notes
 
-- Use the matching updated CLI or rebuild and restart the local stdio MCP server when publishing documents that use the new Markdown syntax. Shared parsing covers admonitions, tabs, image widths and captions, highlights, definition lists and abbreviations, as well as multi-paragraph footnotes. Older clients can disagree with the updated Viewer about which text is code, an image reference or a plain-text abbreviation explanation; images in nested content may be omitted or literal image examples misidentified.
-- Updating the Viewer cannot upload assets omitted by an older client. To include missing assets, publish the original Markdown again with the updated client; this creates a new document URL. Existing document IDs, stored Markdown and uploaded assets stay unchanged. Viewer upgrades can change how existing unescaped extension syntax is displayed; use escapes or code in source examples that should remain literal. See the [Markdown reference](https://github.com/flc1125/mote/blob/main/docs/markdown.md) for syntax and fallback boundaries.
-- Stable tags release the CLI and GitHub Release only; API and Viewer deploy independently through Workers Builds on `main`. Check the deployed Worker revisions separately from the installed CLI version. See the [deployment and release checklist](https://github.com/flc1125/mote/blob/main/docs/deployment.md#markdown-release-checklist).
-- Self-hosted users must pass `--api <your-instance-origin>` when logging in instead of relying on saved publishing settings. Explicit auth-mode settings still apply. Successful login remembers the selected instance; explicit environment/config API overrides still control subsequent publishing and are reported after login. This login change is not included in v0.6.0. ([#54](https://github.com/flc1125/mote/pull/54))
+- Upgrade to `mote-cli@0.7.0`, or rebuild and restart the local stdio MCP server from the matching source revision, when publishing documents that use the new Markdown syntax. Shared parsing covers admonitions, tabs, image widths and captions, highlights, definition lists and abbreviations, as well as multi-paragraph footnotes. Older clients can disagree with the updated Viewer about which text is code, an image reference or a plain-text abbreviation explanation; images in nested content may be omitted or literal image examples misidentified. ([#61](https://github.com/flc1125/mote/pull/61), [#68](https://github.com/flc1125/mote/pull/68))
+- Updating the Viewer cannot upload assets omitted by an older client. To include missing assets, publish the original Markdown again with the updated client; this creates a new document URL. Existing document IDs, stored Markdown and uploaded assets stay unchanged. Viewer upgrades can change how existing unescaped extension syntax is displayed; use escapes or code in source examples that should remain literal. See the [Markdown reference](https://github.com/flc1125/mote/blob/v0.7.0/docs/markdown.md) for syntax and fallback boundaries. ([#68](https://github.com/flc1125/mote/pull/68))
+- Stable tags release the CLI and GitHub Release only; API and Viewer deploy independently through Workers Builds on `main`. Check the deployed Worker revisions separately from the installed CLI version. See the [deployment and release checklist](https://github.com/flc1125/mote/blob/v0.7.0/docs/deployment.md#markdown-release-checklist). ([#68](https://github.com/flc1125/mote/pull/68))
+- Self-hosted users must pass `--api <your-instance-origin>` when logging in instead of relying on saved publishing settings. Explicit auth-mode settings still apply. Successful login remembers the selected instance; explicit environment/config API overrides still control subsequent publishing and are reported after login. ([#54](https://github.com/flc1125/mote/pull/54))
 
 ## [0.6.0] - 2026-09-11
 
@@ -172,7 +171,8 @@ Published manually to npm without a matching Git tag or GitHub Release; v0.1.1 i
 - **Docs** — architecture, publish protocol, security model, self-hosting guide, CLI and MCP references (English + 中文) ([initial commit](https://github.com/flc1125/mote/commit/214ded08ef6f19483e8cba460ba268e756fe49d5); no PR)
 - **Infrastructure** — Cloudflare Workers + R2 only; Workers Cache with per-version cache namespaces; runs on the free tier ([initial commit](https://github.com/flc1125/mote/commit/214ded08ef6f19483e8cba460ba268e756fe49d5); no PR)
 
-[Unreleased]: https://github.com/flc1125/mote/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/flc1125/mote/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/flc1125/mote/releases/tag/v0.7.0
 [0.6.0]: https://github.com/flc1125/mote/releases/tag/v0.6.0
 [0.5.0]: https://github.com/flc1125/mote/releases/tag/v0.5.0
 [0.4.0]: https://github.com/flc1125/mote/releases/tag/v0.4.0
