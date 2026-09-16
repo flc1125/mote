@@ -26,6 +26,7 @@ function setup(
     style = { overflow: 'auto', width: '' };
     classes = new Set<string>();
     classList = {
+      contains: (name: string) => this.classes.has(name),
       remove: (name: string) => this.classes.delete(name),
       toggle: (name: string) => {
         if (this.classes.delete(name)) return false;
@@ -42,6 +43,8 @@ function setup(
     href = '';
     naturalWidth = options.size ?? 1280;
     naturalHeight = 720;
+    clientWidth = 640;
+    clientHeight = 360;
     complete = options.complete ?? true;
     disabled = false;
     hidden = false;
@@ -83,8 +86,8 @@ function setup(
     addEventListener(event: string, fn: (event?: unknown) => void) {
       this.events.set(event, fn);
     }
-    fire(event: string) {
-      this.events.get(event)?.();
+    fire(event: string, payload?: unknown) {
+      this.events.get(event)?.(payload);
     }
     focus() {
       setActive(this);
@@ -98,15 +101,7 @@ function setup(
     }
   }
   const selectors = new Map<string, Element>();
-  for (const name of [
-    '.image-viewer-stage',
-    'img',
-    '.image-size',
-    '.image-original',
-    '.image-viewer-caption',
-    '.image-viewer-status',
-    '.image-close',
-  ])
+  for (const name of ['.image-viewer-stage', 'img', '.image-viewer-status', '.image-close'])
     selectors.set(name, new Element(name === 'img' ? 'IMG' : 'DIV'));
   const figureCaption = new Element('FIGCAPTION');
   figureCaption.textContent = 'Visible <caption>';
@@ -149,22 +144,88 @@ function setup(
 }
 
 describe('fixed image viewer', () => {
-  it('opens the existing URL with separate alt/caption, toggles size and restores focus/scroll', () => {
+  it('opens a frameless viewer, toggles size on the image and restores focus/scroll', () => {
     const ui = setup({ width: '50%' });
     expect(ui.images[0]!.parentElement!.style.width).toBe('50%');
     ui.button().fire('click');
     expect(ui.dialog().open).toBe(true);
     expect(ui.selectors.get('img')!.src).toBe('/assets/original.png');
-    expect(ui.selectors.get('.image-original')!.href).toBe('/assets/original.png');
     expect(ui.selectors.get('img')!.alt).toBe('Alternative <text>');
-    expect(ui.selectors.get('.image-viewer-caption')!.textContent).toBe('Visible <caption>');
+    expect(ui.dialog().innerHTML).not.toMatch(
+      /image-viewer-toolbar|image-original|image-size|image-viewer-caption/,
+    );
+    expect(ui.button().innerHTML).toContain('<svg');
     expect(ui.active()).toBe(ui.selectors.get('.image-close'));
-    ui.selectors.get('.image-size')!.fire('click');
+    expect(ui.dialog().getAttribute('aria-label')).toBe('Image viewer: Alternative <text>');
+    // The zoom toggle's accessible name keeps the image description.
+    expect(ui.selectors.get('img')!.getAttribute('aria-label')).toBe(
+      'View at original size: Alternative <text>',
+    );
+    expect(ui.selectors.get('.image-viewer-stage')!.getAttribute('tabindex')).toBe('-1');
+    ui.selectors.get('img')!.fire('click');
     expect(ui.dialog().classes.has('is-original')).toBe(true);
+    expect(ui.selectors.get('img')!.getAttribute('aria-label')).toBe(
+      'Fit image to window: Alternative <text>',
+    );
+    expect(ui.selectors.get('.image-viewer-stage')!.getAttribute('tabindex')).toBe('0');
     ui.selectors.get('.image-close')!.fire('click');
     expect(ui.dialog().open).toBe(false);
     expect(ui.root.style.overflow).toBe('auto');
     expect(ui.active()).toBe(ui.button());
+  });
+  it('supports keyboard zoom and closes on the empty backdrop', () => {
+    const ui = setup();
+    ui.button().fire('click');
+    let prevented = false;
+    ui.selectors.get('img')!.fire('keydown', {
+      key: 'Enter',
+      preventDefault: () => {
+        prevented = true;
+      },
+    });
+    expect(prevented).toBe(true);
+    expect(ui.dialog().classes.has('is-original')).toBe(true);
+    ui.dialog().fire('click', { target: ui.selectors.get('.image-viewer-stage') });
+    expect(ui.dialog().open).toBe(false);
+    expect(ui.active()).toBe(ui.button());
+  });
+  it('keeps an unscaled image noninteractive and reevaluates after resize', () => {
+    const ui = setup();
+    const image = ui.selectors.get('img')!;
+    image.clientWidth = image.naturalWidth;
+    image.clientHeight = image.naturalHeight;
+    ui.button().fire('click');
+    for (const name of ['role', 'tabindex', 'aria-label', 'aria-pressed'])
+      expect(image.getAttribute(name)).toBeNull();
+    image.fire('click');
+    image.fire('keydown', {
+      key: ' ',
+      preventDefault: () => {
+        throw Error('No zoom action');
+      },
+    });
+    expect(ui.dialog().classes.has('is-original')).toBe(false);
+    image.clientHeight = 360;
+    ui.windowEvents.get('resize')!();
+    expect(image.getAttribute('role')).toBe('button');
+    image.fire('keydown', { key: ' ', preventDefault() {} });
+    expect(ui.dialog().classes.has('is-original')).toBe(true);
+    image.clientHeight = image.naturalHeight;
+    ui.windowEvents.get('resize')!();
+    expect(ui.dialog().classes.has('is-original')).toBe(false);
+    expect(image.getAttribute('role')).toBeNull();
+  });
+  it('waits for image dimensions before offering zoom', () => {
+    const ui = setup();
+    const image = ui.selectors.get('img')!;
+    image.naturalWidth = 0;
+    ui.button().fire('click');
+    expect(image.getAttribute('role')).toBeNull();
+    image.naturalWidth = 1280;
+    image.fire('load');
+    expect(image.getAttribute('role')).toBe('button');
+    image.fire('error');
+    expect(image.getAttribute('role')).toBeNull();
   });
   it('enhances after load and provides viewer load failure feedback and print cleanup', () => {
     const ui = setup({ complete: false });
@@ -172,7 +233,7 @@ describe('fixed image viewer', () => {
     ui.images[0]!.fire('load');
     ui.button().fire('click');
     ui.selectors.get('img')!.fire('error');
-    expect(ui.selectors.get('.image-size')!.disabled).toBe(true);
+    expect(ui.selectors.get('img')!.hidden).toBe(true);
     expect(ui.selectors.get('.image-viewer-status')!.textContent).toContain('could not be loaded');
     ui.windowEvents.get('beforeprint')!();
     expect(ui.dialog().open).toBe(false);

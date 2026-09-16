@@ -1,6 +1,6 @@
 # Images and captions
 
-Images keep their original asset URLs. A standalone large image offers **Enlarge**;
+Images keep their original asset URLs. Hover or focus a standalone large image to reveal its magnifier;
 linked images and small inline icons retain their usual behavior.
 
 ## 1. A readable size and a visible caption
@@ -10,8 +10,9 @@ linked images and small inline icons retain their usual behavior.
 **Content tabs** in a Mote document. The caption is visible; the image's alternative text describes the picture. [Read about tabs](../markdown.md#content-tabs).
 ///
 
-Use **Enlarge**, then **Original size** to inspect the screenshot. Escape closes the
-viewer and returns focus to its button. On a narrow screen, the image fits the
+Use the magnifier to open the screenshot, then, if it is scaled down to fit
+the window, click the image to toggle its original size. The borderless viewer has only a close icon; Escape also closes it
+and returns focus to the magnifier. On a narrow screen, the image fits the
 column without horizontal page scrolling.
 
 ## 2. Percentage width and HTML figures

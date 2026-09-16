@@ -146,9 +146,11 @@ complete paragraph 8,192; at most 64 candidate paragraphs and 65,536 units per
 document. Attempts consume the budget even when invalid. Unsupported or oversized
 structures follow ordinary Markdown rules.
 
-Loaded standalone large images offer **Enlarge** in browsers with native dialog
-support. The viewer provides **Original size** / **Fit to window**, **Open original**,
-and **Close**. Escape closes it and restores focus. Enlarged images scroll with
+Loaded standalone large images offer a magnifier in browsers with native dialog
+support. It appears on hover or keyboard focus, and stays visible on touch devices.
+The borderless viewer shows the image and a close icon. When the image is scaled down to fit the window, click it or press
+Enter/Space while it is focused to switch between original size and fitting the
+window. Images already displayed at original size have no extra zoom interaction. Click the empty backdrop or press Escape to close and restore focus. Enlarged images scroll with
 keyboard or native touch scrolling; browser zoom remains available. Linked images,
 inline images, small icons, `picture` and `srcset` images retain their original
 behavior. At most 64 eligible candidates receive controls. Without JavaScript,
