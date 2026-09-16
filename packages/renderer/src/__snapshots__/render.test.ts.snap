@@ -414,6 +414,33 @@ tr:last-child td { border-bottom: 0; }
 .table-scroll th, .table-scroll td { min-width: 4em; max-width: 24em; overflow-wrap: anywhere; }
 
 img { max-width: 100%; height: auto; box-sizing: border-box; border-radius: 8px; }
+article figure:has(> img), article figure:has(> .image-frame) { margin: 1.5em 0; }
+article figure:has(> img) > figcaption, article figure:has(> .image-frame) > figcaption { margin-top: 0.6em; color: var(--mote-muted); font-size: 0.85em; text-align: center; overflow-wrap: anywhere; }
+.image-frame { display: block; position: relative; max-width: 100%; }
+.image-frame > img { display: block; width: 100%; }
+.image-expand { position: absolute; right: 8px; bottom: 8px; box-shadow: 0 1px 4px rgb(0 0 0 / 15%); }
+.image-expand, .image-viewer button, .image-original { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; font: inherit; font-size: 0.8rem; line-height: 1.4; color: var(--mote-fg); background: var(--mote-bg); border: 1px solid var(--mote-border); border-radius: 6px; padding: 0.5em 0.75em; min-height: 36px; cursor: pointer; text-decoration: none; }
+.image-expand[hidden] { display: none; }
+.image-expand:hover, .image-viewer button:hover, .image-original:hover { background: var(--mote-code-bg); }
+.image-expand:focus-visible, .image-viewer :focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
+.image-viewer { box-sizing: border-box; width: calc(100vw - 32px); max-width: 1440px; height: calc(100dvh - 32px); max-height: none; padding: 0; color: var(--mote-fg); background: var(--mote-bg); border: 1px solid var(--mote-border); border-radius: 8px; }
+.image-viewer[open] { display: flex; flex-direction: column; }
+.image-viewer::backdrop { background: rgb(0 0 0 / 70%); }
+.image-viewer-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; border-bottom: 1px solid var(--mote-border); }
+.image-viewer-toolbar > span { margin-right: auto; font-weight: 600; }
+.image-viewer-stage { display: flex; align-items: center; justify-content: center; flex: 1; min-height: 0; overflow: auto; padding: 16px; text-align: center; overscroll-behavior: contain; }
+.image-viewer-stage img { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; vertical-align: middle; }
+.image-viewer.is-original .image-viewer-stage { display: block; text-align: left; }
+.image-viewer.is-original img { max-width: none; max-height: none; }
+.image-viewer-caption, .image-viewer-status { flex-shrink: 0; max-height: 20vh; overflow: auto; margin: 0; padding: 8px 16px; font-size: 0.85em; color: var(--mote-muted); }
+.image-viewer-status:empty { display: none; }
+@media (max-width: 600px) {
+  .image-expand, .image-viewer button, .image-original { min-height: 44px; }
+  .image-viewer { width: calc(100vw - 16px); height: calc(100dvh - 16px); }
+  .image-viewer-toolbar > span { width: 100%; }
+}
+@media print { .image-expand, .image-viewer { display: none !important; } }
+
 
 hr {
   height: 1px;
@@ -792,7 +819,7 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 <h1 id="mote-设计文档">Mote 设计文档</h1>
 <h2 id="背景">背景</h2>
 <p>一些 <strong>加粗</strong> 文字与 <code>code</code>，见 <a href="https://example.com">https://example.com</a> 。</p>
-<p><img src="/7Vk3mQ9x2NFaP4Ls/a/Aq8K3pLm92Xq" alt="Architecture"></p>
+<p><img src="/7Vk3mQ9x2NFaP4Ls/a/Aq8K3pLm92Xq" alt="Architecture" decoding="async"></p>
 <div class="table-scroll" role="region" aria-label="表格 / Table" tabindex="0">
 <table>
 <thead>
@@ -1263,6 +1290,101 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
     });
     button.hidden = false;
   }
+})();</script>
+<script>(function () {
+  var article = document.querySelector('article');
+  if (!article || typeof HTMLDialogElement === 'undefined' || !HTMLDialogElement.prototype.showModal) return;
+  var dialog = document.createElement('dialog');
+  dialog.className = 'image-viewer';
+  dialog.setAttribute('aria-label', 'Image viewer');
+  dialog.innerHTML = '<div class="image-viewer-toolbar"><span>Image viewer</span><button type="button" class="image-size" aria-pressed="false">Original size</button><a class="image-original" target="_blank" rel="noopener noreferrer">Open original</a><button type="button" class="image-close" aria-label="Close image viewer">Close</button></div><div class="image-viewer-stage" tabindex="0" role="region" aria-label="Image; scroll when enlarged"><img alt=""></div><p class="image-viewer-caption"></p><p class="image-viewer-status" role="status"></p>';
+  var stage = dialog.querySelector('.image-viewer-stage');
+  var large = stage.querySelector('img');
+  var size = dialog.querySelector('.image-size');
+  var original = dialog.querySelector('.image-original');
+  var caption = dialog.querySelector('.image-viewer-caption');
+  var status = dialog.querySelector('.image-viewer-status');
+  var close = dialog.querySelector('.image-close');
+  var trigger;
+  var overflow;
+  function resetSize() {
+    dialog.classList.remove('is-original');
+    size.setAttribute('aria-pressed', 'false');
+    size.textContent = 'Original size';
+    stage.scrollTop = 0;
+    stage.scrollLeft = 0;
+  }
+  size.addEventListener('click', function () {
+    var full = dialog.classList.toggle('is-original');
+    size.setAttribute('aria-pressed', String(full));
+    size.textContent = full ? 'Fit to window' : 'Original size';
+  });
+  close.addEventListener('click', function () { dialog.close(); });
+  dialog.addEventListener('click', function (event) { if (event.target === dialog) dialog.close(); });
+  dialog.addEventListener('close', function () {
+    document.documentElement.style.overflow = overflow;
+    large.removeAttribute('src');
+    if (trigger && trigger.isConnected) trigger.focus({ preventScroll: true });
+  });
+  large.addEventListener('error', function () {
+    if (!dialog.open) return;
+    status.textContent = 'Image could not be loaded. Try opening the original.';
+    size.disabled = true;
+  });
+  large.addEventListener('load', function () {
+    status.textContent = '';
+    size.disabled = false;
+  });
+  window.addEventListener('beforeprint', function () { if (dialog.open) dialog.close(); });
+  var count = 0;
+  article.querySelectorAll('img').forEach(function (img) {
+    var parent = img.parentElement;
+    if (!parent || (parent.tagName !== 'P' && parent.tagName !== 'FIGURE')) return;
+    if (img.closest('a, picture, figcaption, button') || img.hasAttribute('srcset')) return;
+    if (Array.from(parent.childNodes).some(function (node) {
+      return node !== img && !(node.nodeType === 3 && !node.textContent.trim()) && !(node.nodeType === 1 && node.tagName === 'FIGCAPTION');
+    })) return;
+    var width = img.getAttribute('width');
+    if (width && /^\\d+$/.test(width) && Number(width) < 160) return;
+    if (++count > 64) return;
+    function enhance() {
+      if (!img.naturalWidth || img.naturalWidth < 160 || img.naturalHeight < 100 || !img.getAttribute('src')) return;
+      if (img.parentElement !== parent) return;
+      var frame = document.createElement('span');
+      frame.className = 'image-frame';
+      // Percentage widths stay relative to the prose column, not a shrink-wrapped frame.
+      frame.style.width = (img.getAttribute('width') || String(img.naturalWidth)).replace(/^(\\d+)$/, '$1px');
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'image-expand';
+      button.textContent = 'Enlarge';
+      button.setAttribute('aria-label', 'Enlarge image' + (img.alt ? ': ' + img.alt : ''));
+      parent.insertBefore(frame, img);
+      frame.appendChild(img);
+      frame.appendChild(button);
+      button.addEventListener('click', function () {
+        if (!img.naturalWidth) return;
+        if (!dialog.isConnected) document.body.appendChild(dialog);
+        trigger = button;
+        resetSize();
+        status.textContent = '';
+        size.disabled = false;
+        large.alt = img.alt;
+        large.src = img.currentSrc || img.src;
+        original.href = img.currentSrc || img.src;
+        var text = parent.querySelector('figcaption');
+        caption.textContent = text ? text.textContent : '';
+        caption.hidden = !caption.textContent;
+        overflow = document.documentElement.style.overflow;
+        dialog.showModal();
+        document.documentElement.style.overflow = 'hidden';
+        close.focus();
+      });
+      img.addEventListener('error', function () { button.hidden = true; });
+    }
+    if (img.complete) enhance();
+    else img.addEventListener('load', enhance, { once: true });
+  });
 })();</script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+import { IMAGE_SCRIPT } from '../../../packages/renderer/src/image-script.js';
 import { createHash } from 'node:crypto';
 import { TOC_SCRIPT } from '../../../packages/renderer/src/toc-script.js';
 import { COPY_SCRIPT } from '../../../packages/renderer/src/copy-script.js';
@@ -134,8 +135,12 @@ function assetPaths(html: string): string[] {
 
 function expectTocPolicy(response: Response, html: string, copy = false): void {
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
-  expect(scripts).toEqual(copy ? [TOC_SCRIPT, COPY_SCRIPT] : [TOC_SCRIPT]);
-  const hashes = [TOC_SCRIPT, COPY_SCRIPT].map(
+  expect(scripts).toEqual([
+    TOC_SCRIPT,
+    ...(copy ? [COPY_SCRIPT] : []),
+    ...(html.includes('<img ') ? [IMAGE_SCRIPT] : []),
+  ]);
+  const hashes = [TOC_SCRIPT, COPY_SCRIPT, IMAGE_SCRIPT].map(
     (script) => `'sha256-${createHash('sha256').update(script).digest('base64')}'`,
   );
   const policy = response.headers.get('Content-Security-Policy')!;
@@ -260,6 +265,34 @@ describe('E2E (§59)', () => {
         await readFile(new URL('../../../docs/assets/favicon-32.png', import.meta.url)),
       ),
     );
+    const head = await viewerWorker.fetch(new Request(`${VIEWER_BASE}/${id}`, { method: 'HEAD' }), {
+      DOCUMENTS: bucket,
+    });
+    expect(head.status).toBe(200);
+    expect(await head.text()).toBe('');
+    expect(head.headers.get('Content-Security-Policy')).toBe(
+      response.headers.get('Content-Security-Policy'),
+    );
+  });
+
+  it('publishes image widths and captions without changing source or duplicating assets', async () => {
+    const file = fileURLToPath(
+      new URL('../../../docs/examples/markdown-images.md', import.meta.url),
+    );
+    const source = await readFile(file, 'utf8');
+    const { id } = await publishDoc(file);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const manifest = JSON.parse(
+      (await (await bucket.get(`documents/${id}/manifest.json`))?.text()) ?? '{}',
+    ) as { assets: unknown[] };
+    expect(manifest.assets).toHaveLength(3);
+    const response = await view(`/${id}`);
+    const html = await response.text();
+    expectTocPolicy(response, html, true);
+    expect(html.match(/<figure class="mote-figure">/g)).toHaveLength(4);
+    expect(html).toContain('width="50%"');
+    expect(html).toContain('<figcaption><strong>Content tabs</strong>');
+    expect(new Set(assetPaths(html)).size).toBe(3);
     const head = await viewerWorker.fetch(new Request(`${VIEWER_BASE}/${id}`, { method: 'HEAD' }), {
       DOCUMENTS: bucket,
     });

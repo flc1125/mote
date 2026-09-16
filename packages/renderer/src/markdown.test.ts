@@ -75,12 +75,16 @@ describe('renderMarkdown — asset URLs (§31, §32)', () => {
 
   it('rewrites local image references to asset URLs', () => {
     const html = render('![Architecture](./images/architecture.png)', assets);
-    expect(html).toContain('<img src="/7Vk3mQ9x2NFaP4Ls/a/Aq8K3pLm92Xq" alt="Architecture">');
+    expect(html).toContain(
+      '<img src="/7Vk3mQ9x2NFaP4Ls/a/Aq8K3pLm92Xq" alt="Architecture" decoding="async">',
+    );
   });
 
   it('keeps remote images untouched', () => {
     const html = render('![OpenAI](https://example.com/image.png)', assets);
-    expect(html).toContain('<img src="https://example.com/image.png" alt="OpenAI">');
+    expect(html).toContain(
+      '<img src="https://example.com/image.png" alt="OpenAI" decoding="async">',
+    );
   });
 
   it('keeps unresolved local references as-is', () => {

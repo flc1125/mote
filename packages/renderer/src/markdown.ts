@@ -138,10 +138,13 @@ export function renderMarkdown(
 
   // Local asset rewrite (§31) + dangerous image src stripping (§57).
   // Delegates to the default rule afterwards so alt text is still rendered.
+  let imageCount = 0;
   const defaultImage = md.renderer.rules.image;
   md.renderer.rules.image = (tokens, idx, options, env, self) => {
     const token = tokens[idx];
     if (token) {
+      token.attrSet('decoding', 'async');
+      if (imageCount++ > 0) token.attrSet('loading', 'lazy');
       const src = String(token.attrGet('src') ?? '');
       const resolved = resolveAssetUrl(src, assetUrls) ?? safeImageUrl(src);
       if (resolved === null) {

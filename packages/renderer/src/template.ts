@@ -1,6 +1,7 @@
 import { escapeHtml } from './escape.js';
 import { PAGE_CSS } from './styles.js';
 import { TOC_SCRIPT } from './toc-script.js';
+import { IMAGE_SCRIPT } from './image-script.js';
 import { COPY_SCRIPT } from './copy-script.js';
 
 export interface PageInput {
@@ -57,6 +58,7 @@ ${contentHtml}</article>
 </div></footer>
 ${tocHtml !== '' || contentHtml.includes('<details') || contentHtml.includes('class="content-tabs"') ? `<script>${TOC_SCRIPT}</script>` : ''}
 ${codeCopy ? `<script>${COPY_SCRIPT}</script>` : ''}
+${contentHtml.includes('<img ') ? `<script>${IMAGE_SCRIPT}</script>` : ''}
 </body>
 </html>
 `;

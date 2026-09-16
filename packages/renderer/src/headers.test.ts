@@ -30,12 +30,13 @@ describe('trusted document script policy', () => {
     const { createHash } = await import('node:crypto');
     const { TOC_SCRIPT } = await import('./toc-script.js');
     const { COPY_SCRIPT } = await import('./copy-script.js');
+    const { IMAGE_SCRIPT } = await import('./image-script.js');
     const { tocDocumentSecurityHeaders } = await import('./headers.js');
     const { renderHtmlPage } = await import('./template.js');
     const html = renderHtmlPage({ title: 'TOC', tocHtml: '<nav></nav>', contentHtml: '' });
     const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
     expect(scripts).toEqual([TOC_SCRIPT]);
-    const hashes = [TOC_SCRIPT, COPY_SCRIPT].map(
+    const hashes = [TOC_SCRIPT, COPY_SCRIPT, IMAGE_SCRIPT].map(
       (script) => `'sha256-${createHash('sha256').update(script).digest('base64')}'`,
     );
     const headers = await tocDocumentSecurityHeaders();
