@@ -47,6 +47,20 @@ Neither production connection deploys `access-test`. Test resources and the loca
 
 The Workers deploy independently: a temporary mixed-version window is expected, and one successful Build is not acceptance of the pair. Cross-API/CLI/Viewer changes need two-stage compatibility: first support old and new behavior, then remove old behavior only after both Workers and supported clients have migrated. Server deployment may precede the matching CLI release.
 
+## Markdown release checklist
+
+Use this checklist for changes to Markdown syntax or reading interactions. Keep
+version-specific behavior and upgrade instructions in [Changelog](../CHANGELOG.md);
+the [Markdown reference](markdown.md) describes the complete supported format.
+
+- [ ] Record the intended source commit and successful CI checks, including documentation, Worker dry-runs and CLI package verification. Local browser checks complement CI; record each browser, viewport and unverified device or interaction.
+- [ ] Check both language guides, the support matrix and [publishable specimens](markdown.md#publishable-specimens) against the implemented syntax, budgets and fallbacks. Add an example when a new capability needs one.
+- [ ] Check the CLI/local stdio MCP and Viewer together when shared parsing changes. Include images inside the affected structures and image-like text in code or plain-text definitions; verify asset discovery, deduplication and unchanged source bytes. Updating a Viewer cannot recover assets omitted during an earlier publication.
+- [ ] Exercise representative mixed content: folded sections, tabs, code copying, images and footnotes. Check keyboard navigation and focus return, narrow and dark views, no-JavaScript reading, printing, deep links and matching GET/HEAD CSP. Record partial coverage explicitly.
+- [ ] Record the source, version and license of added dependencies or copied resources, and verify required notices in the actual distributed artifacts.
+- [ ] Before a CLI release, choose the release version, move the relevant `Unreleased` entries into a dated version section and match the CLI package version and stable tag. Include client/Viewer upgrade order and changes to existing documents' rendering.
+- [ ] Verify the two Worker rollouts independently using [Validate a rollout](#validate-a-rollout), and record the installed publisher version used for any publishing checks. A merged PR, a successful dry-run or a CLI release does not prove the production revisions or behavior.
+
 ## Failed builds, retry and rollback
 
 Inspect the affected Worker's Build log and current deployment first. Record the commit, Build ID, current version and intended recovery version. Keep credentials and private document URLs out of reports.

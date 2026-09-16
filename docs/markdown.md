@@ -23,6 +23,7 @@ remain available when JavaScript is disabled.
 | Abbreviations                                    | Bounded enhancement         | Document-local definitions produce static, case-sensitive abbreviation hints.                   |
 | Chinese emphasis boundaries                      | Limited extension           | Double-asterisk emphasis next to CJK text or East Asian punctuation; details below.             |
 | Local Markdown and HTML images                   | Supported                   | CLI uploads referenced assets, including encoded paths; identical assets are deduplicated.      |
+| Image widths, captions and viewing               | Bounded enhancement         | Explicit widths and image-only captions; image viewing keeps a static fallback.                 |
 | Presentational HTML                              | Allowlisted                 | Includes details/summary, picture, tables, kbd, sub and sup. Arbitrary HTML/CSS is excluded.    |
 | GitHub-style alerts                              | Supported at document level | NOTE, TIP, IMPORTANT, WARNING and CAUTION. Nested list/quote markers remain ordinary quotes.    |
 | Extended admonitions                             | Bounded enhancement         | Custom titles, seven types, nested content and native folding with `!!!`, `???` and `???+`.     |
@@ -49,6 +50,8 @@ mote docs/examples/markdown-admonitions.md
 Publishing requires an instance and publisher authorization; see the
 [CLI reference](cli.md) and [authentication guide](authentication.md).
 
+- [Code blocks](examples/markdown-code-blocks.md): titles, line numbers, highlighted lines, copying and invalid metadata.
+- [Images](examples/markdown-images.md): widths, captions, nested images, image viewing and fallbacks.
 - [Abbreviations and footnote previews](examples/markdown-reading.md): word boundaries, repeated references, rich notes and static fallbacks.
 - [Highlights and definition lists](examples/markdown-typography.md): inline boundaries, rich definitions and mixed components.
 - [Content tabs](examples/markdown-tabs.md): alternatives, independent groups, nested disclosures and static fallbacks.

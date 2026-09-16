@@ -97,10 +97,12 @@ The skill drives the CLI or MCP tools — details: [docs/skill.md](docs/skill.md
 
 ## 📝 Markdown support
 
-Tables, task lists, footnotes, GitHub-style alerts, static code highlighting,
-Chinese emphasis compatibility, math formulas and a bounded Mermaid subset.
-Document content is rendered on the server. A small, CSP-restricted script enhances
-the responsive table of contents; document content cannot run scripts.
+Tables, task lists, alerts and foldable admonitions, content tabs, code titles and
+line highlighting, image widths and captions, text highlights, definition lists,
+abbreviations and footnotes. Chinese emphasis compatibility, math formulas and a
+bounded Mermaid subset are also supported. Server-rendered content stays readable
+without JavaScript; fixed, CSP-restricted scripts enhance navigation, code copying,
+image viewing and footnote previews. Document content cannot run scripts.
 
 [Compatibility reference and limits](docs/markdown.md) · [Live compatibility specimen](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown source](docs/examples/markdown-compatibility.md)
 

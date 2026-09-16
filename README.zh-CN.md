@@ -97,9 +97,10 @@ Skill 通过驱动 CLI 或 MCP 工具完成发布——详见 [Skill 指南（�
 
 ## 📝 Markdown 支持
 
-支持表格、任务列表、脚注、GitHub 风格提示块、静态代码高亮、中文加粗兼容、
-数学公式和有明确边界的 Mermaid 图表。文档内容在服务端渲染，响应式目录由一小段
-受 CSP 限制的自有脚本增强；文档内容不能执行脚本。
+支持表格、任务列表、提示块与折叠、内容标签页、代码标题与行高亮、图片尺寸与图注、
+文本高亮、定义列表、缩写及脚注，也支持中文加粗兼容、数学公式和有明确边界的
+Mermaid 图表。服务端渲染的正文在无 JavaScript 时仍可阅读；受 CSP 限制的固定脚本
+增强目录与标签导航、代码复制、图片查看及脚注预览。文档内容不能执行脚本。
 
 [兼容性说明与限制](docs/zh-CN/markdown.md) · [在线兼容性案例](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown 源文件（英文）](docs/examples/markdown-compatibility.md)
 
