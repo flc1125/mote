@@ -257,7 +257,7 @@ pre code {
   color: var(--mote-accent);
   border-bottom-color: currentColor;
 }
-.content-tab-list > button:hover { color: var(--mote-fg); }
+.content-tab-list > button[aria-selected="false"]:hover { color: var(--mote-fg); }
 .content-tab-list > button:focus-visible,
 .content-panel:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: -3px; }
 .content-tabs[data-tabs-enhanced] > .content-panel { border-top: 0; }
