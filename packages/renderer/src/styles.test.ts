@@ -39,4 +39,8 @@ describe('PAGE_CSS design tokens', () => {
     expect(PAGE_CSS).toContain('min-width: var(--mote-control-size)');
     expect(PAGE_CSS).toContain('min-height: var(--mote-control-size)');
   });
+
+  it('clears the sticky banner for footnote jumps in both directions', () => {
+    expect(PAGE_CSS).toContain('article [id^="fn"] { scroll-margin-top: 76px; }');
+  });
 });

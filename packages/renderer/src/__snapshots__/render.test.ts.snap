@@ -183,6 +183,11 @@ li { margin: 0.5em 0; }
 li > ul, li > ol { margin-top: 0.35em; margin-bottom: 0; }
 li > :last-child { margin-bottom: 0; }
 
+/* Footnote jumps (ref → definition and backref → ref) must clear the
+   sticky banner like headings do. The targets are the inline <a id="fnref*">
+   and the <li id="fn*">, so the margin lives on the id, not the wrapper. */
+article [id^="fn"] { scroll-margin-top: 76px; }
+
 article a {
   color: var(--mote-accent);
   text-decoration: none;
