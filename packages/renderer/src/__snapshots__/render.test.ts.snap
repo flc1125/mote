@@ -28,6 +28,23 @@ exports[`render (§42) > renders a complete page (snapshot) 1`] = `
   --mote-tint-border: #f3c8c5;
   --mote-glow-from: rgb(239 85 82 / 0.16);
   --mote-glow-to: rgb(239 85 82 / 0);
+
+  /* Shape, elevation and motion (plan 012 contract A). */
+  --mote-radius-xs: 4px;
+  --mote-radius-sm: 6px;
+  --mote-radius-md: 8px;
+  --mote-radius-lg: 10px;
+  --mote-radius-xl: 18px;
+  --mote-radius-pill: 999px;
+  --mote-shadow-pop: 0 8px 32px rgb(0 0 0 / 0.13);
+  --mote-shadow-overlay: 0 12px 48px rgb(0 0 0 / 0.55);
+  --mote-shadow-drawer: -16px 0 48px rgb(15 17 21 / 0.1);
+  --mote-scrim: rgb(15 17 21 / 0.32);
+  --mote-duration-fast: 0.15s;
+  --mote-duration-base: 0.18s;
+  --mote-duration-slow: 0.2s;
+  --mote-ease-standard: ease;
+  --mote-ease-out: ease-out;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,6 +64,11 @@ exports[`render (§42) > renders a complete page (snapshot) 1`] = `
     --mote-tint-border: #5a2a29;
     --mote-glow-from: rgb(255 109 106 / 0.14);
     --mote-glow-to: rgb(255 109 106 / 0);
+
+    /* Shadows and scrims must deepen at night to stay visible on dark surfaces. */
+    --mote-shadow-pop: 0 8px 32px rgb(0 0 0 / 0.5);
+    --mote-shadow-drawer: -16px 0 48px rgb(0 0 0 / 0.45);
+    --mote-scrim: rgb(0 0 0 / 0.55);
   }
 }
 
@@ -79,13 +101,23 @@ code, kbd, pre {
     "Liberation Mono", monospace;
 }
 
+/* Document-layer tokens: stacking order and shared control sizing (plan 012
+   contract A). Color, shape and motion tokens live in @mote/theme. */
+:root {
+  --mote-z-toc-rail: 9;
+  --mote-z-banner: 10;
+  --mote-z-scrim: 38;
+  --mote-z-drawer: 40;
+  --mote-control-size: 40px;
+}
+
 ::selection { background: var(--mote-accent); color: var(--mote-on-accent); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 .mote-banner {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--mote-z-banner);
   border-bottom: 1px solid var(--mote-border);
   background: color-mix(in srgb, var(--mote-bg) 82%, transparent);
   backdrop-filter: saturate(1.5) blur(14px);
@@ -151,11 +183,16 @@ li { margin: 0.5em 0; }
 li > ul, li > ol { margin-top: 0.35em; margin-bottom: 0; }
 li > :last-child { margin-bottom: 0; }
 
+/* Footnote jumps (ref → definition and backref → ref) must clear the
+   sticky banner like headings do. The targets are the inline <a id="fnref*">
+   and the <li id="fn*">, so the margin lives on the id, not the wrapper. */
+article [id^="fn"] { scroll-margin-top: 76px; }
+
 article a {
   color: var(--mote-accent);
   text-decoration: none;
   border-bottom: 1px solid var(--mote-tint-border);
-  transition: border-color 0.15s ease;
+  transition: border-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
 article a:hover { text-decoration: none; border-bottom-color: var(--mote-accent); }
 /* Linked images (badges, logos): no underline under the picture. */
@@ -164,7 +201,7 @@ article a:has(img) { border-bottom: 0; }
 code {
   background: var(--mote-code-bg);
   padding: 0.15em 0.4em;
-  border-radius: 6px;
+  border-radius: var(--mote-radius-sm);
   font-size: 0.86em;
 }
 
@@ -172,7 +209,7 @@ pre {
   background: var(--mote-pre-bg);
   border: 1px solid var(--mote-border);
   padding: 1rem 1.15rem;
-  border-radius: 10px;
+  border-radius: var(--mote-radius-lg);
   overflow-x: auto;
   font-size: 0.87em;
   line-height: 1.6;
@@ -186,14 +223,15 @@ pre code {
 }
 
 /* Generated code controls; user HTML cannot opt into these classes. */
-.code-block { margin: 1.25em 0; border: 1px solid var(--mote-border); border-radius: 10px; background: var(--mote-pre-bg); overflow: hidden; }
+.code-block { margin: 1.25em 0; border: 1px solid var(--mote-border); border-radius: var(--mote-radius-lg); background: var(--mote-pre-bg); overflow: hidden; }
 .code-block pre { margin: 0; border: 0; border-radius: 0; }
 .code-block pre:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: -3px; }
 .code-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0.5rem 0.75rem; padding: 0.5rem 1.15rem; border-bottom: 1px solid var(--mote-border); min-width: 0; }
 .code-toolbar[hidden], .code-copy[hidden] { display: none; }
 .code-title { grid-column: 1; grid-row: 1; align-self: center; min-width: 0; overflow-wrap: anywhere; font-family: monospace; font-size: 0.8em; color: var(--mote-muted); }
-.code-copy { grid-column: 2; grid-row: 1; margin-left: auto; padding: 0.3em 0.65em; border: 1px solid var(--mote-border); border-radius: 5px; color: var(--mote-fg); background: var(--mote-bg); font: inherit; font-size: 0.75em; cursor: pointer; }
-.code-copy:hover { border-color: var(--mote-accent); }
+.code-copy { grid-column: 2; grid-row: 1; margin-left: auto; padding: 0.3em 0.65em; border: 1px solid var(--mote-border); border-radius: var(--mote-radius-sm); color: var(--mote-fg); background: var(--mote-bg); font: inherit; font-size: 0.75em; cursor: pointer; transition: border-color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard), color var(--mote-duration-fast) var(--mote-ease-standard); }
+.code-copy:hover { border-color: var(--mote-accent); color: var(--mote-accent); }
+.code-copy:active { background: var(--mote-tint); }
 .code-copy:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
 .code-copy:disabled { opacity: 0.6; cursor: wait; }
 .code-copy-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -220,7 +258,7 @@ pre code {
 .content-tabs {
   margin: 1.2em 0;
   border: 1px solid var(--mote-border);
-  border-radius: 8px;
+  border-radius: var(--mote-radius-md);
   min-width: 0;
 }
 .content-panel { padding: 1em; min-width: 0; }
@@ -234,7 +272,7 @@ pre code {
   display: flex;
   overflow-x: auto;
   border-bottom: 1px solid var(--mote-border);
-  border-radius: 7px 7px 0 0;
+  border-radius: calc(var(--mote-radius-md) - 1px) calc(var(--mote-radius-md) - 1px) 0 0;
   background: var(--mote-code-bg);
   padding: 0 .5em;
   gap: .25em;
@@ -252,6 +290,7 @@ pre code {
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  transition: color var(--mote-duration-fast) var(--mote-ease-standard), border-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
 .content-tab-list > button[aria-selected="true"] {
   color: var(--mote-accent);
@@ -320,7 +359,7 @@ blockquote > :last-child { margin-bottom: 0; }
   margin: 0 0 1.15em;
   padding: var(--alert-padding-y) var(--alert-padding-x);
   border: 1px solid color-mix(in srgb, var(--alert-color) 35%, var(--mote-bg));
-  border-radius: 8px;
+  border-radius: var(--mote-radius-md);
   background: var(--mote-bg);
   color: var(--mote-fg);
   overflow-wrap: anywhere;
@@ -334,7 +373,7 @@ blockquote > :last-child { margin-bottom: 0; }
   position: relative;
   margin: calc(-1 * var(--alert-padding-y)) calc(-1 * var(--alert-padding-x)) 0.85em;
   padding: 0.65em var(--alert-padding-x);
-  border-radius: 7px 7px 0 0;
+  border-radius: calc(var(--mote-radius-md) - 1px) calc(var(--mote-radius-md) - 1px) 0 0;
   background: color-mix(in srgb, var(--alert-color) 7%, var(--mote-bg));
   color: var(--alert-color);
   font-weight: 600;
@@ -369,7 +408,7 @@ table {
   overflow-x: auto;
   border-collapse: collapse;
   border: 1px solid var(--mote-border);
-  border-radius: 8px;
+  border-radius: var(--mote-radius-md);
   font-size: 0.95em;
   font-variant-numeric: tabular-nums;
 }
@@ -389,7 +428,7 @@ tr:last-child td { border-bottom: 0; }
   overflow-x: auto;
   margin: 0 0 1.15em;
   border: 1px solid var(--mote-border);
-  border-radius: 8px;
+  border-radius: var(--mote-radius-md);
   scrollbar-width: thin;
   scrollbar-color: var(--mote-muted) var(--mote-pre-bg);
   /* Local covers hide the edge shadows at each scroll boundary. A short
@@ -413,37 +452,37 @@ tr:last-child td { border-bottom: 0; }
 }
 .table-scroll th, .table-scroll td { min-width: 4em; max-width: 24em; overflow-wrap: anywhere; }
 
-img { max-width: 100%; height: auto; box-sizing: border-box; border-radius: 8px; }
+img { max-width: 100%; height: auto; box-sizing: border-box; border-radius: var(--mote-radius-md); }
 article figure:has(> img), article figure:has(> .image-frame) { margin: 1.5em 0; }
 article figure:has(> img) > figcaption, article figure:has(> .image-frame) > figcaption { margin-top: 0.6em; color: var(--mote-muted); font-size: 0.85em; text-align: center; overflow-wrap: anywhere; }
 .image-frame { display: block; position: relative; max-width: 100%; }
 .image-frame > img { display: block; width: 100%; }
-.image-expand, .image-close { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; }
+.image-expand, .image-close { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--mote-radius-pill); cursor: pointer; }
 /* The magnifier stays quiet until the image is hovered or focused; touch
    devices keep it visible via the coarse-pointer media query below. */
 .image-expand {
   position: absolute;
   right: 4px;
   bottom: 4px;
-  border-radius: 6px;
+  border-radius: var(--mote-radius-sm);
   background: transparent;
   isolation: isolate;
   color: var(--mote-fg);
   opacity: 0;
   transform: scale(0.9);
   pointer-events: none;
-  transition: opacity 0.16s ease, transform 0.16s ease, background-color 0.15s ease;
+  transition: opacity var(--mote-duration-fast) var(--mote-ease-standard), transform var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
 .image-frame:hover > .image-expand, .image-frame:focus-within > .image-expand { opacity: 1; transform: none; pointer-events: auto; }
 .image-expand[hidden], .image-viewer-stage img[hidden] { display: none; }
-.image-expand::before { content: ""; position: absolute; inset: 7px; z-index: -1; border-radius: 5px; background: color-mix(in srgb, var(--mote-bg) 90%, transparent); }
+.image-expand::before { content: ""; position: absolute; inset: 7px; z-index: -1; border-radius: calc(var(--mote-radius-sm) - 1px); background: color-mix(in srgb, var(--mote-bg) 90%, transparent); }
 .image-expand:hover::before { background: var(--mote-bg); }
 .image-expand:focus-visible, .image-viewer :focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
 /* Frameless viewer: a dimmed page, the picture and one close button. */
 .image-viewer { box-sizing: border-box; position: fixed; inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; color: white; background: transparent; border: 0; border-radius: 0; overflow: hidden; }
 .image-viewer[open] { display: flex; flex-direction: column; }
 .image-viewer::backdrop { background: rgb(0 0 0 / 85%); backdrop-filter: blur(2px); }
-.image-viewer[open]::backdrop { animation: image-viewer-fade 0.16s ease-out; }
+.image-viewer[open]::backdrop { animation: image-viewer-fade var(--mote-duration-fast) var(--mote-ease-out); }
 .image-close {
   position: absolute;
   top: max(14px, env(safe-area-inset-top));
@@ -454,15 +493,15 @@ article figure:has(> img) > figcaption, article figure:has(> .image-frame) > fig
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  transition: background-color var(--mote-duration-fast) var(--mote-ease-standard), box-shadow var(--mote-duration-fast) var(--mote-ease-standard);
 }
 .image-close:hover { background: rgb(0 0 0 / 62%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 38%); }
 .image-viewer-stage { box-sizing: border-box; display: flex; align-items: center; justify-content: center; flex: 1; min-height: 0; overflow: auto; padding: 68px 24px 24px; text-align: center; overscroll-behavior: contain; }
 /* The enlarged image keeps the document's corner radius and floats on the
    dimmed page; clicking it toggles the original size. */
-.image-viewer-stage img { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 12px 48px rgb(0 0 0 / 55%); cursor: default; }
+.image-viewer-stage img { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: var(--mote-shadow-overlay); cursor: default; }
 .image-viewer-stage img[role="button"] { cursor: zoom-in; }
-.image-viewer[open] .image-viewer-stage img { animation: image-viewer-in 0.18s ease-out; }
+.image-viewer[open] .image-viewer-stage img { animation: image-viewer-in var(--mote-duration-base) var(--mote-ease-out); }
 .image-viewer.is-original .image-viewer-stage { display: block; text-align: left; }
 .image-viewer.is-original img { max-width: none; max-height: none; cursor: zoom-out; }
 .image-viewer-status { position: absolute; left: 24px; right: 24px; top: 50%; margin: 0; text-align: center; color: rgb(255 255 255 / 88%); pointer-events: none; }
@@ -484,7 +523,7 @@ hr {
 kbd {
   border: 1px solid var(--mote-border);
   border-bottom-width: 2px;
-  border-radius: 6px;
+  border-radius: var(--mote-radius-sm);
   padding: 0.1em 0.4em;
   background: var(--mote-pre-bg);
   font-size: 0.85em;
@@ -495,11 +534,11 @@ mark {
   color: inherit;
   /* Balance the background around the text's baseline without changing line height. */
   padding: 0.08em 0.2em 0.16em;
-  border-radius: 4px;
+  border-radius: var(--mote-radius-xs);
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
-mark code { padding: 0 0.2em; border-radius: 3px; }
+mark code { padding: 0 0.2em; border-radius: calc(var(--mote-radius-xs) - 1px); }
 
 article dl { margin: 0 0 1.4em; }
 article dt { font-weight: 600; margin-top: 1em; overflow-wrap: anywhere; }
@@ -514,7 +553,7 @@ article dd > :last-child { margin-bottom: 0; }
 .math-display math { min-width: max-content; }
 .mermaid-diagram { margin: 0 0 1.4em; }
 .mermaid-diagram figcaption { margin-bottom: 0.5em; color: var(--mote-muted); font-size: 0.85em; }
-.diagram-scroll { overflow: auto; max-height: 640px; padding: 0.5em; border: 1px solid var(--mote-border); border-radius: 10px; }
+.diagram-scroll { overflow: auto; max-height: 640px; padding: 0.5em; border: 1px solid var(--mote-border); border-radius: var(--mote-radius-lg); }
 .diagram-scroll svg {
   display: block; margin: auto; max-width: 100%; height: auto;
   --bg: var(--mote-bg); --fg: var(--mote-fg);
@@ -557,8 +596,8 @@ article details > summary {
 /* Match the shared title selector so closed blocks have no trailing gap. */
 article details:not([open]) > summary, article details.markdown-alert:not([open]) > summary {
   margin-bottom: calc(-1 * var(--alert-padding-y));
-  border-bottom-left-radius: 7px;
-  border-bottom-right-radius: 7px;
+  border-bottom-left-radius: calc(var(--mote-radius-md) - 1px);
+  border-bottom-right-radius: calc(var(--mote-radius-md) - 1px);
 }
 article details > summary::-webkit-details-marker { display: none; }
 article details > summary::marker { content: ''; }
@@ -590,15 +629,16 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
   align-items: center;
   justify-content: center;
   margin-left: auto;
-  min-width: 40px;
-  min-height: 40px;
+  min-width: var(--mote-control-size);
+  min-height: var(--mote-control-size);
   box-sizing: border-box;
   padding: 8px 10px;
   font-size: 13px;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--mote-radius-pill);
   color: var(--mote-muted);
   text-decoration: none;
+  transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
 .toc-trigger:hover { color: var(--mote-accent); background: var(--mote-tint); }
 .toc-trigger[aria-expanded="true"] { color: var(--mote-fg); }
@@ -606,11 +646,11 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
 .toc-scrim {
   position: fixed;
   inset: 0;
-  z-index: 38;
-  background: rgb(15 17 21 / 0.32);
+  z-index: var(--mote-z-scrim);
+  background: var(--mote-scrim);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.18s ease, visibility 0.18s;
+  transition: opacity var(--mote-duration-base) var(--mote-ease-standard), visibility var(--mote-duration-base);
 }
 .toc-drawer {
   box-sizing: border-box;
@@ -620,21 +660,21 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 40;
+  z-index: var(--mote-z-drawer);
   width: min(360px, 90vw);
   padding: 12px 16px 0;
   background: var(--mote-bg);
   border-left: 1px solid var(--mote-border);
   transform: translateX(105%);
   visibility: hidden;
-  transition: transform 0.2s ease, visibility 0s 0.2s;
+  transition: transform var(--mote-duration-slow) var(--mote-ease-standard), visibility 0s var(--mote-duration-slow);
 }
 body:not([data-toc-enhanced]) .toc-drawer:target,
 body[data-toc-open] .toc-drawer {
   transform: none;
   visibility: visible;
-  box-shadow: -16px 0 48px rgb(15 17 21 / 0.1);
-  transition: transform 0.2s ease, visibility 0s;
+  box-shadow: var(--mote-shadow-drawer);
+  transition: transform var(--mote-duration-slow) var(--mote-ease-standard), visibility 0s;
 }
 body:not([data-toc-enhanced]) .toc-drawer:target + .toc-scrim,
 body[data-toc-open] .toc-scrim { opacity: 1; visibility: visible; }
@@ -655,13 +695,12 @@ body[data-toc-modal] { position: fixed; left: 0; right: 0; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 40px;
-  min-height: 40px;
-  border-radius: 6px;
-  font-size: 20px;
-  line-height: 1;
+  min-width: var(--mote-control-size);
+  min-height: var(--mote-control-size);
+  border-radius: var(--mote-radius-sm);
   color: var(--mote-muted);
   text-decoration: none;
+  transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
 .toc-close:hover { color: var(--mote-accent); background: var(--mote-tint); }
 .toc-nav {
@@ -683,7 +722,7 @@ body[data-toc-modal] { position: fixed; left: 0; right: 0; }
   box-sizing: border-box;
   min-height: 36px;
   padding: 8px;
-  border-radius: 5px;
+  border-radius: var(--mote-radius-sm);
   color: var(--mote-muted);
   font-size: 13px;
   line-height: 1.5;
@@ -709,10 +748,11 @@ body[data-toc-modal] { position: fixed; left: 0; right: 0; }
   min-height: 36px;
   border: 0;
   padding: 0;
-  border-radius: 5px;
+  border-radius: var(--mote-radius-sm);
   color: var(--mote-muted);
   background: transparent;
   cursor: pointer;
+  transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
 .toc-toggle[aria-expanded="true"] svg { transform: rotate(90deg); }
 .toc-toggle:hover { color: var(--mote-fg); background: var(--mote-pre-bg); }
@@ -733,13 +773,13 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
     background: transparent;
     transform: none;
     visibility: visible;
-    z-index: 9;
+    z-index: var(--mote-z-toc-rail);
     transition: none;
   }
   .toc-drawer-head { padding: 0 8px; border-bottom: 0; margin-bottom: 4px; }
   /* Native momentum scrolling can paint before the scroll handler runs.
      Keep the footer above the rail and links during that transient overlap. */
-  .has-toc .mote-colophon { position: relative; z-index: 10; background: var(--mote-bg); }
+  .has-toc .mote-colophon { position: relative; z-index: var(--mote-z-banner); background: var(--mote-bg); }
   /* Center the 2px marker over the 1px rail at x = 1.5px. Keep both
      inside the scrollable area to avoid clipping their outer edges. */
   .toc-nav {
@@ -765,12 +805,13 @@ li[data-current-branch] > .toc-row > .toc-toggle[aria-expanded="false"] { color:
   .toc-drawer { width: 300px; }
 }
 @media (max-width: 767px) {
+  :root { --mote-control-size: 44px; }
   .toc-drawer {
     top: auto; left: 0; right: 0; bottom: 0;
     width: 100%; height: min(80vh, 680px); height: min(80dvh, 680px);
     padding-top: 8px;
     border: 1px solid var(--mote-border); border-bottom: 0;
-    border-radius: 18px 18px 0 0;
+    border-radius: var(--mote-radius-xl) var(--mote-radius-xl) 0 0;
     transform: translateY(105%);
   }
   .toc-trigger, .toc-close, .toc-row > a, .toc-toggle { min-height: 44px; }
@@ -806,9 +847,9 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 .footnote-preview {
   position: fixed; inset: auto; margin: 0; padding: 0;
   width: min(28rem, calc(100vw - 24px)); max-height: min(28rem, calc(100vh - 24px));
-  border: 1px solid var(--mote-border); border-radius: 10px;
+  border: 1px solid var(--mote-border); border-radius: var(--mote-radius-lg);
   background: var(--mote-bg); color: var(--mote-fg);
-  box-shadow: 0 8px 32px #0002; font-size: 0.9em; line-height: 1.65;
+  box-shadow: var(--mote-shadow-pop); font-size: 0.9em; line-height: 1.65;
   overflow: hidden;
 }
 .footnote-preview:popover-open { display: flex; flex-direction: column; }
@@ -818,10 +859,12 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 }
 .footnote-preview-header strong { font-size: 0.9em; color: var(--mote-muted); }
 .footnote-preview-header button {
+  display: inline-flex; align-items: center; justify-content: center;
   border: 0; background: transparent; color: var(--mote-muted); cursor: pointer;
-  width: 36px; height: 36px; border-radius: 6px; font-size: 24px; line-height: 1;
+  width: 36px; height: 36px; border-radius: var(--mote-radius-sm); padding: 0;
+  transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
-.footnote-preview-header button:hover { background: var(--mote-code-bg); color: var(--mote-fg); }
+.footnote-preview-header button:hover { background: var(--mote-tint); color: var(--mote-accent); }
 .footnote-preview :focus-visible { outline: 2px solid var(--mote-accent); outline-offset: -2px; }
 .footnote-preview-body { overflow: auto; min-height: 0; padding: 0.85rem 1rem; overscroll-behavior: contain; overflow-wrap: anywhere; }
 .footnote-preview-body > :first-child { margin-top: 0; }
@@ -888,13 +931,13 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 </head>
 <body class="has-toc">
 <aside class="toc-drawer" id="mote-toc" aria-label="Table of contents" tabindex="-1">
-<div class="toc-drawer-head"><span class="toc-title">Contents</span><a class="toc-close" href="#!" tabindex="0" aria-label="Close table of contents" title="Hide contents">×</a></div>
+<div class="toc-drawer-head"><span class="toc-title">Contents</span><a class="toc-close" href="#!" tabindex="0" aria-label="Close table of contents" title="Hide contents"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></a></div>
 <nav class="toc-nav" aria-label="Table of contents"><ul><li><div class="toc-row" title="Mote 设计文档" style="--toc-depth:0"><button class="toc-toggle" type="button" aria-expanded="true" aria-controls="mote-toc-group-0" aria-label="Toggle subheadings: Mote 设计文档" hidden><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 3 5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><a href="#mote-设计文档">Mote 设计文档</a></div><ul class="toc-branch" id="mote-toc-group-0"><li><div class="toc-row" title="背景" style="--toc-depth:1"><a href="#背景">背景</a></div></li><li><div class="toc-row" title="小结" style="--toc-depth:1"><a href="#小结">小结</a></div></li></ul></li></ul></nav>
 </aside>
 <a class="toc-scrim" href="#!" aria-hidden="true" tabindex="-1"></a>
 <header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/" target="_blank" rel="noopener noreferrer"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-<a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="Open table of contents" title="Show contents"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 4.5h8M7 9h8M7 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><g fill="currentColor"><circle cx="3" cy="4.5" r="1"/><circle cx="3" cy="9" r="1"/><circle cx="3" cy="13.5" r="1"/></g></svg></a></div></header>
+<a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="Open table of contents" title="Show contents"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><g fill="currentColor"><circle cx="4" cy="6" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="4" cy="18" r="1.3"/></g></svg></a></div></header>
 <main>
 <article>
 <h1 id="mote-设计文档">Mote 设计文档</h1>

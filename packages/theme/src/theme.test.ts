@@ -27,16 +27,35 @@ describe('TOKENS_CSS', () => {
     }
   });
 
-  it('redefines every light token under prefers-color-scheme: dark', () => {
+  it('redefines every theme-dependent light token under prefers-color-scheme: dark', () => {
     expect(TOKENS_CSS).toContain('@media (prefers-color-scheme: dark)');
     const dark = TOKENS_CSS.slice(TOKENS_CSS.indexOf('@media'));
+    // Shape, motion and the fixed overlay shadow look identical in both
+    // palettes; only palette colors and night-adjusted shadows are redefined.
+    const themeInvariant = new Set([
+      '--mote-radius-xs',
+      '--mote-radius-sm',
+      '--mote-radius-md',
+      '--mote-radius-lg',
+      '--mote-radius-xl',
+      '--mote-radius-pill',
+      '--mote-shadow-overlay',
+      '--mote-duration-fast',
+      '--mote-duration-base',
+      '--mote-duration-slow',
+      '--mote-ease-standard',
+      '--mote-ease-out',
+    ]);
     const tokenNames = [...light.matchAll(/(--mote-[a-z-]+):/g)].map((match) => match[1]!);
     expect(tokenNames.length).toBeGreaterThan(0);
     for (const name of new Set(tokenNames)) {
+      if (themeInvariant.has(name)) {
+        expect(dark).not.toContain(`${name}:`);
+        continue;
+      }
       expect(dark).toContain(`${name}:`);
     }
   });
-
   it('anchors the brand palette to the logo red', () => {
     expect(TOKENS_CSS).toContain('--mote-brand: #ef5552');
   });

@@ -24,6 +24,23 @@ export const TOKENS_CSS = `
   --mote-tint-border: #f3c8c5;
   --mote-glow-from: rgb(239 85 82 / 0.16);
   --mote-glow-to: rgb(239 85 82 / 0);
+
+  /* Shape, elevation and motion (plan 012 contract A). */
+  --mote-radius-xs: 4px;
+  --mote-radius-sm: 6px;
+  --mote-radius-md: 8px;
+  --mote-radius-lg: 10px;
+  --mote-radius-xl: 18px;
+  --mote-radius-pill: 999px;
+  --mote-shadow-pop: 0 8px 32px rgb(0 0 0 / 0.13);
+  --mote-shadow-overlay: 0 12px 48px rgb(0 0 0 / 0.55);
+  --mote-shadow-drawer: -16px 0 48px rgb(15 17 21 / 0.1);
+  --mote-scrim: rgb(15 17 21 / 0.32);
+  --mote-duration-fast: 0.15s;
+  --mote-duration-base: 0.18s;
+  --mote-duration-slow: 0.2s;
+  --mote-ease-standard: ease;
+  --mote-ease-out: ease-out;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,6 +60,11 @@ export const TOKENS_CSS = `
     --mote-tint-border: #5a2a29;
     --mote-glow-from: rgb(255 109 106 / 0.14);
     --mote-glow-to: rgb(255 109 106 / 0);
+
+    /* Shadows and scrims must deepen at night to stay visible on dark surfaces. */
+    --mote-shadow-pop: 0 8px 32px rgb(0 0 0 / 0.5);
+    --mote-shadow-drawer: -16px 0 48px rgb(0 0 0 / 0.45);
+    --mote-scrim: rgb(0 0 0 / 0.55);
   }
 }
 `;
