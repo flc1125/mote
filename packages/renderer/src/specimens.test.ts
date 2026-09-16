@@ -1,3 +1,4 @@
+import { FOOTNOTE_SCRIPT } from './footnote-script.js';
 import { IMAGE_SCRIPT } from './image-script.js';
 import { readFileSync } from 'node:fs';
 import { Parser } from 'htmlparser2';
@@ -72,12 +73,14 @@ describe('committed compatibility specimens', () => {
       TOC_SCRIPT,
       COPY_SCRIPT,
       IMAGE_SCRIPT,
+      FOOTNOTE_SCRIPT,
     ]);
     expect(
       html
         .replace(`<script>${TOC_SCRIPT}</script>`, '')
         .replace(`<script>${COPY_SCRIPT}</script>`, '')
-        .replace(`<script>${IMAGE_SCRIPT}</script>`, ''),
+        .replace(`<script>${IMAGE_SCRIPT}</script>`, '')
+        .replace(`<script>${FOOTNOTE_SCRIPT}</script>`, ''),
     ).not.toMatch(/<(?:script|iframe|foreignObject)\b/);
   });
   it('renders supplementary charts with all relationship labels and series', () => {

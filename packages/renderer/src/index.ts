@@ -34,3 +34,4 @@ export { TOC_SCRIPT } from './toc-script.js';
 export { COPY_SCRIPT } from './copy-script.js';
 
 export { IMAGE_SCRIPT } from './image-script.js';
+export { FOOTNOTE_SCRIPT } from './footnote-script.js';

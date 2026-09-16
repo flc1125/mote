@@ -3,6 +3,7 @@ import { PAGE_CSS } from './styles.js';
 import { TOC_SCRIPT } from './toc-script.js';
 import { IMAGE_SCRIPT } from './image-script.js';
 import { COPY_SCRIPT } from './copy-script.js';
+import { FOOTNOTE_SCRIPT } from './footnote-script.js';
 
 export interface PageInput {
   title: string;
@@ -59,6 +60,7 @@ ${contentHtml}</article>
 ${tocHtml !== '' || contentHtml.includes('<details') || contentHtml.includes('class="content-tabs"') ? `<script>${TOC_SCRIPT}</script>` : ''}
 ${codeCopy ? `<script>${COPY_SCRIPT}</script>` : ''}
 ${contentHtml.includes('<img ') ? `<script>${IMAGE_SCRIPT}</script>` : ''}
+${contentHtml.includes('class="footnote-ref"') ? `<script>${FOOTNOTE_SCRIPT}</script>` : ''}
 </body>
 </html>
 `;

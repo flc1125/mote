@@ -1,3 +1,4 @@
+import { FOOTNOTE_SCRIPT } from '../../../packages/renderer/src/footnote-script.js';
 import { IMAGE_SCRIPT } from '../../../packages/renderer/src/image-script.js';
 import { createHash } from 'node:crypto';
 import { TOC_SCRIPT } from '../../../packages/renderer/src/toc-script.js';
@@ -114,8 +115,8 @@ async function runCli(args: string[]): Promise<{ code: number; out: string; err:
   return { code, out: out.join('\n'), err: err.join('\n') };
 }
 
-function view(path: string): Promise<Response> {
-  return viewerWorker.fetch(new Request(`${VIEWER_BASE}${path}`), { DOCUMENTS: bucket });
+function view(path: string, init?: RequestInit): Promise<Response> {
+  return viewerWorker.fetch(new Request(`${VIEWER_BASE}${path}`, init), { DOCUMENTS: bucket });
 }
 
 async function publishDoc(markdownPath: string): Promise<{ id: string; url: string }> {
@@ -139,8 +140,9 @@ function expectTocPolicy(response: Response, html: string, copy = false): void {
     TOC_SCRIPT,
     ...(copy ? [COPY_SCRIPT] : []),
     ...(html.includes('<img ') ? [IMAGE_SCRIPT] : []),
+    ...(html.includes('class="footnote-ref"') ? [FOOTNOTE_SCRIPT] : []),
   ]);
-  const hashes = [TOC_SCRIPT, COPY_SCRIPT, IMAGE_SCRIPT].map(
+  const hashes = [TOC_SCRIPT, COPY_SCRIPT, IMAGE_SCRIPT, FOOTNOTE_SCRIPT].map(
     (script) => `'sha256-${createHash('sha256').update(script).digest('base64')}'`,
   );
   const policy = response.headers.get('Content-Security-Policy')!;
@@ -151,6 +153,26 @@ function expectTocPolicy(response: Response, html: string, copy = false): void {
 }
 
 describe('E2E (§59)', () => {
+  it('publishes abbreviation and footnote content with fixed preview CSP and unchanged source', async () => {
+    const file = fileURLToPath(
+      new URL('../../../docs/examples/markdown-reading.md', import.meta.url),
+    );
+    const source = await readFile(file, 'utf8');
+    const { id } = await publishDoc(file);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const response = await view(`/${id}`);
+    const html = await response.text();
+    expectTocPolicy(response, html, true);
+    expect(html).toContain('<abbr title="Application Programming Interface">API</abbr>');
+    expect(html).toContain('href="#fnref1:1"');
+    expect(new Set(assetPaths(html)).size).toBe(1);
+    expect(html).not.toContain('src="not-an-asset.png"');
+    const head = await view(`/${id}`, { method: 'HEAD' });
+    expect(head.headers.get('Content-Security-Policy')).toBe(
+      response.headers.get('Content-Security-Policy'),
+    );
+    expect(await head.text()).toBe('');
+  });
   it('publishes images in multi-paragraph footnotes without uploading code examples (DEF-01)', async () => {
     const source = [
       '# Footnote assets',

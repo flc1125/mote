@@ -9,6 +9,7 @@ import deflistPlugin from 'markdown-it-deflist';
 import { containerSyntax } from './container-syntax.js';
 import { imageSyntax } from './image-syntax.js';
 import { mathSyntax } from './math-syntax.js';
+import { abbreviations } from './abbreviations.js';
 
 const footnote = footnotePlugin as (md: MarkdownIt) => void;
 const mark = markPlugin as (md: MarkdownIt) => void;
@@ -27,4 +28,5 @@ export function documentSyntax(md: MarkdownIt, options: DocumentSyntaxOptions = 
   md.use(imageSyntax);
   md.use(footnote);
   if (options.containers !== false) md.use(containerSyntax);
+  md.use(abbreviations);
 }
