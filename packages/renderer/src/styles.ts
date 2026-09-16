@@ -420,7 +420,23 @@ kbd {
   font-size: 0.85em;
 }
 
-mark { background: var(--mote-tint); color: inherit; padding: 0.05em 0.2em; border-radius: 4px; }
+mark {
+  background: var(--mote-tint);
+  color: inherit;
+  /* Balance the background around the text's baseline without changing line height. */
+  padding: 0.08em 0.2em 0.16em;
+  border-radius: 4px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+mark code { padding: 0 0.2em; border-radius: 3px; }
+
+article dl { margin: 0 0 1.4em; }
+article dt { font-weight: 600; margin-top: 1em; overflow-wrap: anywhere; }
+article dt:first-child { margin-top: 0; }
+article dd { margin: 0.35em 0 0.85em 1.5em; min-width: 0; overflow-wrap: anywhere; }
+article dd > :first-child { margin-top: 0; }
+article dd > :last-child { margin-bottom: 0; }
 
 /* Static formulas and diagrams */
 .math-inline { display: inline-block; max-width: 100%; overflow-x: auto; vertical-align: middle; }

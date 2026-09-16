@@ -20,8 +20,11 @@ export function imageSyntax(md: MarkdownIt): void {
   md.core.ruler.after('inline', 'mote_image_caption', (state) => {
     let attempts = 0;
     let units = 0;
+    let definitionDepth = 0;
     for (let i = 0; i < state.tokens.length - 2; i++) {
       const open = state.tokens[i]!;
+      if (open.type === 'dd_open') definitionDepth++;
+      if (open.type === 'dd_close') definitionDepth--;
       const inline = state.tokens[i + 1]!;
       const close = state.tokens[i + 2]!;
       if (
@@ -30,10 +33,23 @@ export function imageSyntax(md: MarkdownIt): void {
         close.type !== 'paragraph_close'
       )
         continue;
-      const source = inline.content;
+      let source = inline.content;
+      // Definitions use a two-space content indent. Authoring their body with
+      // four spaces leaves continuation padding in paragraph source, although
+      // the inline parser has already removed it from text tokens.
+      if (definitionDepth > 0) {
+        const padding = /\n( {1,3})\/\/\/ caption\n/.exec(source)?.[1];
+        if (padding) {
+          const lines = source.split('\n');
+          if (lines.slice(1).every((line) => line.startsWith(padding)))
+            source = [lines[0], ...lines.slice(1).map((line) => line.slice(padding.length))].join(
+              '\n',
+            );
+        }
+      }
       if (!source.includes('\n/// caption\n')) continue;
-      if (++attempts > 64 || (units += source.length) > 65536) break;
-      if (source.length > 8192) continue;
+      if (++attempts > 64 || (units += inline.content.length) > 65536) break;
+      if (inline.content.length > 8192) continue;
       const lines = source.split('\n');
       if (
         lines.length < 4 ||

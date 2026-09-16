@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Text highlights with `==text==` and definition lists with shared CLI/Viewer parsing, static reading styles and rich definition bodies. Existing unescaped matching syntax now renders as these structures; use escapes or code to preserve literal examples.
+
 - Image widths with a bounded `{ width="640" }` / percentage subset, image-only `/// caption` blocks, and a progressive native-dialog image viewer. Shared parsing preserves asset paths and deduplication; linked/inline images keep their behavior. Later Markdown images use native lazy loading, with a fixed image-script CSP hash shared by GET and HEAD.
 
 - Content tabs with `=== "label"`: independent groups, keyboard navigation, panel and heading deep links, shared CLI/Viewer parsing and bounded nesting. All panels remain readable without JavaScript and in print; initialization failures retain static content.

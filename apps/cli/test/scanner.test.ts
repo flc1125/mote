@@ -168,3 +168,16 @@ describe('image enhancement scanning', () => {
     expect(extractLocalImageReferences(source)).toEqual(['hidden.png']);
   });
 });
+
+describe('typography scanning', () => {
+  it('scans definition images and captions while protecting fenced, indented and math examples', () => {
+    const source =
+      'Term\n: ==![marked](marked.png)==\n\n    ![body](body.png)\n    /// caption\n    Caption ![caption](caption.png)\n    ///\n\n    ```md\n    ![fake](fenced.png)\n    ```\n\n        ![fake](indented.png)\n\n    $![fake](inline-math.png)$\n\n    $$\n    ![fake](block-math.png)\n    $$';
+    expect(extractLocalImageReferences(source)).toEqual(['marked.png', 'body.png', 'caption.png']);
+  });
+  it('scans definitions in hidden tabs and footnotes in parser order', () => {
+    const source =
+      '=== "One"\n\n    First.\n\n=== "Two"\n\n    Term\n    : ![hidden](hidden.png)\n\nReference[^n]\n\n[^n]: Term\n    : ![footnote](footnote.png)';
+    expect(extractLocalImageReferences(source)).toEqual(['hidden.png', 'footnote.png']);
+  });
+});

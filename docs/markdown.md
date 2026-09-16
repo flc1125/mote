@@ -19,6 +19,7 @@ remain available when JavaScript is disabled.
 | Headings, paragraphs, emphasis, quotes and lists | Supported                   | Includes nested content, ordered-list starts and explicit hard breaks.                          |
 | Tables, strikethrough and automatic links        | Supported                   | Escaped pipes, alignment and inline formatting; wide content can scroll.                        |
 | Task lists and footnotes                         | Supported                   | Read-only checkboxes; repeated footnote references have return links.                           |
+| Highlights and definition lists                  | Supported                   | `==text==` and term/definition blocks; rendered as static semantic HTML.                        |
 | Chinese emphasis boundaries                      | Limited extension           | Double-asterisk emphasis next to CJK text or East Asian punctuation; details below.             |
 | Local Markdown and HTML images                   | Supported                   | CLI uploads referenced assets, including encoded paths; identical assets are deduplicated.      |
 | Presentational HTML                              | Allowlisted                 | Includes details/summary, picture, tables, kbd, sub and sup. Arbitrary HTML/CSS is excluded.    |
@@ -47,6 +48,7 @@ mote docs/examples/markdown-admonitions.md
 Publishing requires an instance and publisher authorization; see the
 [CLI reference](cli.md) and [authentication guide](authentication.md).
 
+- [Highlights and definition lists](examples/markdown-typography.md): inline boundaries, rich definitions and mixed components.
 - [Content tabs](examples/markdown-tabs.md): alternatives, independent groups, nested disclosures and static fallbacks.
 - [Admonitions](examples/markdown-admonitions.md): ordinary alerts, titles, nesting, folding and bundled images.
 - [Main specimen](examples/markdown-compatibility.md): numbered checks for mixed
@@ -88,6 +90,59 @@ and ASCII-only cases such as `**English:**Next` retain standard behavior.
 Ordinary line breaks remain soft breaks. Use two trailing spaces or a backslash for
 an explicit hard break. Task-list labels preserve parsed emphasis, links and inline
 code exactly once; checkboxes remain read-only.
+
+## Highlights and definition lists
+
+Use paired equals signs to highlight a phrase:
+
+```markdown
+This is an ==important conclusion==.
+这是==需要注意的结论==。
+Highlights can include ==**Strong text**, `inline code` and [a link](https://example.com)==.
+```
+
+The opening pair must touch non-whitespace text, as must the closing pair.
+Delimiter pairing follows CommonMark emphasis boundaries; the special CJK
+punctuation rules for `**` do not extend to `==`. Highlights may span a soft
+line break within one paragraph. Escape the equals signs (`\==literal\==`) or
+use code to display them literally. Empty, unmatched or whitespace-adjacent
+markers stay as text. Longer runs pair up: `===word===` leaves one literal
+equals sign at either end of the highlight. Setext heading lines keep their
+normal meaning. Code, mathematical source, link destinations and HTML
+attributes do not interpret highlight syntax.
+
+A definition list pairs a one-line term with one or more explanations:
+
+```markdown
+Capability URL
+: A link that grants access to a document.
+: Keep it private when the document is private.
+
+Document bundle
+
+: Source Markdown and its referenced images.
+
+    A second paragraph, indented four spaces.
+
+    - Markdown lists, images, code and formulas can appear here.
+```
+
+Use `:` followed by whitespace and the explanation; `~` is also accepted as a
+marker. A marker on its own creates an empty definition. A term may be followed
+immediately by its first definition or separated by one blank line. Multiple
+blank lines or a multiline term remain ordinary Markdown. Use four spaces for
+additional paragraphs and nested blocks; the parser also accepts two-space
+continuations. Relative to the definition body, additional code indentation
+still creates a code block, so image examples in code are not uploaded.
+
+Definitions can appear inside ordinary lists, quotes, footnotes, admonitions
+and tab panels. Nested definition lists work; new admonitions and tabs are not
+activated inside definition bodies. Their markers follow ordinary Markdown
+there. Image widths and captions remain available within definitions.
+
+Both features render on the server and work without JavaScript, in dark mode
+and in print. The [typography specimen](examples/markdown-typography.md) shows
+mixed content and literal fallbacks. Reference captures: [desktop](assets/markdown-typography-desktop.png), [narrow viewport](assets/markdown-typography-mobile.png) and [dark theme](assets/markdown-typography-dark.png).
 
 ## Heading links
 

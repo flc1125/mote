@@ -168,8 +168,14 @@ importers:
       markdown-it:
         specifier: ^15.0.1
         version: 15.0.1
+      markdown-it-deflist:
+        specifier: 4.0.0
+        version: 4.0.0
       markdown-it-footnote:
         specifier: ^4.0.0
+        version: 4.0.0
+      markdown-it-mark:
+        specifier: 4.0.0
         version: 4.0.0
       yaml:
         specifier: ^2.9.0
@@ -1740,8 +1746,14 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
+  markdown-it-deflist@4.0.0:
+    resolution: {integrity: sha512-06186ZWDwNLg638THD70MxBeFrDMF0+nL7IWU/qwCGHGOcUIm4MTYXbfjpv0ooWnVjkSnAjW8msKaOQmNRfY6Q==}
+
   markdown-it-footnote@4.0.0:
     resolution: {integrity: sha512-WYJ7urf+khJYl3DqofQpYfEYkZKbmXmwxQV8c8mO/hGIhgZ1wOe7R4HLFNwqx7TjILbnC98fuyeSsin19JdFcQ==}
+
+  markdown-it-mark@4.0.0:
+    resolution: {integrity: sha512-YLhzaOsU9THO/cal0lUjfMjrqSMPjjyjChYM7oyj4DnyaXEzA8gnW6cVJeyCrCVeyesrY2PlEdUYJSPFYL4Nkg==}
 
   markdown-it-task-lists@2.1.1:
     resolution: {integrity: sha512-TxFAc76Jnhb2OUu+n3yz9RMu4CwGfaT788br6HhEDlvWfdeJcLUsxk1Hgw2yJio0OXsxv7pyIPmvECY7bMbluA==}
@@ -3498,7 +3510,11 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
 
+  markdown-it-deflist@4.0.0: {}
+
   markdown-it-footnote@4.0.0: {}
+
+  markdown-it-mark@4.0.0: {}
 
   markdown-it-task-lists@2.1.1: {}
 
