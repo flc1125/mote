@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { TOC_SCRIPT } from './toc-script.js';
+import { THEME_SCRIPT } from './theme-script.js';
 import { renderHtmlPage } from './template.js';
 
 const page = renderHtmlPage({
@@ -16,11 +17,36 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
     expect(page).toContain('<meta name="viewport" content="width=device-width, initial-scale=1">');
   });
 
-  it('inlines CSS and only the fixed TOC enhancement', () => {
+  it('inlines CSS plus the fixed theme and TOC enhancements', () => {
     expect(page).toContain('<style>');
     expect(page).toContain('prefers-color-scheme: dark');
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
+      THEME_SCRIPT,
       TOC_SCRIPT,
+    ]);
+  });
+
+  it('applies the theme script before first paint, right after the styles', () => {
+    expect(page.indexOf('</style>')).toBeLessThan(page.indexOf(`<script>${THEME_SCRIPT}`));
+    expect(page.indexOf(`<script>${THEME_SCRIPT}`)).toBeLessThan(page.indexOf('</head>'));
+  });
+
+  it('renders a hidden three-state theme menu in the banner', () => {
+    expect(page).toContain('<button type="button" class="theme-toggle"');
+    expect(page).toMatch(
+      /class="theme-toggle"[^>]*aria-haspopup="menu"[^>]*aria-expanded="false"[^>]*hidden>/,
+    );
+    expect(page).toContain('<span class="theme-menu-list" role="menu" aria-label="Theme" hidden>');
+    for (const icon of ['theme-icon-auto', 'theme-icon-light', 'theme-icon-dark']) {
+      expect(page).toContain(icon);
+    }
+    const items = [
+      ...page.matchAll(/role="menuitemradio" aria-checked="(\w+)" data-theme-value="(\w+)"/g),
+    ];
+    expect(items.map((match) => [match[1], match[2]])).toEqual([
+      ['true', 'auto'],
+      ['false', 'light'],
+      ['false', 'dark'],
     ]);
   });
 
@@ -61,7 +87,10 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
     const bare = renderHtmlPage({ title: 'T', tocHtml: '', contentHtml: '<p>x</p>' });
     expect(bare).not.toContain('<aside class="toc-drawer"');
     expect(bare).not.toContain('<a class="toc-trigger"');
-    expect(bare).not.toContain('<script>');
+    // The theme script stays: the toggle lives on every document page.
+    expect([...bare.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
+      THEME_SCRIPT,
+    ]);
   });
 
   it('opens the same-origin home in a new tab from both brand links', () => {

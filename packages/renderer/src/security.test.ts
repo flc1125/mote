@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { DocumentManifest } from '@mote/protocol';
 
 import { render } from './index.js';
+import { THEME_SCRIPT } from './theme-script.js';
 
 const DOCUMENT_ID = '7Vk3mQ9x2NFaP4Ls';
 
@@ -31,7 +32,10 @@ function articleContent(html: string): string {
 describe('XSS security tests (§57)', () => {
   it('<script>alert(1)</script> must not become an element', () => {
     const html = renderAttack('<script>alert(1)</script>');
-    expect(html).not.toContain('<script>');
+    // The only script on the page is the fixed first-party theme script.
+    expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
+    ]);
     // The allowlist sanitizer drops the script subtree entirely.
     expect(html).not.toContain('alert(1)');
   });

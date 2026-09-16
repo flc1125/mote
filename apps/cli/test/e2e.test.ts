@@ -2,6 +2,7 @@ import { FOOTNOTE_SCRIPT } from '../../../packages/renderer/src/footnote-script.
 import { IMAGE_SCRIPT } from '../../../packages/renderer/src/image-script.js';
 import { createHash } from 'node:crypto';
 import { TOC_SCRIPT } from '../../../packages/renderer/src/toc-script.js';
+import { THEME_SCRIPT } from '../../../packages/renderer/src/theme-script.js';
 import { COPY_SCRIPT } from '../../../packages/renderer/src/copy-script.js';
 import { execFile } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
@@ -137,12 +138,13 @@ function assetPaths(html: string): string[] {
 function expectTocPolicy(response: Response, html: string, copy = false): void {
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
   expect(scripts).toEqual([
+    THEME_SCRIPT,
     TOC_SCRIPT,
     ...(copy ? [COPY_SCRIPT] : []),
     ...(html.includes('<img ') ? [IMAGE_SCRIPT] : []),
     ...(html.includes('class="footnote-ref"') ? [FOOTNOTE_SCRIPT] : []),
   ]);
-  const hashes = [TOC_SCRIPT, COPY_SCRIPT, IMAGE_SCRIPT, FOOTNOTE_SCRIPT].map(
+  const hashes = [TOC_SCRIPT, COPY_SCRIPT, IMAGE_SCRIPT, FOOTNOTE_SCRIPT, THEME_SCRIPT].map(
     (script) => `'sha256-${createHash('sha256').update(script).digest('base64')}'`,
   );
   const policy = response.headers.get('Content-Security-Policy')!;

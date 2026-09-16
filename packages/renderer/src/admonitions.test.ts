@@ -6,6 +6,7 @@ import { renderMarkdown } from './markdown.js';
 import { render } from './index.js';
 import { TOC_SCRIPT } from './toc-script.js';
 import { COPY_SCRIPT } from './copy-script.js';
+import { THEME_SCRIPT } from './theme-script.js';
 
 const id = '7Vk3mQ9x2NFaP4Ls';
 const manifest = {
@@ -73,12 +74,16 @@ describe('shared admonition presentation', () => {
     );
     expect(page).not.toContain('<aside');
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
       TOC_SCRIPT,
       COPY_SCRIPT,
     ]);
   });
   it('keeps an ordinary heading-free static admonition script-free', () => {
-    expect(render('!!! note\n\n    Body.', manifest, id)).not.toContain('<script>');
+    const page = render('!!! note\n\n    Body.', manifest, id);
+    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
+    ]);
   });
   it('preserves native HTML summary content and open state without accepting custom attributes', () => {
     const page = render(
@@ -92,6 +97,7 @@ describe('shared admonition presentation', () => {
     expect(page).not.toContain('style="color:red"');
     expect(page).not.toContain('<aside');
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
       TOC_SCRIPT,
     ]);
   });

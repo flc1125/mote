@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { renderMarkdown } from './markdown.js';
 import { renderHtmlPage } from './template.js';
+import { THEME_SCRIPT } from './theme-script.js';
 
 const render = (source: string) => renderMarkdown(source, new Map([['photo.png', '/asset/photo']]));
 
@@ -10,9 +11,10 @@ describe('typography rendering', () => {
     const { html } = render('==Important==\n\nTerm\n: Definition');
     expect(html).toContain('<mark>Important</mark>');
     expect(html).toContain('<dl>\n<dt>Term</dt>\n<dd>Definition</dd>');
-    expect(renderHtmlPage({ title: 'Typography', tocHtml: '', contentHtml: html })).not.toContain(
-      '<script>',
-    );
+    const page = renderHtmlPage({ title: 'Typography', tocHtml: '', contentHtml: html });
+    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
+    ]);
   });
   it('sanitizes HTML within marks and definitions while rewriting real images', () => {
     const { html } = render(

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { render } from './index.js';
 import { TOC_SCRIPT } from './toc-script.js';
+import { THEME_SCRIPT } from './theme-script.js';
 
 const id = '7Vk3mQ9x2NFaP4Ls';
 const manifest = {
@@ -48,7 +49,7 @@ describe('TOC enhancement boundary', () => {
         if (tag === 'script') inScript = false;
       },
     }).end(html);
-    expect(scripts).toEqual([TOC_SCRIPT]);
+    expect(scripts).toEqual([THEME_SCRIPT, TOC_SCRIPT]);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toContain('mote-toc-group-0-1');
     expect(TOC_SCRIPT).not.toContain('attack()');

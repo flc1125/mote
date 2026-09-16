@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { renderMarkdown } from './markdown.js';
 import { renderHtmlPage } from './template.js';
 import { COPY_SCRIPT } from './copy-script.js';
+import { THEME_SCRIPT } from './theme-script.js';
 import MarkdownIt from 'markdown-it';
 import { codeBlockCases } from './fixtures/code-blocks.js';
 
@@ -201,11 +202,14 @@ describe('code block enhancements', () => {
       codeCopy: result.codeCopy,
     });
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
       COPY_SCRIPT,
     ]);
-    expect(
-      renderHtmlPage({ title: 'Plain', tocHtml: '', contentHtml: '<p>text</p>' }),
-    ).not.toContain('<script>');
+    // A plain page still carries the always-on theme script, nothing else.
+    const plain = renderHtmlPage({ title: 'Plain', tocHtml: '', contentHtml: '<p>text</p>' });
+    expect([...plain.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
+    ]);
   });
   it('renders the committed specimen with code text intact and no image assets', () => {
     const source = readFileSync(

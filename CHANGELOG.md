@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Reader theme switching on document pages: a banner toggle cycles auto (system), light and dark, persists the choice per browser and applies it before first paint without flashing. With JavaScript disabled the page still follows the system theme, and printing always uses the light palette. The fixed theme script is authorized by its exact CSP hash, shared across GET and HEAD. ([#72](https://github.com/flc1125/mote/pull/72))
+
+### Fixed
+
+- Footnote fragment jumps (reference → definition and back) now clear the sticky banner, matching heading anchors. ([#71](https://github.com/flc1125/mote/pull/71))
+- Footnote popover shadow, TOC scrim and drawer shadow deepen in dark mode so overlays stay visible. ([#71](https://github.com/flc1125/mote/pull/71))
+
 ## [0.7.0] - 2026-09-16
 
 ### Added

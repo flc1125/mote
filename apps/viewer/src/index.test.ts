@@ -8,6 +8,7 @@ import {
   COPY_SCRIPT,
   IMAGE_SCRIPT,
   FOOTNOTE_SCRIPT,
+  THEME_SCRIPT,
 } from '@mote/renderer';
 import { HOME_HTML } from './home.js';
 import { FAVICON_BASE64, ICON_SVG } from './brand.generated.js';
@@ -102,11 +103,14 @@ describe('GET /{document-id}', () => {
       expect(html.match(/aria-label="Mermaid diagram"/g)).toHaveLength(2);
       expect(html).not.toContain('fonts.googleapis');
       expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
+        THEME_SCRIPT,
         TOC_SCRIPT,
       ]);
-      expect(html.replace(`<script>${TOC_SCRIPT}</script>`, '')).not.toMatch(
-        /<(?:script|foreignObject|image)\b/,
-      );
+      expect(
+        html
+          .replace(`<script>${THEME_SCRIPT}</script>`, '')
+          .replace(`<script>${TOC_SCRIPT}</script>`, ''),
+      ).not.toMatch(/<(?:script|foreignObject|image)\b/);
       if (previous) expect(html).toBe(previous);
       previous = html;
     }
@@ -303,11 +307,8 @@ describe('public homepage and branding', () => {
     const document = await workerFetch(`http://localhost/${ID}`);
     const documentHtml = await document.text();
     const tocScript = [...documentHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)];
-    expect(tocScript.map((match) => match[1])).toEqual([TOC_SCRIPT, IMAGE_SCRIPT]);
-    const tocDigest = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(tocScript[0]![1]!),
-    );
+    expect(tocScript.map((match) => match[1])).toEqual([THEME_SCRIPT, TOC_SCRIPT, IMAGE_SCRIPT]);
+    const tocDigest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(TOC_SCRIPT));
     const tocHash = btoa(String.fromCharCode(...new Uint8Array(tocDigest)));
     const imageDigest = await crypto.subtle.digest(
       'SHA-256',
@@ -319,17 +320,23 @@ describe('public homepage and branding', () => {
       new TextEncoder().encode(FOOTNOTE_SCRIPT),
     );
     const footnoteHash = btoa(String.fromCharCode(...new Uint8Array(footnoteDigest)));
+    const themeDigest = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(THEME_SCRIPT),
+    );
+    const themeHash = btoa(String.fromCharCode(...new Uint8Array(themeDigest)));
     const copyDigest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(COPY_SCRIPT));
     const copyHash = btoa(String.fromCharCode(...new Uint8Array(copyDigest)));
     const documentPolicy = document.headers.get('Content-Security-Policy')!;
     expect(
       documentPolicy.split('; ').find((directive) => directive.startsWith('script-src ')),
     ).toBe(
-      `script-src 'sha256-${tocHash}' 'sha256-${copyHash}' 'sha256-${imageHash}' 'sha256-${footnoteHash}'`,
+      `script-src 'sha256-${tocHash}' 'sha256-${copyHash}' 'sha256-${imageHash}' 'sha256-${footnoteHash}' 'sha256-${themeHash}'`,
     );
     expect(documentPolicy).not.toContain(hash);
     expect(policy).not.toContain(tocHash);
     expect(policy).not.toContain(copyHash);
+    expect(policy).not.toContain(themeHash);
   });
 
   it('opens document and external links in new tabs while preserving in-page navigation', async () => {

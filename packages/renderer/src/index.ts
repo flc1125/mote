@@ -35,3 +35,4 @@ export { COPY_SCRIPT } from './copy-script.js';
 
 export { IMAGE_SCRIPT } from './image-script.js';
 export { FOOTNOTE_SCRIPT } from './footnote-script.js';
+export { THEME_SCRIPT } from './theme-script.js';

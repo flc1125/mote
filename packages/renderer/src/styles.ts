@@ -5,8 +5,8 @@ import { BASE_CSS, TOKENS_CSS } from '@mote/theme';
  * a clean, reading-first page on the shared Mote tokens — 760px prose
  * column, 17px/1.75 body text, rule-free headings, softly framed tables,
  * accent-red used only for links, quotes and the brand mark. The slim
- * banner is sticky and blurred; dark mode comes from the token palette,
- * no JS.
+ * banner is sticky and blurred; dark mode follows the token palette with an
+ * optional reader override (data-theme) applied by the fixed theme script.
  */
 const DOCUMENT_CSS = `
 /* Document-layer tokens: stacking order and shared control sizing (plan 012
@@ -532,11 +532,81 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
 
 /* Static anchors work without JavaScript. Enhancement adds state, focus
    management and scroll position; it never changes the rendered article. */
+/* Banner theme menu (plan 012 control spec): pill button + popover list. */
+.theme-menu { position: relative; margin-left: auto; }
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: var(--mote-control-size);
+  min-height: var(--mote-control-size);
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--mote-radius-pill);
+  background: transparent;
+  color: var(--mote-muted);
+  cursor: pointer;
+  transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
+}
+.theme-toggle[hidden] { display: none; }
+.theme-toggle:hover { color: var(--mote-accent); background: var(--mote-tint); }
+.theme-toggle:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.theme-toggle[aria-expanded="true"] { color: var(--mote-fg); }
+.theme-chevron { flex-shrink: 0; }
+/* SVG ignores the hidden attribute without an explicit rule. */
+.theme-icon[hidden] { display: none; }
+
+.theme-menu-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+  min-width: 9rem;
+  box-sizing: border-box;
+  padding: 4px;
+  border: 1px solid var(--mote-border);
+  border-radius: var(--mote-radius-md);
+  background: var(--mote-bg);
+  box-shadow: var(--mote-shadow-pop);
+  animation: theme-menu-in var(--mote-duration-fast) var(--mote-ease-out);
+}
+.theme-menu-list[hidden] { display: none; }
+@keyframes theme-menu-in { from { opacity: 0; transform: translateY(-3px); } }
+.theme-menu-list button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--mote-radius-sm);
+  background: transparent;
+  color: var(--mote-fg);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
+}
+.theme-menu-list button:hover { color: var(--mote-accent); background: var(--mote-tint); }
+.theme-menu-list button:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: -2px; }
+.theme-menu-list button[aria-checked="true"] { color: var(--mote-accent); font-weight: 600; }
+.theme-menu-list button[aria-checked="true"]::after { content: "✓"; margin-left: auto; font-size: 12px; }
+.theme-item-icon { flex-shrink: 0; color: var(--mote-muted); }
+.theme-menu-list button:hover .theme-item-icon,
+.theme-menu-list button[aria-checked="true"] .theme-item-icon { color: inherit; }
+
 .toc-trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: auto;
   min-width: var(--mote-control-size);
   min-height: var(--mote-control-size);
   box-sizing: border-box;
@@ -822,7 +892,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
-  .toc-trigger, .toc-scrim, .toc-drawer { display: none; }
+  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer { display: none; }
   .has-toc:not([data-toc-collapsed]) main,
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin: 0 auto; }
   body[data-toc-modal] { position: static; }
@@ -834,6 +904,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
   .toc-drawer, .toc-scrim { transition: none; }
   .image-expand, .image-close { transition: none; }
   .image-viewer[open]::backdrop, .image-viewer[open] .image-viewer-stage img { animation: none; }
+  .theme-menu-list { animation: none; }
 }
 `;
 

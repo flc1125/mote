@@ -94,6 +94,7 @@ documents/
 - CLI 与 Viewer 共用 `@mote/core` 的 `documentSyntax`，以相同规则识别脚注、受保护的代码/数学区域、扩展提示块、内容标签组、图片宽度/图注及文本高亮/定义列表及文档内缩写，保持图片扫描与正文渲染一致。提示块使用受控类型和纯文本标题，与 GitHub Alerts 共用视觉样式；折叠使用原生 `details/summary`，固定导航脚本统一处理目录、标签切换、深链接展开及打印恢复。标签组先输出全部面板与可链接标题，成功初始化后才增加 tabs 语义和隐藏状态；共用提示块的源码、层级和组件预算。
 
 - Viewer 在请求时用 markdown-it 把 Markdown 渲染为 HTML（GFM：表格、删除线、任务列表、脚注；Raw HTML 经白名单净化器处理，见[安全模型](security.md)），本地图片引用按 manifest 重写为 `/{document-id}/a/{asset-id}`。
+- 文档页明暗主题默认跟随系统（`prefers-color-scheme`）；读者可通过 banner 的主题按钮在 auto/light/dark 间循环，选择按浏览器存入 `localStorage["mote-theme"]`，由固定的第一方脚本在首帧前设置 `<html data-theme>` 避免闪烁，无 JavaScript 时回退系统主题；打印始终使用亮色配色。主题脚本按其精确 CSP 哈希授权，GET/HEAD 策略一致。
 - 缩写定义与匹配均有文档级预算，输出静态 abbr；脚注预览由固定脚本按需增强，仅复制已净化 DOM 的静态子集，删除 ID/控件/运行时状态，超限或复杂内容保持原始锚点跳转。文末脚注与回链始终保留。
 - 渲染结果交给 Workers Cache（非 Cache API）：Document 边缘缓存 1 年，Asset `immutable`。
 - 保持 Workers Cache 默认的「Worker Version 纳入 Cache Key」行为：Renderer/Theme 发新版自动使用新缓存，无需 purge。

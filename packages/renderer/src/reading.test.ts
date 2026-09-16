@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { renderMarkdown } from './markdown.js';
 import { renderHtmlPage } from './template.js';
 import { FOOTNOTE_SCRIPT } from './footnote-script.js';
+import { THEME_SCRIPT } from './theme-script.js';
 
 describe('abbreviations and footnote reading', () => {
   it('keeps visible heading anchors and escapes abbreviation explanations', () => {
@@ -19,14 +20,16 @@ describe('abbreviations and footnote reading', () => {
     const { html } = renderMarkdown('Text[^n]\n\n[^n]: A note.', new Map());
     const page = renderHtmlPage({ title: 'Notes', tocHtml: '', contentHtml: html });
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
       FOOTNOTE_SCRIPT,
     ]);
     expect(html).toContain('href="#fn1"');
     expect(html).toContain('href="#fnref1"');
     expect(html).not.toContain('hidden');
-    expect(
-      renderHtmlPage({ title: 'Plain', tocHtml: '', contentHtml: '<p>No notes</p>' }),
-    ).not.toContain('<script>');
+    const plain = renderHtmlPage({ title: 'Plain', tocHtml: '', contentHtml: '<p>No notes</p>' });
+    expect([...plain.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
+    ]);
   });
   it('renders the mixed specimen with one real asset and protected code', () => {
     const source = readFileSync(
