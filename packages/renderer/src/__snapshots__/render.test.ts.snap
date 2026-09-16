@@ -798,6 +798,9 @@ hr.footnotes-sep { display: none; }
   color: var(--mote-muted);
 }
 .footnotes ol { padding-left: 1.4em; }
+/* A block-ending footnote keeps its return links on a compact separate line. */
+.footnote-item > dl:has(+ a.footnote-backref) { margin-bottom: 0.35em; }
+.footnote-item > dl:has(+ a.footnote-backref) > dd:last-child { margin-bottom: 0; }
 a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 
 /* Colophon */
