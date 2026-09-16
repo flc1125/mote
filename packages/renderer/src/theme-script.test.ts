@@ -14,7 +14,7 @@ function harness(saved: string | null = null) {
 
   const makeIcon = (name: string, hidden: boolean) => ({
     name,
-    attrs: { hidden },
+    attrs: { hidden } as Record<string, boolean>,
     toggleAttribute(attr: string, force: boolean) {
       this.attrs[attr] = force;
     },
