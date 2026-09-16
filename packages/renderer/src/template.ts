@@ -21,7 +21,9 @@ export function renderHtmlPage({
 }: PageInput): string {
   const safeTitle = escapeHtml(title);
   const tocIcon =
-    '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 4.5h8M7 9h8M7 13.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><g fill="currentColor"><circle cx="3" cy="4.5" r="1"/><circle cx="3" cy="9" r="1"/><circle cx="3" cy="13.5" r="1"/></g></svg>';
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><g fill="currentColor"><circle cx="4" cy="6" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="4" cy="18" r="1.3"/></g></svg>';
+  const closeIcon =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
   const tocTrigger =
     tocHtml === ''
       ? ''
@@ -30,7 +32,7 @@ export function renderHtmlPage({
     tocHtml === ''
       ? ''
       : `<aside class="toc-drawer" id="mote-toc" aria-label="Table of contents" tabindex="-1">
-<div class="toc-drawer-head"><span class="toc-title">Contents</span><a class="toc-close" href="#!" tabindex="0" aria-label="Close table of contents" title="Hide contents">×</a></div>
+<div class="toc-drawer-head"><span class="toc-title">Contents</span><a class="toc-close" href="#!" tabindex="0" aria-label="Close table of contents" title="Hide contents">${closeIcon}</a></div>
 ${tocHtml}</aside>
 <a class="toc-scrim" href="#!" aria-hidden="true" tabindex="-1"></a>
 `;

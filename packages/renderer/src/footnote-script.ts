@@ -11,7 +11,9 @@ export const FOOTNOTE_SCRIPT = String.raw`(() => {
   const title = document.createElement('strong');
   const close = document.createElement('button');
   close.type = 'button';
-  close.textContent = '×';
+  // Shared close glyph: same SVG cross as the TOC drawer and image viewer.
+  close.innerHTML =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
   close.setAttribute('aria-label', 'Close footnote preview');
   header.append(title, close);
   const body = document.createElement('div');
