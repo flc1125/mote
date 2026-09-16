@@ -344,6 +344,65 @@ tr:last-child td { border-bottom: 0; }
 .table-scroll th, .table-scroll td { min-width: 4em; max-width: 24em; overflow-wrap: anywhere; }
 
 img { max-width: 100%; height: auto; box-sizing: border-box; border-radius: 8px; }
+article figure:has(> img), article figure:has(> .image-frame) { margin: 1.5em 0; }
+article figure:has(> img) > figcaption, article figure:has(> .image-frame) > figcaption { margin-top: 0.6em; color: var(--mote-muted); font-size: 0.85em; text-align: center; overflow-wrap: anywhere; }
+.image-frame { display: block; position: relative; max-width: 100%; }
+.image-frame > img { display: block; width: 100%; }
+.image-expand, .image-close { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; }
+/* The magnifier stays quiet until the image is hovered or focused; touch
+   devices keep it visible via the coarse-pointer media query below. */
+.image-expand {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  border-radius: 6px;
+  background: transparent;
+  isolation: isolate;
+  color: var(--mote-fg);
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease, background-color 0.15s ease;
+}
+.image-frame:hover > .image-expand, .image-frame:focus-within > .image-expand { opacity: 1; transform: none; pointer-events: auto; }
+.image-expand[hidden], .image-viewer-stage img[hidden] { display: none; }
+.image-expand::before { content: ""; position: absolute; inset: 7px; z-index: -1; border-radius: 5px; background: color-mix(in srgb, var(--mote-bg) 90%, transparent); }
+.image-expand:hover::before { background: var(--mote-bg); }
+.image-expand:focus-visible, .image-viewer :focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
+/* Frameless viewer: a dimmed page, the picture and one close button. */
+.image-viewer { box-sizing: border-box; position: fixed; inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; color: white; background: transparent; border: 0; border-radius: 0; overflow: hidden; }
+.image-viewer[open] { display: flex; flex-direction: column; }
+.image-viewer::backdrop { background: rgb(0 0 0 / 85%); backdrop-filter: blur(2px); }
+.image-viewer[open]::backdrop { animation: image-viewer-fade 0.16s ease-out; }
+.image-close {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 1;
+  color: white;
+  background: rgb(0 0 0 / 45%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.image-close:hover { background: rgb(0 0 0 / 62%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 38%); }
+.image-viewer-stage { box-sizing: border-box; display: flex; align-items: center; justify-content: center; flex: 1; min-height: 0; overflow: auto; padding: 68px 24px 24px; text-align: center; overscroll-behavior: contain; }
+/* The enlarged image keeps the document's corner radius and floats on the
+   dimmed page; clicking it toggles the original size. */
+.image-viewer-stage img { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 12px 48px rgb(0 0 0 / 55%); cursor: default; }
+.image-viewer-stage img[role="button"] { cursor: zoom-in; }
+.image-viewer[open] .image-viewer-stage img { animation: image-viewer-in 0.18s ease-out; }
+.image-viewer.is-original .image-viewer-stage { display: block; text-align: left; }
+.image-viewer.is-original img { max-width: none; max-height: none; cursor: zoom-out; }
+.image-viewer-status { position: absolute; left: 24px; right: 24px; top: 50%; margin: 0; text-align: center; color: rgb(255 255 255 / 88%); pointer-events: none; }
+.image-viewer-status:empty { display: none; }
+@keyframes image-viewer-fade { from { opacity: 0; } }
+@keyframes image-viewer-in { from { opacity: 0; transform: scale(0.97); } }
+@media (hover: none), (pointer: coarse) { .image-expand { opacity: 1; transform: none; pointer-events: auto; } }
+@media (max-width: 600px) { .image-viewer-stage { padding: 68px 12px 12px; } }
+@media print { .image-expand, .image-viewer { display: none !important; } }
+
 
 hr {
   height: 1px;
@@ -705,6 +764,8 @@ a.footnote-ref, a.footnote-backref { border-bottom: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   .toc-drawer, .toc-scrim { transition: none; }
+  .image-expand, .image-close { transition: none; }
+  .image-viewer[open]::backdrop, .image-viewer[open] .image-viewer-stage img { animation: none; }
 }
 `;
 

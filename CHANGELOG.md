@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Image widths with a bounded `{ width="640" }` / percentage subset, image-only `/// caption` blocks, and a progressive native-dialog image viewer. Shared parsing preserves asset paths and deduplication; linked/inline images keep their behavior. Later Markdown images use native lazy loading, with a fixed image-script CSP hash shared by GET and HEAD.
+
 - Content tabs with `=== "label"`: independent groups, keyboard navigation, panel and heading deep links, shared CLI/Viewer parsing and bounded nesting. All panels remain readable without JavaScript and in print; initialization failures retain static content.
 
 - Extended admonitions with `!!!`, `???` and `???+`: seven types, plain-text custom titles, bounded nesting and native disclosures. They share a tinted title band and page-colored body with GitHub alerts and native HTML disclosures. CLI and Viewer use the same structure rules for nested images; links reveal closed ancestors, and printing includes folded bodies.

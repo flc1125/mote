@@ -1,3 +1,4 @@
+import { IMAGE_SCRIPT } from './image-script.js';
 import { readFileSync } from 'node:fs';
 import { Parser } from 'htmlparser2';
 import { describe, expect, it } from 'vitest';
@@ -70,11 +71,13 @@ describe('committed compatibility specimens', () => {
     expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
       TOC_SCRIPT,
       COPY_SCRIPT,
+      IMAGE_SCRIPT,
     ]);
     expect(
       html
         .replace(`<script>${TOC_SCRIPT}</script>`, '')
-        .replace(`<script>${COPY_SCRIPT}</script>`, ''),
+        .replace(`<script>${COPY_SCRIPT}</script>`, '')
+        .replace(`<script>${IMAGE_SCRIPT}</script>`, ''),
     ).not.toMatch(/<(?:script|iframe|foreignObject)\b/);
   });
   it('renders supplementary charts with all relationship labels and series', () => {

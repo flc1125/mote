@@ -118,6 +118,55 @@ style/class/id attributes and active embeds are removed. Put blank lines around
 Markdown inside `details` containers; arbitrary HTML blocks are not recursively
 reinterpreted as Markdown.
 
+### Image sizes, captions and viewing
+
+Append `{ width="640" }` directly to an image to set its width in CSS pixels, or
+use `{ width="50%" }` relative to the containing column. Height stays proportional;
+images never exceed the available width. Only `width` is accepted: a decimal
+integer from 1–4096 or a percentage from 1–100, in double quotes. The attribute
+tail is limited to 64 UTF-16 units. Spaces before the braces, duplicate/unknown
+fields and invalid values leave the tail visible as ordinary text.
+
+```markdown
+![Alternative description](photo.png 'Optional tooltip'){ width="640" }
+/// caption
+A **visible caption** with a [source link](https://example.com).
+///
+```
+
+Place the image on its own line, followed immediately by `/// caption`, 1–32
+nonblank caption lines, and a closing `///`. Separate the whole block from other
+paragraphs with blank lines. Captions support inline Markdown, including links;
+they are not general block containers. Reference-style images work too. Captions
+remain distinct from alternative text and the optional image tooltip. HTML
+`figure`/`figcaption` remains available.
+
+Caption processing is bounded: image line 4,096 UTF-16 units, caption 4,096,
+complete paragraph 8,192; at most 64 candidate paragraphs and 65,536 units per
+document. Attempts consume the budget even when invalid. Unsupported or oversized
+structures follow ordinary Markdown rules.
+
+Loaded standalone large images offer a magnifier in browsers with native dialog
+support. It appears on hover or keyboard focus, and stays visible on touch devices.
+The borderless viewer shows the image and a close icon. When the image is scaled down to fit the window, click it or press
+Enter/Space while it is focused to switch between original size and fitting the
+window. Images already displayed at original size have no extra zoom interaction. Click the empty backdrop or press Escape to close and restore focus. Enlarged images scroll with
+keyboard or native touch scrolling; browser zoom remains available. Linked images,
+inline images, small icons, `picture` and `srcset` images retain their original
+behavior. At most 64 eligible candidates receive controls. Without JavaScript,
+images and captions remain readable with the browser's native image actions.
+Printing omits viewer controls. A failed image retains its alternative text.
+
+The first Markdown image keeps default eager loading; later Markdown images use
+native lazy loading, and all decode asynchronously. This is a document-order
+heuristic, not viewport detection. Raw HTML images keep browser defaults. Remote
+images and the viewer reuse the original URLs without a proxy or a separate upload.
+For different light/dark artwork, use the existing `picture`/`source media` markup;
+URL-fragment shortcuts are not interpreted.
+
+Try the [image specimen](examples/markdown-images.md) for widths, captions,
+linked images and images inside tabs and disclosures. Screenshots: [desktop](assets/markdown-images-desktop.png), [narrow viewer](assets/markdown-images-mobile.png), [dark viewer](assets/markdown-images-dark.png).
+
 ## Alerts
 
 ### Ordinary notes

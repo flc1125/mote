@@ -148,8 +148,8 @@ describe('XSS security tests (§57)', () => {
       ),
     );
     expect(article).toContain('<a href="">link</a>');
-    expect(article).toContain('<img src="" alt="inline">');
-    expect(article).toContain('<img src="" alt="reference">');
+    expect(article).toContain('<img src="" alt="inline" decoding="async">');
+    expect(article).toContain('<img src="" alt="reference" decoding="async" loading="lazy">');
     expect(article).not.toContain('external.example');
   });
 

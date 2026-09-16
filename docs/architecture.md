@@ -91,7 +91,7 @@ documents/
 
 ## 渲染与缓存
 
-- CLI 与 Viewer 共用 `@mote/core` 的 `documentSyntax`，以相同规则识别脚注、受保护的代码/数学区域、扩展提示块和内容标签组，保持图片扫描与正文渲染一致。提示块使用受控类型和纯文本标题，与 GitHub Alerts 共用视觉样式；折叠使用原生 `details/summary`，固定导航脚本统一处理目录、标签切换、深链接展开及打印恢复。标签组先输出全部面板与可链接标题，成功初始化后才增加 tabs 语义和隐藏状态；共用提示块的源码、层级和组件预算。
+- CLI 与 Viewer 共用 `@mote/core` 的 `documentSyntax`，以相同规则识别脚注、受保护的代码/数学区域、扩展提示块、内容标签组及图片宽度/图注，保持图片扫描与正文渲染一致。提示块使用受控类型和纯文本标题，与 GitHub Alerts 共用视觉样式；折叠使用原生 `details/summary`，固定导航脚本统一处理目录、标签切换、深链接展开及打印恢复。标签组先输出全部面板与可链接标题，成功初始化后才增加 tabs 语义和隐藏状态；共用提示块的源码、层级和组件预算。
 
 - Viewer 在请求时用 markdown-it 把 Markdown 渲染为 HTML（GFM：表格、删除线、任务列表、脚注；Raw HTML 经白名单净化器处理，见[安全模型](security.md)），本地图片引用按 manifest 重写为 `/{document-id}/a/{asset-id}`。
 - 渲染结果交给 Workers Cache（非 Cache API）：Document 边缘缓存 1 年，Asset `immutable`。
@@ -99,7 +99,8 @@ documents/
 
 ## 安全要点
 
-- Raw HTML 白名单净化、仅允许固定目录与代码复制脚本哈希的严格 CSP、`Referrer-Policy: no-referrer`、noindex。
+- 图片宽度和图注在共享解析层处理，保持原始引用及上传去重。图片查看器是固定脚本的渐进增强：原生 dialog、焦点恢复、适应窗口/原始尺寸，跳过链接、行内和响应式 picture 图片；不增加用户 HTML 权限。
+- Raw HTML 白名单净化、仅允许固定导航、代码复制与图片查看脚本哈希的严格 CSP、`Referrer-Policy: no-referrer`、noindex。
 - 图片 MIME 以 Magic Bytes 为准；V1 不支持 SVG（Active Content 风险）。
 - 发布接口：静态 token 或经过 Access 的签名身份；Bundle ≤ 20 MiB（20 × 1,048,576 字节）、上传 Asset ≤ 50 个。Access 模式绑定 issuer/AUD/API 主机，不支持从备用 Worker 域名旁路。
 - CLI 与本地 stdio 共享 Mote 凭据存储、刷新锁与发布管线；Codex 独立保存自己的 OAuth 凭据。远程 MCP 保持无状态，无文档所有权或用户配额新增。

@@ -153,3 +153,18 @@ describe('shared tab structures', () => {
     expect(extractLocalImageReferences(source)).toEqual(images);
   });
 });
+
+describe('image enhancement scanning', () => {
+  it('scans real caption images but never treats width or code examples as paths', () => {
+    expect(
+      extractLocalImageReferences(
+        '![a](encoded%20name.png){ width="640" }\n/// caption\n**Caption** ![inline](caption.png) and `![fake](missing.png)`\n///\n\n```md\n![fake](code.png){ width="20" }\n/// caption\n![fake](code-caption.png)\n///\n```',
+      ),
+    ).toEqual(['encoded%20name.png', 'caption.png']);
+  });
+  it('scans captions inside hidden tabs and disclosures using the shared parser', () => {
+    const source =
+      '??? note "Images"\n\n    === "One"\n\n        Text.\n\n    === "Two"\n\n        ![alt](hidden.png){ width="50%" }\n        /// caption\n        Caption.\n        ///';
+    expect(extractLocalImageReferences(source)).toEqual(['hidden.png']);
+  });
+});
