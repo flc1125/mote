@@ -14,23 +14,24 @@ remain available when JavaScript is disabled.
 
 ## Support matrix
 
-| Feature                                          | Support                     | Behavior                                                                                     |
-| ------------------------------------------------ | --------------------------- | -------------------------------------------------------------------------------------------- |
-| Headings, paragraphs, emphasis, quotes and lists | Supported                   | Includes nested content, ordered-list starts and explicit hard breaks.                       |
-| Tables, strikethrough and automatic links        | Supported                   | Escaped pipes, alignment and inline formatting; wide content can scroll.                     |
-| Task lists and footnotes                         | Supported                   | Read-only checkboxes; repeated footnote references have return links.                        |
-| Chinese emphasis boundaries                      | Limited extension           | Double-asterisk emphasis next to CJK text or East Asian punctuation; details below.          |
-| Local Markdown and HTML images                   | Supported                   | CLI uploads referenced assets, including encoded paths; identical assets are deduplicated.   |
-| Presentational HTML                              | Allowlisted                 | Includes details/summary, picture, tables, kbd, sub and sup. Arbitrary HTML/CSS is excluded. |
-| GitHub-style alerts                              | Supported at document level | NOTE, TIP, IMPORTANT, WARNING and CAUTION. Nested list/quote markers remain ordinary quotes. |
-| Extended admonitions                             | Bounded enhancement         | Custom titles, seven types, nested content and native folding with `!!!`, `???` and `???+`.  |
-| Code highlighting                                | Selected languages          | Static coloring for explicitly named languages; otherwise escaped source.                    |
-| Code titles, line numbers and copying            | Bounded enhancement         | Optional titles and physical-line emphasis; browser copy controls exclude decorative text.   |
-| YAML front matter                                | Conservative recognition    | Valid metadata at the start is hidden; malformed or ambiguous content stays visible.         |
-| Mathematical formulas                            | TeX subset                  | Inline and display formulas rendered with KaTeX as native MathML.                            |
-| Mermaid diagrams                                 | Static subset               | Six diagram families with rendering budgets; source remains inspectable.                     |
-| MDX, Dataview and executable embeds              | Not supported               | No code execution or editor-specific runtime.                                                |
-| Uploaded or raw HTML SVG                         | Not supported               | Generated diagram SVG has a separate sanitizer; it does not enable user SVG uploads.         |
+| Feature                                          | Support                     | Behavior                                                                                        |
+| ------------------------------------------------ | --------------------------- | ----------------------------------------------------------------------------------------------- |
+| Headings, paragraphs, emphasis, quotes and lists | Supported                   | Includes nested content, ordered-list starts and explicit hard breaks.                          |
+| Tables, strikethrough and automatic links        | Supported                   | Escaped pipes, alignment and inline formatting; wide content can scroll.                        |
+| Task lists and footnotes                         | Supported                   | Read-only checkboxes; repeated footnote references have return links.                           |
+| Chinese emphasis boundaries                      | Limited extension           | Double-asterisk emphasis next to CJK text or East Asian punctuation; details below.             |
+| Local Markdown and HTML images                   | Supported                   | CLI uploads referenced assets, including encoded paths; identical assets are deduplicated.      |
+| Presentational HTML                              | Allowlisted                 | Includes details/summary, picture, tables, kbd, sub and sup. Arbitrary HTML/CSS is excluded.    |
+| GitHub-style alerts                              | Supported at document level | NOTE, TIP, IMPORTANT, WARNING and CAUTION. Nested list/quote markers remain ordinary quotes.    |
+| Extended admonitions                             | Bounded enhancement         | Custom titles, seven types, nested content and native folding with `!!!`, `???` and `???+`.     |
+| Content tabs                                     | Bounded enhancement         | Independent groups, keyboard switching, linkable panels and a complete static reading fallback. |
+| Code highlighting                                | Selected languages          | Static coloring for explicitly named languages; otherwise escaped source.                       |
+| Code titles, line numbers and copying            | Bounded enhancement         | Optional titles and physical-line emphasis; browser copy controls exclude decorative text.      |
+| YAML front matter                                | Conservative recognition    | Valid metadata at the start is hidden; malformed or ambiguous content stays visible.            |
+| Mathematical formulas                            | TeX subset                  | Inline and display formulas rendered with KaTeX as native MathML.                               |
+| Mermaid diagrams                                 | Static subset               | Six diagram families with rendering budgets; source remains inspectable.                        |
+| MDX, Dataview and executable embeds              | Not supported               | No code execution or editor-specific runtime.                                                   |
+| Uploaded or raw HTML SVG                         | Not supported               | Generated diagram SVG has a separate sanitizer; it does not enable user SVG uploads.            |
 
 ## Publishable specimens
 
@@ -46,6 +47,7 @@ mote docs/examples/markdown-admonitions.md
 Publishing requires an instance and publisher authorization; see the
 [CLI reference](cli.md) and [authentication guide](authentication.md).
 
+- [Content tabs](examples/markdown-tabs.md): alternatives, independent groups, nested disclosures and static fallbacks.
 - [Admonitions](examples/markdown-admonitions.md): ordinary alerts, titles, nesting, folding and bundled images.
 - [Main specimen](examples/markdown-compatibility.md): numbered checks for mixed
   prose, lists, tables, alerts, code, local images, HTML, formulas, four diagram
@@ -150,7 +152,7 @@ accepted.
 
 Put a blank line after the opener and indent every nonblank body line with four
 spaces relative to it. The opener must start at column zero of the document or its
-containing admonition. Body content supports ordinary Markdown, including lists,
+containing admonition or tab panel. Body content supports ordinary Markdown, including lists,
 images, tables, code, math, footnotes and other admonitions. Local images inside
 closed blocks are bundled like visible images. Code and math examples remain
 literal and do not upload images.
@@ -206,6 +208,65 @@ Publish the [admonition specimen](examples/markdown-admonitions.md) to try both
 syntaxes, custom titles, nesting, image discovery and disclosure navigation.
 Reference screenshots: [desktop](assets/markdown-admonitions-desktop.png) and
 [dark style preview](assets/markdown-admonitions-dark.png).
+
+## Content tabs
+
+Use `=== "label"` for alternative instructions, such as package managers or platforms:
+
+````markdown
+=== "npm"
+
+    ```sh
+    npm install -g mote-cli
+    ```
+
+=== "pnpm"
+
+    ```sh
+    pnpm add -g mote-cli
+    ```
+````
+
+Start each opener at column zero of the document or recognized component body.
+Leave a blank line after it and indent every nonblank body line with four literal
+spaces. Adjacent valid panels separated only by blank lines form one group; an
+ordinary block ends the group. Labels are nonblank plain text in double quotes,
+with only `\"` and `\\` escapes. Duplicate labels are allowed and receive distinct
+links. A single panel is a readable section without switching controls.
+
+Each group initially selects its first panel and switches independently. Click or
+tap a label, or use Left/Right arrows, Home and End while a label has keyboard
+focus. Tab moves into the active panel. Selections are not synchronized across
+groups or remembered across pages.
+
+Choosing a tab updates the URL with a panel anchor such as `#mote-tab-2`. Heading
+links retain their ordinary IDs: following one reveals its panel and any closed
+disclosures, including when using the contents drawer or browser back/forward.
+Prefer heading links for durable references, since inserting earlier panels can
+change generated panel IDs. Footnote return links also reveal their referring
+panel. Without JavaScript, all panels and their linked labels stay visible; printing
+includes every panel. Native disclosures still need manual expansion when scripts are disabled. If initialization fails, the affected group stays readable.
+
+### Supported nesting
+
+| Container                                                     | Admonitions (`!!!`, `???`, `???+`) | Tab groups |
+| ------------------------------------------------------------- | ---------------------------------- | ---------- |
+| Document body                                                 | Yes                                | Yes        |
+| Admonition body, outside tabs                                 | Yes                                | Yes        |
+| Tab panel body                                                | Yes                                | No         |
+| Admonition anywhere inside a tab panel                        | Yes                                | No         |
+| Lists, blockquotes, footnote definitions, code or math source | No                                 | No         |
+
+HTML disclosures can surround Markdown components when blank lines allow Markdown
+parsing. Raw HTML blocks themselves are not reparsed. Each tab group and each panel
+counts as a component and a nesting level; these share the admonition budgets.
+A group supports at most 16 panels. An over-budget group falls back as a whole;
+invalid syntax follows ordinary Markdown rules. Images in every valid panel are
+bundled, while image examples in fallback code are not uploaded. Code, tables,
+math and diagrams retain their document-wide limits across panels.
+
+Try the [content tabs specimen](examples/markdown-tabs.md) for independent groups,
+folding, images, long labels and fallback examples. Screenshots: [desktop](assets/markdown-tabs-desktop.png) and [narrow screen](assets/markdown-tabs-mobile.png).
 
 ## Code highlighting
 
@@ -310,14 +371,14 @@ These are processing limits, not publication size limits. Exceeding a rendering
 budget keeps the affected source readable. Text counts use JavaScript string units;
 see the README for Markdown and asset upload byte limits.
 
-| Feature           | Per item                                                               | Per document                                                                    |
-| ----------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Front matter      | Closing delimiter within the first 16,384 text units                   | Opening block only                                                              |
-| Code highlighting | 16,384 input units; 4,096 per line; 262,144 output units               | 64 processed blocks; 65,536 input and 524,288 output units                      |
-| Code enhancements | 16,384 input units; 512 lines; 32 KiB additional markup                | 64 processed blocks; 65,536 input units; 4,096 lines; 256 KiB additional markup |
-| Admonitions       | 512 opener units; 160 title units; 8 levels of nesting                 | 256 components; 131,072 source units, counting nested source once               |
-| Mathematics       | 4,096 input units; 65,536 output units; 100 macro expansions           | 128 processed formulas; 16,384 input and 262,144 output units                   |
-| Mermaid           | 4,096 input units; 64 lines; 256 word tokens; 262,144 SVG output units | Up to 4 diagram attempts, in source order                                       |
+| Feature           | Per item                                                                           | Per document                                                                    |
+| ----------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Front matter      | Closing delimiter within the first 16,384 text units                               | Opening block only                                                              |
+| Code highlighting | 16,384 input units; 4,096 per line; 262,144 output units                           | 64 processed blocks; 65,536 input and 524,288 output units                      |
+| Code enhancements | 16,384 input units; 512 lines; 32 KiB additional markup                            | 64 processed blocks; 65,536 input units; 4,096 lines; 256 KiB additional markup |
+| Shared containers | 512 opener units; 160 title/label units; 8 nesting levels; 16 panels per tab group | 256 components; 131,072 source units, counting nested source once               |
+| Mathematics       | 4,096 input units; 65,536 output units; 100 macro expansions                       | 128 processed formulas; 16,384 input and 262,144 output units                   |
+| Mermaid           | 4,096 input units; 64 lines; 256 word tokens; 262,144 SVG output units             | Up to 4 diagram attempts, in source order                                       |
 
 Flowcharts and state diagrams additionally allow at most 32 nodes, 48 edges and
 8 top-level groups. Rendered SVG dimensions must not exceed 5,000 units per side.

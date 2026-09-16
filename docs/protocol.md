@@ -185,7 +185,7 @@ documents/{document-id}/
 
 - Malformed ID 与不存在的 ID 返回**完全相同的 404**，不暴露枚举信息。
 - 缓存：Document 边缘缓存 1 年（浏览器 5 分钟）；Asset `immutable` 1 年。
-- 安全头：`Content-Security-Policy`（`script-src` 仅授权固定目录（含折叠定位）与代码复制脚本的 SHA-256 哈希）、`Referrer-Policy: no-referrer`、`X-Robots-Tag: noindex` 等，详见 [security.md](security.md)。
+- 安全头：`Content-Security-Policy`（`script-src` 仅授权固定导航（含目录、折叠定位和标签切换）与代码复制脚本的 SHA-256 哈希）、`Referrer-Policy: no-referrer`、`X-Robots-Tag: noindex` 等，详见 [security.md](security.md)。
 
 ## ID 格式
 

@@ -146,7 +146,60 @@ pre code {
 .has-line-numbers .code-line { padding-left: calc(1.15rem + var(--code-line-width) + 0.75rem); }
 .code-line-number { position: absolute; left: 1.15rem; width: var(--code-line-width); text-align: right; color: var(--mote-muted); user-select: none; }
 .code-line-number::before { content: attr(data-line); }
+/* Static sections remain visible until the entire group is initialized. */
+.content-tabs {
+  margin: 1.2em 0;
+  border: 1px solid var(--mote-border);
+  border-radius: 8px;
+  min-width: 0;
+}
+.content-panel { padding: 1em; min-width: 0; }
+.content-panel, .content-panel [id^="fnref"] { scroll-margin-top: 76px; }
+.content-panel + .content-panel { border-top: 1px solid var(--mote-border); }
+.content-panel > :first-child { margin-top: 0; }
+.content-panel > :last-child { margin-bottom: 0; }
+.content-panel-title { font-weight: 600; margin: 0 0 .85em; overflow-wrap: anywhere; }
+.content-panel > .content-panel-title + * { margin-top: 0; }
+.content-tab-list {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--mote-border);
+  border-radius: 7px 7px 0 0;
+  background: var(--mote-code-bg);
+  padding: 0 .5em;
+  gap: .25em;
+}
+.content-tab-list > button {
+  flex: 0 0 auto;
+  max-width: min(24em, 80vw);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding: .7em .85em;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--mote-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.content-tab-list > button[aria-selected="true"] {
+  color: var(--mote-accent);
+  border-bottom-color: currentColor;
+}
+.content-tab-list > button[aria-selected="false"]:hover { color: var(--mote-fg); }
+.content-tab-list > button:focus-visible,
+.content-panel:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: -3px; }
+.content-tabs[data-tabs-enhanced] > .content-panel { border-top: 0; }
+.content-tabs[data-tabs-enhanced] > .content-panel > .content-panel-title { display: none; }
+.content-tabs[data-tabs-enhanced] > .content-panel[hidden] { display: none; }
+
 @media print {
+  .content-tabs > .content-tab-list { display: none !important; }
+  .content-tabs[data-tabs-enhanced] > .content-panel,
+  .content-tabs[data-tabs-enhanced] > .content-panel > .content-panel-title { display: block !important; }
+  .content-tabs[data-tabs-enhanced] > .content-panel + .content-panel { border-top: 1px solid var(--mote-border); }
+
   .code-copy, .code-copy-status { display: none !important; }
   .code-block { overflow: visible; }
   .code-block pre { overflow: visible; white-space: pre-wrap; }

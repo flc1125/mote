@@ -91,7 +91,7 @@ documents/
 
 ## 渲染与缓存
 
-- CLI 与 Viewer 共用 `@mote/core` 的 `documentSyntax`，以相同规则识别脚注、受保护的代码/数学区域和扩展提示块，保持图片扫描与正文渲染一致。提示块使用受控类型和纯文本标题，与 GitHub Alerts 共用视觉样式；折叠使用原生 `details/summary`，固定目录脚本补充深链接展开及打印恢复。
+- CLI 与 Viewer 共用 `@mote/core` 的 `documentSyntax`，以相同规则识别脚注、受保护的代码/数学区域、扩展提示块和内容标签组，保持图片扫描与正文渲染一致。提示块使用受控类型和纯文本标题，与 GitHub Alerts 共用视觉样式；折叠使用原生 `details/summary`，固定导航脚本统一处理目录、标签切换、深链接展开及打印恢复。标签组先输出全部面板与可链接标题，成功初始化后才增加 tabs 语义和隐藏状态；共用提示块的源码、层级和组件预算。
 
 - Viewer 在请求时用 markdown-it 把 Markdown 渲染为 HTML（GFM：表格、删除线、任务列表、脚注；Raw HTML 经白名单净化器处理，见[安全模型](security.md)），本地图片引用按 manifest 重写为 `/{document-id}/a/{asset-id}`。
 - 渲染结果交给 Workers Cache（非 Cache API）：Document 边缘缓存 1 年，Asset `immutable`。

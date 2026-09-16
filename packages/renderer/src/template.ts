@@ -55,7 +55,7 @@ ${contentHtml}</article>
 <footer class="mote-colophon"><div class="mote-colophon-inner">
 <span class="mote-colophon-mark" aria-hidden="true"></span><span>Published with <a href="/" target="_blank" rel="noopener noreferrer">Mote</a></span>
 </div></footer>
-${tocHtml !== '' || contentHtml.includes('<details') ? `<script>${TOC_SCRIPT}</script>` : ''}
+${tocHtml !== '' || contentHtml.includes('<details') || contentHtml.includes('class="content-tabs"') ? `<script>${TOC_SCRIPT}</script>` : ''}
 ${codeCopy ? `<script>${COPY_SCRIPT}</script>` : ''}
 </body>
 </html>

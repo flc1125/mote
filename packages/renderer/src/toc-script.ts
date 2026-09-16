@@ -1,3 +1,5 @@
+import { TABS_INIT_SCRIPT } from './tabs-script.js';
+
 /** Trusted, dependency-free enhancement. Never interpolate document content here. */
 export const TOC_SCRIPT = String.raw`(() => {
   const panel = document.getElementById('mote-toc');
@@ -12,15 +14,19 @@ export const TOC_SCRIPT = String.raw`(() => {
     if (!hash || hash === '#') return null;
     try { return document.getElementById(decodeURIComponent(hash.slice(1))); } catch { return null; }
   }
+${TABS_INIT_SCRIPT}
   function revealTarget(target) {
     if (!target || !article.contains(target)) return false;
     let unfolded = false;
     for (let parent = target; parent && parent !== article; parent = parent.parentElement) {
+      const activate = tabPanels.get(parent);
+      if (activate && activate()) unfolded = true;
       if (parent.tagName === 'DETAILS' && !parent.open) { parent.open = true; unfolded = true; }
     }
     return unfolded;
   }
   function revealFragment() {
+    if (!location.hash) for (const reset of tabDefaults) reset();
     const target = hashTarget();
     if (revealTarget(target)) target.scrollIntoView();
     return target;
@@ -196,6 +202,8 @@ export const TOC_SCRIPT = String.raw`(() => {
     if (!frame) frame = requestAnimationFrame(update);
   }
 
+  contentChanged = () => { selectNavigation(null); schedule(true); };
+
   function openPanel() {
     if (desktop.matches) desktopCollapsed = false;
     else mobileOpen = true;
@@ -299,7 +307,7 @@ export const TOC_SCRIPT = String.raw`(() => {
   window.addEventListener('scroll', () => schedule(), { passive: true });
   window.addEventListener('resize', () => schedule(true), { passive: true });
   window.addEventListener('hashchange', onHashChange);
-  window.addEventListener('pageshow', () => { syncPanel(); schedule(true); });
+  window.addEventListener('pageshow', () => { syncPanel(); onHashChange(); });
   article.addEventListener('toggle', () => schedule(true), true);
   if (typeof ResizeObserver !== 'undefined') {
     const observer = new ResizeObserver(() => schedule(true));

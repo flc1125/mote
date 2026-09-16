@@ -11,6 +11,7 @@ import { diagrams } from './diagrams.js';
 import { slugify, type Heading } from './headings.js';
 import { createCodeHighlighter } from './highlight.js';
 import { math } from './math.js';
+import { tabs } from './tabs.js';
 import { taskLists } from './plugins.js';
 import { createHtmlSanitizer } from './sanitize.js';
 import { safeImageUrl, safeLinkUrl } from './urls.js';
@@ -133,6 +134,7 @@ export function renderMarkdown(
 
   // Heading IDs are allocated first, so component IDs cannot steal their anchors.
   md.use(admonitions);
+  md.use(tabs);
 
   // Local asset rewrite (§31) + dangerous image src stripping (§57).
   // Delegates to the default rule afterwards so alt text is still rendered.
