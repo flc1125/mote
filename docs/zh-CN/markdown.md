@@ -17,6 +17,7 @@ Mote 渲染 CommonMark 风格的 Markdown，并提供部分 GFM 和文档扩展�
 | 缩写                         | 有限增强     | 文档内定义，区分大小写，输出静态缩写提示。                                     |
 | 中文强调边界                 | 有限扩展     | 支持紧邻 CJK 文本或东亚标点的双星号强调，详见下文。                            |
 | Markdown 与 HTML 本地图片    | 支持         | CLI 上传引用的资产，包括编码路径；相同资产去重。                               |
+| 图片尺寸、图注与查看         | 有限增强     | 显式宽度、独立图片图注与渐进增强的图片查看；保留静态阅读回退。                 |
 | 展示类 HTML                  | 白名单       | 包括 details/summary、picture、表格、kbd、sub 和 sup；不支持任意 HTML/CSS。    |
 | GitHub 风格提示块            | 支持文档层级 | NOTE、TIP、IMPORTANT、WARNING 和 CAUTION；列表或引用中的嵌套标记仍是普通引用。 |
 | 内容标签页                   | 有限增强     | 独立分组、键盘切换、面板深链接和完整静态阅读路径。                             |
@@ -42,6 +43,8 @@ mote docs/examples/markdown-admonitions.md
 
 发布需要实例和发布者授权，参阅 [CLI 参考](cli.md)与[鉴权指南](authentication.md)。
 
+- [代码块示例（英文）](../examples/markdown-code-blocks.md)：标题、行号、重点行、复制与无效参数。
+- [图片示例（英文）](../examples/markdown-images.md)：尺寸、图注、嵌套图片、图片查看与回退。
 - [缩写与脚注预览示例（英文）](../examples/markdown-reading.md)：词边界、重复引用、富内容与静态回退。
 - [高亮与定义列表示例（英文）](../examples/markdown-typography.md)：行内边界、多段释义和组件组合。
 - [标签页示例（英文）](../examples/markdown-tabs.md)：替代方案、独立分组、折叠与静态回退。
