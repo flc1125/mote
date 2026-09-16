@@ -275,6 +275,27 @@ describe('E2E (§59)', () => {
     );
   });
 
+  it('publishes highlighted definitions with real assets and unchanged source', async () => {
+    const file = fileURLToPath(
+      new URL('../../../docs/examples/markdown-typography.md', import.meta.url),
+    );
+    const source = await readFile(file, 'utf8');
+    const { id } = await publishDoc(file);
+    expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
+    const manifest = JSON.parse(
+      (await (await bucket.get(`documents/${id}/manifest.json`))?.text()) ?? '{}',
+    ) as { assets: unknown[] };
+    expect(manifest.assets).toHaveLength(1);
+    const response = await view(`/${id}`);
+    const html = await response.text();
+    expectTocPolicy(response, html, true);
+    expect(html).toContain('<mark>important conclusion</mark>');
+    expect(html).toContain('<dt>Capability URL</dt>');
+    expect(html).toContain('<figcaption>A visible caption inside a definition.</figcaption>');
+    expect(new Set(assetPaths(html)).size).toBe(1);
+    expect(html).not.toContain('src="code-example.png"');
+  });
+
   it('publishes image widths and captions without changing source or duplicating assets', async () => {
     const file = fileURLToPath(
       new URL('../../../docs/examples/markdown-images.md', import.meta.url),

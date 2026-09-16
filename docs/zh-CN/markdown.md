@@ -13,6 +13,7 @@ Mote 渲染 CommonMark 风格的 Markdown，并提供部分 GFM 和文档扩展�
 | 标题、段落、强调、引用和列表 | 支持         | 包括嵌套内容、有序列表起始编号和显式硬换行。                                   |
 | 表格、删除线和自动链接       | 支持         | 支持转义竖线、对齐与行内格式；宽内容可滚动。                                   |
 | 任务列表与脚注               | 支持         | 复选框只读；重复脚注引用带返回链接。                                           |
+| 文本高亮与定义列表           | 支持         | `==文本==` 与术语/释义结构，输出静态语义 HTML。                                |
 | 中文强调边界                 | 有限扩展     | 支持紧邻 CJK 文本或东亚标点的双星号强调，详见下文。                            |
 | Markdown 与 HTML 本地图片    | 支持         | CLI 上传引用的资产，包括编码路径；相同资产去重。                               |
 | 展示类 HTML                  | 白名单       | 包括 details/summary、picture、表格、kbd、sub 和 sup；不支持任意 HTML/CSS。    |
@@ -40,6 +41,7 @@ mote docs/examples/markdown-admonitions.md
 
 发布需要实例和发布者授权，参阅 [CLI 参考](cli.md)与[鉴权指南](authentication.md)。
 
+- [高亮与定义列表示例（英文）](../examples/markdown-typography.md)：行内边界、多段释义和组件组合。
 - [标签页示例（英文）](../examples/markdown-tabs.md)：替代方案、独立分组、折叠与静态回退。
 - [提示块示例（英文）](../examples/markdown-admonitions.md)：普通提示、自定义标题、嵌套、折叠与图片打包。
 - [主要示例（英文）](../examples/markdown-compatibility.md)：按编号检查混合正文、列表、表格、提示块、代码、本地图片、HTML、公式、四类图表、脚注与标题冲突。
@@ -87,6 +89,39 @@ mote docs/examples/markdown-admonitions.md
 HTML 折叠区可以通过空行包围 Markdown 组件，原始 HTML 块本身不会重新解析。每个标签组、每个面板都计入组件数量和嵌套层级，与提示块共用预算。每组最多 16 项，整组超出预算时整体回退；非法语法按普通 Markdown 规则显示。所有有效面板内的图片都会打包，回退代码中的伪图片不会上传。代码、表格、公式和图表继续共享原有文档预算。
 
 可发布[标签页示例（英文）](../examples/markdown-tabs.md)，体验独立分组、折叠、图片、长标签与回退。截图：[桌面](../assets/markdown-tabs-desktop.png)与[窄屏](../assets/markdown-tabs-mobile.png)。
+
+## 高亮与定义列表
+
+用成对等号标记需要注意的文字：
+
+```markdown
+这是==需要注意的结论==。
+\==**加粗文字**、`行内代码`与[链接](https://example.com)==
+```
+
+开启和闭合标记的内侧不能紧邻空白。配对采用 CommonMark 强调边界，`**` 的中文标点扩展不适用于 `==`。同一段内可以跨软换行；用反斜杠转义（`\==原样显示\==`）或代码展示标记本身。空内容、未配对、内侧紧邻空白的标记保持文字。连续多个等号按成对规则解析，例如 `===文字===` 在高亮两端各留下一个等号。Setext 标题优先保持原含义。代码、数学源码、链接目标和 HTML 属性不解释高亮标记。
+
+定义列表用于解释术语：
+
+```markdown
+Capability URL
+: 持有链接即可访问文档的 URL。
+: 私密内容的链接应妥善保管。
+
+文档包
+
+: 原始 Markdown 和引用的图片。
+
+    第二段正文，缩进四个空格。
+
+    - 可以包含普通列表、图片、代码和公式。
+```
+
+术语须独占一行，释义以 `:` 加空白开头，也兼容 `~`。只有标记的行可表示空释义。术语与首条释义之间最多空一行；多行术语、相隔多个空行或 `:无空格` 保持普通 Markdown。多段正文和嵌套块建议缩进四个空格，解析器也接受两空格续行；相对于释义正文继续增加代码缩进时，内容仍是代码，不会上传示例中的伪图片。
+
+支持一个术语对应多条释义、嵌套定义列表，以及普通列表、引用、脚注、提示块和标签页内的定义列表。定义正文里不激活新的提示块或标签组，其标记遵循普通 Markdown；图片宽度和图注继续可用。
+
+两项能力均由服务端输出静态语义 HTML，无 JavaScript、深色模式和打印时仍可阅读。参阅[高亮与定义列表示例（英文）](../examples/markdown-typography.md)。参考截图：[桌面](../assets/markdown-typography-desktop.png)、[窄屏](../assets/markdown-typography-mobile.png)和[深色](../assets/markdown-typography-dark.png)。
 
 ## 中文强调与换行
 

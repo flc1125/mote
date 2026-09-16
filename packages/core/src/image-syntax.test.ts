@@ -49,6 +49,16 @@ describe('shared image syntax', () => {
     expect(html.match(/id="fnref1"/g)).toHaveLength(1);
     expect(html.match(/class="footnote-backref"/g)).toHaveLength(1);
   });
+  it('recognizes consistently indented captions in definition bodies only', () => {
+    const image = '![alt](a.png)\n    /// caption\n    **Caption**\n    ///';
+    expect(md.render('Term\n: body\n\n    ' + image)).toContain(
+      '<figcaption><strong>Caption</strong>',
+    );
+    expect(md.render(image)).not.toContain('<figcaption>');
+    expect(
+      md.render('Term\n: body\n\n    ![alt](a.png)\n    /// caption\n  inconsistent\n    ///'),
+    ).not.toContain('<figcaption>');
+  });
   it('limits attempts per document and resets for the next document', () => {
     const sample = '![alt](a.png)\n/// caption\nCaption\n///\n\n';
     expect(md.render(sample.repeat(70)).match(/<figure/g)).toHaveLength(64);
