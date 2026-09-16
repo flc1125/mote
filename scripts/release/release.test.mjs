@@ -91,7 +91,7 @@ describe('release prerequisites', () => {
 });
 
 describe('npm recovery', () => {
-  it.each(['MISSING_NPM_OIDC', 'NPM_OIDC_VERSION_UNSUPPORTED'])(
+  it.each(['MISSING_NPM_OIDC', 'NPM_OIDC_VERSION_UNSUPPORTED', 'NPM_VERSION_CHECK_FAILED'])(
     'keeps proven pre-publish failure %s recoverable',
     async (code) => {
       const state = fresh();
@@ -158,16 +158,94 @@ describe('npm recovery', () => {
   it('does not retry an uncertain publish when the registry still reports absence', async () => {
     const state = fresh();
     const publish = vi.fn(async () => fail('NPM_PUBLISH_UNKNOWN'));
+    const wait = vi.fn(async () => {});
+    const lookup = vi.fn(async () => ({ present: false }));
     const args = {
       state,
       publish,
-      lookup: async () => ({ present: false }),
+      lookup,
+      wait,
       persist: persist(),
       guard: guard(),
     };
     await expect(ensureNpm(args)).rejects.toThrow('NPM_OUTCOME_UNKNOWN');
+    expect(wait.mock.calls.map(([delay]) => delay)).toEqual([1000, 2000, 4000, 8000, 15000]);
+    expect(lookup).toHaveBeenCalledTimes(7);
+    expect(state.npmPublish).toEqual({ outcome: 'error', error: 'NPM_PUBLISH_UNKNOWN' });
     await expect(ensureNpm(args)).rejects.toThrow('NPM_OUTCOME_UNKNOWN_NO_RETRY');
     expect(publish).toHaveBeenCalledTimes(1);
+  });
+  it.each([false, true])(
+    'waits for delayed visibility after publish (lost response: %s)',
+    async (lost) => {
+      const state = fresh();
+      const publish = vi.fn(async () => {
+        if (lost) fail('NPM_PUBLISH_E503');
+      });
+      const lookup = vi
+        .fn()
+        .mockResolvedValueOnce({ present: false })
+        .mockResolvedValueOnce({ present: false })
+        .mockResolvedValueOnce({ present: false })
+        .mockResolvedValueOnce(found);
+      const wait = vi.fn(async () => {});
+      await ensureNpm({ state, publish, lookup, wait, persist: persist(), guard: guard() });
+      expect(publish).toHaveBeenCalledTimes(1);
+      expect(wait.mock.calls.map(([delay]) => delay)).toEqual([1000, 2000]);
+      expect(state.npm.state).toBe('success');
+      expect(state.npmPublish).toEqual(
+        lost
+          ? { outcome: 'error', error: 'NPM_PUBLISH_E503' }
+          : { outcome: 'returned', error: null },
+      );
+    },
+  );
+  it('retains a successful publish command when confirmation never appears', async () => {
+    const state = fresh();
+    const publish = vi.fn(async () => {});
+    await expect(
+      ensureNpm({
+        state,
+        publish,
+        lookup: async () => ({ present: false }),
+        wait: async () => {},
+        persist: persist(),
+        guard: guard(),
+      }),
+    ).rejects.toThrow('NPM_OUTCOME_UNKNOWN');
+    expect(state.npmPublish).toEqual({ outcome: 'returned', error: null });
+    expect(state.npm.state).toBe('unknown');
+    expect(publish).toHaveBeenCalledTimes(1);
+  });
+  it.each(['REGISTRY_QUERY_FAILED', 'NPM_IDENTITY_CONFLICT', 'NPM_TARBALL_CONFLICT'])(
+    'stops confirmation on %s rather than treating it as delayed absence',
+    async (code) => {
+      const publish = vi.fn(async () => {});
+      const lookup = vi
+        .fn()
+        .mockResolvedValueOnce({ present: false })
+        .mockImplementationOnce(async () => fail(code));
+      const wait = vi.fn();
+      await expect(
+        ensureNpm({ state: fresh(), publish, lookup, wait, persist: persist(), guard: guard() }),
+      ).rejects.toThrow(code);
+      expect(publish).toHaveBeenCalledTimes(1);
+      expect(wait).not.toHaveBeenCalled();
+    },
+  );
+  it('checks the remote tag again after waiting for visibility', async () => {
+    const publish = vi.fn(async () => {});
+    const lookup = vi.fn(async () => ({ present: false }));
+    const tagGuard = guard();
+    const wait = vi.fn(async () => {
+      tagGuard.mockImplementation(async () => fail('SUPERSEDED_RUN'));
+    });
+    await expect(
+      ensureNpm({ state: fresh(), publish, lookup, wait, persist: persist(), guard: tagGuard }),
+    ).rejects.toThrow('SUPERSEDED_RUN');
+    expect(publish).toHaveBeenCalledTimes(1);
+    expect(lookup).toHaveBeenCalledTimes(2);
+    expect(wait).toHaveBeenCalledTimes(1);
   });
   it.each(['REGISTRY_QUERY_FAILED', 'NPM_IDENTITY_CONFLICT'])(
     'never publishes after %s',
@@ -476,6 +554,7 @@ describe('registry adapter', () => {
       .mockResolvedValueOnce(response(packument()))
       .mockResolvedValueOnce(response(bytes));
     expect(await registryClient(manifest, bytes, fetch)()).toEqual(found);
+    expect(fetch.mock.calls[0][1].headers).toEqual({ 'Cache-Control': 'no-cache' });
     expect(fetch.mock.calls[1][0]).toBe(packument().versions['1.2.3'].dist.tarball);
   });
   it.each([401, 403, 404, 500])('does not treat HTTP %s as package absence', async (status) => {
@@ -574,6 +653,60 @@ describe('publishing adapters without live writes', () => {
         execImpl: exec,
       }),
     ).rejects.toThrow('NPM_OIDC_VERSION_UNSUPPORTED');
+    expect(exec).toHaveBeenCalledTimes(1);
+  });
+  it.each([
+    ['npm error code E403\nprivate token fake-secret', 'NPM_PUBLISH_E403'],
+    ['npm ERR! code ETIMEDOUT\nhttps://secret.example/token', 'NPM_PUBLISH_ETIMEDOUT'],
+    ['npm error code PRIVATE_TOKEN_VALUE', 'NPM_PUBLISH_UNKNOWN'],
+    ['private stderr without a known code', 'NPM_PUBLISH_UNKNOWN'],
+  ])('retains only an allowlisted identifier from npm errors', async (stderr, expected) => {
+    const exec = vi
+      .fn()
+      .mockResolvedValueOnce({ stdout: '11.5.1' })
+      .mockRejectedValueOnce(Object.assign(new Error('private command details'), { stderr }));
+    const error = await npmPublisher({
+      tarball: '/fake/pkg',
+      scratch: await scratch(),
+      execImpl: exec,
+      processEnv: { ACTIONS_ID_TOKEN_REQUEST_URL: 'fake', ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'fake' },
+    }).catch((error) => error);
+    expect(error).toBeInstanceOf(ReleaseError);
+    expect(error.code).toBe(expected);
+    expect(error.message).toBe(expected);
+    expect(JSON.stringify(error)).not.toContain('private');
+    expect(exec).toHaveBeenCalledTimes(2);
+  });
+  it('distinguishes a terminated npm process without exposing its output', async () => {
+    const exec = vi
+      .fn()
+      .mockResolvedValueOnce({ stdout: '11.5.1' })
+      .mockRejectedValueOnce(Object.assign(new Error('private'), { killed: true }));
+    await expect(
+      npmPublisher({
+        tarball: '/fake/pkg',
+        scratch: await scratch(),
+        execImpl: exec,
+        processEnv: {
+          ACTIONS_ID_TOKEN_REQUEST_URL: 'fake',
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'fake',
+        },
+      }),
+    ).rejects.toThrow('NPM_PUBLISH_PROCESS_KILLED');
+  });
+  it('identifies version-command failure before any publish attempt', async () => {
+    const exec = vi.fn().mockRejectedValue(new Error('private local details'));
+    await expect(
+      npmPublisher({
+        tarball: '/fake/pkg',
+        scratch: await scratch(),
+        execImpl: exec,
+        processEnv: {
+          ACTIONS_ID_TOKEN_REQUEST_URL: 'fake',
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'fake',
+        },
+      }),
+    ).rejects.toThrow('NPM_VERSION_CHECK_FAILED');
     expect(exec).toHaveBeenCalledTimes(1);
   });
   it('finds draft releases and resolves annotated tags', async () => {

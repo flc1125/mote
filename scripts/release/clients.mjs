@@ -23,7 +23,12 @@ export function registryClient(manifest, bytes, fetchImpl = globalThis.fetch) {
   return async () => {
     try {
       return await readRetry(async () => {
-        const response = await boundedFetch(`${registry}/mote-cli`, {}, fetchImpl, 4 * 1024 * 1024);
+        const response = await boundedFetch(
+          `${registry}/mote-cli`,
+          { headers: { 'Cache-Control': 'no-cache' } },
+          fetchImpl,
+          4 * 1024 * 1024,
+        );
         // This is an existing public package. Even a package-level 404 is NOT
         // evidence that a version is safe to publish (could be auth/routing).
         requireThat(response.status === 200, 'REGISTRY_QUERY_FAILED');
@@ -67,6 +72,42 @@ export function registryClient(manifest, bytes, fetchImpl = globalThis.fetch) {
   };
 }
 
+// Retain only known npm error identifiers, never stderr, URLs or token text.
+const NPM_ERROR_CODES = new Set([
+  'E401',
+  'E403',
+  'E404',
+  'E409',
+  'E429',
+  'E500',
+  'E502',
+  'E503',
+  'ENEEDAUTH',
+  'EOTP',
+  'EINTEGRITY',
+  'EPUBLISHCONFLICT',
+  'EPRIVATE',
+  'EUSAGE',
+  'EINVALIDNPMTOKEN',
+  'EPROVENANCE',
+  'EUNSCOPED',
+  'ECONNRESET',
+  'ECONNREFUSED',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'ETIMEDOUT',
+]);
+
+function publishFailure(error) {
+  const code =
+    typeof error?.stderr === 'string'
+      ? error.stderr.match(/^npm (?:error|ERR!) code ([A-Z][A-Z0-9_]*)\s*$/m)?.[1]
+      : undefined;
+  if (NPM_ERROR_CODES.has(code)) return new ReleaseError(`NPM_PUBLISH_${code}`);
+  if (error?.killed === true) return new ReleaseError('NPM_PUBLISH_PROCESS_KILLED');
+  return new ReleaseError('NPM_PUBLISH_UNKNOWN');
+}
+
 export async function npmPublisher({ tarball, scratch, processEnv, execImpl = execAsync }) {
   requireThat(
     Boolean(processEnv.ACTIONS_ID_TOKEN_REQUEST_URL) &&
@@ -104,6 +145,7 @@ export async function npmPublisher({ tarball, scratch, processEnv, execImpl = ex
       NPM_CONFIG_UPDATE_NOTIFIER: 'false',
     },
   };
+  let publishing = false;
   try {
     const version = (await execImpl('npm', ['--version'], options)).stdout.trim();
     const [major, minor, patch] = version.split('.').map(Number);
@@ -112,6 +154,7 @@ export async function npmPublisher({ tarball, scratch, processEnv, execImpl = ex
         (major > 11 || (major === 11 && (minor > 5 || (minor === 5 && patch >= 1)))),
       'NPM_OIDC_VERSION_UNSUPPORTED',
     );
+    publishing = true;
     await execImpl(
       'npm',
       [
@@ -130,7 +173,8 @@ export async function npmPublisher({ tarball, scratch, processEnv, execImpl = ex
       options,
     );
   } catch (error) {
-    throw error instanceof ReleaseError ? error : new ReleaseError('NPM_PUBLISH_UNKNOWN');
+    if (error instanceof ReleaseError) throw error;
+    throw publishing ? publishFailure(error) : new ReleaseError('NPM_VERSION_CHECK_FAILED');
   }
 }
 
