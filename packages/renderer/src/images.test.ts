@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderMarkdown } from './markdown.js';
 import { renderHtmlPage } from './template.js';
 import { IMAGE_SCRIPT } from './image-script.js';
+import { THEME_SCRIPT } from './theme-script.js';
 
 const render = (source: string) => renderMarkdown(source, new Map([['photo.png', '/asset/photo']]));
 describe('image presentation', () => {
@@ -26,6 +27,7 @@ describe('image presentation', () => {
     const { html } = render('![alt](photo.png)');
     const page = renderHtmlPage({ title: 'Image', tocHtml: '', contentHtml: html });
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
       IMAGE_SCRIPT,
     ]);
     expect(html).not.toMatch(/button|dialog|hidden/);

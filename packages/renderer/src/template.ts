@@ -4,6 +4,7 @@ import { TOC_SCRIPT } from './toc-script.js';
 import { IMAGE_SCRIPT } from './image-script.js';
 import { COPY_SCRIPT } from './copy-script.js';
 import { FOOTNOTE_SCRIPT } from './footnote-script.js';
+import { THEME_SCRIPT } from './theme-script.js';
 
 export interface PageInput {
   title: string;
@@ -24,6 +25,19 @@ export function renderHtmlPage({
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><g fill="currentColor"><circle cx="4" cy="6" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="4" cy="18" r="1.3"/></g></svg>';
   const closeIcon =
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  // Theme menu icons follow the standalone-button spec: 18px, viewBox 24,
+  // stroke 1.8. The button shows the current state; the script reveals it.
+  const themeShapes: Record<string, string> = {
+    auto: '<circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/>',
+    light:
+      '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.3 4.3l1.4 1.4M18.3 18.3l1.4 1.4M2.5 12h2M19.5 12h2M4.3 19.7l1.4-1.4M18.3 5.7l1.4-1.4"/>',
+    dark: '<path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5a7 7 0 0 0 10 10z"/>',
+  };
+  const themeIcon = (name: string, item: boolean, hidden: boolean) =>
+    `<svg class="theme-icon${item ? ' theme-item-icon' : ''} theme-icon-${name}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${hidden ? ' hidden' : ''}>${themeShapes[name]}</svg>`;
+  const themeItem = (value: string, label: string, checked: boolean) =>
+    `<button type="button" role="menuitemradio" aria-checked="${checked}" data-theme-value="${value}">${themeIcon(value, true, false)}${label}</button>`;
+  const themeToggle = `<span class="theme-menu"><button type="button" class="theme-toggle" aria-haspopup="menu" aria-expanded="false" aria-label="Theme: Auto" title="Theme: Auto" hidden>${themeIcon('auto', false, false)}${themeIcon('light', false, true)}${themeIcon('dark', false, true)}<svg class="theme-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 10 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="theme-menu-list" role="menu" aria-label="Theme" hidden>${themeItem('auto', 'Auto', true)}${themeItem('light', 'Light', false)}${themeItem('dark', 'Dark', false)}</span></span>`;
   const tocTrigger =
     tocHtml === ''
       ? ''
@@ -47,11 +61,12 @@ ${tocHtml}</aside>
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>${PAGE_CSS}</style>
+<script>${THEME_SCRIPT}</script>
 </head>
 <body${tocHtml === '' ? '' : ' class="has-toc"'}>
 ${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/" target="_blank" rel="noopener noreferrer"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-${tocTrigger}</div></header>
+${themeToggle}${tocTrigger}</div></header>
 <main>
 <article>
 ${contentHtml}</article>

@@ -1,4 +1,5 @@
 import { FOOTNOTE_SCRIPT } from './footnote-script.js';
+import { THEME_SCRIPT } from './theme-script.js';
 import { IMAGE_SCRIPT } from './image-script.js';
 import { readFileSync } from 'node:fs';
 import { Parser } from 'htmlparser2';
@@ -70,6 +71,7 @@ describe('committed compatibility specimens', () => {
     expect(html).not.toContain('Metadata does not override');
     expect(html).not.toContain('暂以源码显示');
     expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
+      THEME_SCRIPT,
       TOC_SCRIPT,
       COPY_SCRIPT,
       IMAGE_SCRIPT,
@@ -77,6 +79,7 @@ describe('committed compatibility specimens', () => {
     ]);
     expect(
       html
+        .replace(`<script>${THEME_SCRIPT}</script>`, '')
         .replace(`<script>${TOC_SCRIPT}</script>`, '')
         .replace(`<script>${COPY_SCRIPT}</script>`, '')
         .replace(`<script>${IMAGE_SCRIPT}</script>`, '')

@@ -4,6 +4,7 @@ import { TAB_CASES } from '../../core/src/fixtures/tabs.js';
 import { renderMarkdown } from './markdown.js';
 import { render } from './index.js';
 import { TOC_SCRIPT } from './toc-script.js';
+import { THEME_SCRIPT } from './theme-script.js';
 import { COPY_SCRIPT } from './copy-script.js';
 
 const source = '=== "npm"\n\n    ```sh\n    npm install\n    ```\n\n=== "pnpm"\n\n    Second.';
@@ -24,6 +25,7 @@ describe('content tab rendering', () => {
     expect(html).toContain('<p>Second.</p>');
     expect(html).not.toContain('<aside');
     expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
+      THEME_SCRIPT,
       TOC_SCRIPT,
       COPY_SCRIPT,
     ]);

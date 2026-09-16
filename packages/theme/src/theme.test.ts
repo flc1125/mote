@@ -56,6 +56,18 @@ describe('TOKENS_CSS', () => {
       expect(dark).toContain(`${name}:`);
     }
   });
+  it('lets an explicit reader choice override the media query', () => {
+    expect(TOKENS_CSS).toContain(':root[data-theme="dark"]');
+    expect(TOKENS_CSS).toContain('@media (prefers-color-scheme: dark)');
+    expect(TOKENS_CSS).toContain(':root:not([data-theme="light"])');
+  });
+
+  it('forces the light palette for print', () => {
+    const print = TOKENS_CSS.slice(TOKENS_CSS.indexOf('@media print'));
+    expect(print).toContain('--mote-bg: #ffffff');
+    expect(print).toContain('--mote-fg: #1f2328');
+  });
+
   it('anchors the brand palette to the logo red', () => {
     expect(TOKENS_CSS).toContain('--mote-brand: #ef5552');
   });
