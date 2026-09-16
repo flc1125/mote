@@ -1,3 +1,4 @@
+import { setTimeout as pause } from 'node:timers/promises';
 import { json, sha256 } from './lib.mjs';
 import { requireThat, safeCode } from './policy.mjs';
 
@@ -16,7 +17,10 @@ export function releaseState(context, manifest, digest) {
   };
 }
 
-export async function ensureNpm({ state, lookup, publish, persist, guard }) {
+// Only reads are retried: publishing remains a single irreversible operation.
+const NPM_CONFIRMATION_DELAYS = [1000, 2000, 4000, 8000, 15000];
+
+export async function ensureNpm({ state, lookup, publish, persist, guard, wait = pause }) {
   await guard();
   try {
     let found = await lookup(); // Errors are not absence; identity/hash conflicts throw.
@@ -28,15 +32,27 @@ export async function ensureNpm({ state, lookup, publish, persist, guard }) {
       await guard();
       try {
         await publish();
+        state.npmPublish = { outcome: 'returned', error: null };
       } catch (error) {
+        state.npmPublish = { outcome: 'error', error: safeCode(error) };
         // These adapter errors prove publish was never invoked. Keep them
         // recoverable after configuration is fixed; all other errors reconcile.
-        if (['MISSING_NPM_OIDC', 'NPM_OIDC_VERSION_UNSUPPORTED'].includes(safeCode(error))) {
+        if (
+          ['MISSING_NPM_OIDC', 'NPM_OIDC_VERSION_UNSUPPORTED', 'NPM_VERSION_CHECK_FAILED'].includes(
+            safeCode(error),
+          )
+        ) {
           state.npm.state = 'pending';
           throw error;
         }
       }
-      found = await lookup();
+      await persist(state);
+      for (let attempt = 0; ; attempt++) {
+        await guard();
+        found = await lookup(); // Errors/conflicts stop immediately; absence can lag.
+        if (found.present || attempt === NPM_CONFIRMATION_DELAYS.length) break;
+        await wait(NPM_CONFIRMATION_DELAYS[attempt]);
+      }
       requireThat(found.present, 'NPM_OUTCOME_UNKNOWN');
     }
     state.npm = { state: 'success', integrity: found.integrity };

@@ -91,13 +91,27 @@ async function main() {
 void main().catch(async (error) => {
   const code = safeCode(error);
   log(`Mote release stopped: ${code}`);
+  if (state?.npmPublish)
+    log(
+      `npm publish outcome: ${state.npmPublish.outcome}; error: ${state.npmPublish.error ?? 'none'}`,
+    );
   if (env.RUNNER_TEMP) {
     const directory = join(env.RUNNER_TEMP, 'mote-release-result');
     await mkdir(directory, { recursive: true });
-    await writeJson(join(directory, 'stage-failure.json'), { error: code, state: 'failed' });
+    await writeJson(join(directory, 'stage-failure.json'), {
+      error: code,
+      state: state?.state ?? 'failed',
+      npmPublish: state?.npmPublish ?? null,
+    });
     if (state) await writeJson(join(directory, 'release-result.json'), state);
   }
   if (env.GITHUB_STEP_SUMMARY)
-    await appendFile(env.GITHUB_STEP_SUMMARY, `Mote CLI release failed: ${code}.\n`);
+    await appendFile(
+      env.GITHUB_STEP_SUMMARY,
+      `Mote CLI release failed: ${code}.\n` +
+        (state?.npmPublish
+          ? `npm publish outcome: ${state.npmPublish.outcome}; error: ${state.npmPublish.error ?? 'none'}.\n`
+          : ''),
+    );
   process.exitCode = 1;
 });

@@ -83,6 +83,19 @@ Before pushing a stable tag, verify that it points to the intended commit and ma
 
 For a failed release, inspect the original Actions run and preserve its manifest, tarball and result artifacts: `mote-release-<run-id>`, `mote-npm-result-<run-id>-<attempt>` and `mote-release-result-<run-id>-<attempt>`. Investigate uncertain publication outcomes against npm and GitHub before rerunning; identical results can be reconciled, while conflicting bytes or identity stop the workflow. Do not move a published tag, overwrite assets or add a long-lived npm token to bypass an error.
 
+After `npm publish`, the workflow confirms registry visibility with up to six reads,
+waiting 1, 2, 4, 8 and 15 seconds between absent-version responses. These waits add
+30 seconds at most, excluding request time. Only confirmation reads are retried;
+automatic republishing is not attempted. Registry failures and identity or tarball
+conflicts stop confirmation instead of being treated as absence.
+
+If `NPM_OUTCOME_UNKNOWN` remains, inspect `npmPublish` in the run summary and result
+artifacts. `outcome: returned` means the publish command completed successfully;
+`outcome: error` includes a bounded classification such as `NPM_PUBLISH_E403` or
+`NPM_PUBLISH_ETIMEDOUT`. Unknown errors remain generic. This records command outcome
+separately from verified publication; it does not expose raw npm output or credentials.
+Compare registry metadata and package bytes before deciding whether to rerun.
+
 ## Retiring old deployment resources
 
 Inventory old GitHub environment credentials, deployment variables and Actions artifacts against current workflow references before removal. Record exact targets and obtain cleanup approval. Deleting a GitHub secret copy does not revoke its Cloudflare token; identify the token and its other consumers before a separate revocation.

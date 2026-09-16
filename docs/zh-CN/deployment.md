@@ -82,6 +82,16 @@ Worker 回退不恢复 R2 数据或独立管理的 DNS、Access 策略及其他�
 
 Release 失败时，检查原 Actions 运行并保留 manifest、tarball 和结果产物：`mote-release-<run-id>`、`mote-npm-result-<run-id>-<attempt>`、`mote-release-result-<run-id>-<attempt>`。发布结果不明确时先核对 npm/GitHub 再重跑；相同结果可复用，字节或身份冲突则停止。不要移动已发布标签、覆盖资产或添加长期 npm Token 来绕过错误。
 
+`npm publish` 后，工作流最多查询六次仓库；版本尚未出现时，依次等待 1、2、4、8、15 秒，
+额外等待合计最多 30 秒，不含请求耗时。仅重试结果查询，不自动重复发布；仓库查询失败、
+版本身份或安装包字节冲突会停止核实，不视为“版本尚未出现”。
+
+若仍报 `NPM_OUTCOME_UNKNOWN`，检查运行摘要与结果产物中的 `npmPublish`：
+`outcome: returned` 表示发布命令正常返回；`outcome: error` 会附上有限分类，
+例如 `NPM_PUBLISH_E403` 或 `NPM_PUBLISH_ETIMEDOUT`，无法识别的错误仍使用通用码。
+命令执行结果与发布核实结果分别记录，不输出 npm 原始日志或凭据。决定是否重跑前，
+先对照仓库元数据与实际安装包字节。
+
 ## 退役旧部署资源
 
 删除前，按当前工作流引用盘点旧 GitHub Environment 凭据、部署变量及 Actions 产物，记录准确目标并取得清理批准。删除 GitHub Secret 副本不等于撤销 Cloudflare Token；须先识别令牌及其他使用方，再单独执行撤销。
