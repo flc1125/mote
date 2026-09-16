@@ -98,7 +98,7 @@ Use paired equals signs to highlight a phrase:
 ```markdown
 This is an ==important conclusion==.
 这是==需要注意的结论==。
-\==**Strong text**, `inline code` and [a link](https://example.com)==
+Highlights can include ==**Strong text**, `inline code` and [a link](https://example.com)==.
 ```
 
 The opening pair must touch non-whitespace text, as must the closing pair.
