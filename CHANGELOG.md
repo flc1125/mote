@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Example admonitions now use a neutral gray instead of sharing the note blue, and all alert, syntax-highlight and blockquote colors come from shared design tokens with paired light/dark values. ([#75](https://github.com/flc1125/mote/pull/75))
+
 ### Added
 
 - Section anchors on every heading: revealed on hover or focus (always visible on touch), click copies the absolute section URL with a checkmark confirmation and no navigation. Without JavaScript or clipboard access the anchor degrades to a plain in-page link; anchors are hidden when printing. ([#73](https://github.com/flc1125/mote/pull/73))

@@ -264,43 +264,31 @@ pre code {
   .code-line.is-highlighted { print-color-adjust: exact; }
 }
 
-/* Server-generated syntax tokens only; source HTML cannot supply classes. */
-pre .hljs-comment, pre .hljs-quote { color: #6b7280; }
-pre .hljs-keyword, pre .hljs-selector-tag, pre .hljs-literal, pre .hljs-doctag { color: #a6263c; }
-pre .hljs-string, pre .hljs-regexp, pre .hljs-addition { color: #24633b; }
-pre .hljs-number, pre .hljs-built_in, pre .hljs-type, pre .hljs-attr, pre .hljs-variable { color: #075985; }
-pre .hljs-title, pre .hljs-section, pre .hljs-selector-class, pre .hljs-selector-id { color: #6f42c1; }
-pre .hljs-name, pre .hljs-symbol, pre .hljs-bullet, pre .hljs-link { color: #9a4d00; }
-pre .hljs-meta { color: #52647a; }
-pre .hljs-deletion { color: #b42332; }
+/* Server-generated syntax tokens only; source HTML cannot supply classes.
+   Colors come from the shared --mote-hl-* tokens (both palettes). */
+pre .hljs-comment, pre .hljs-quote { color: var(--mote-hl-comment); }
+pre .hljs-keyword, pre .hljs-selector-tag, pre .hljs-literal, pre .hljs-doctag { color: var(--mote-hl-keyword); }
+pre .hljs-string, pre .hljs-regexp, pre .hljs-addition { color: var(--mote-hl-string); }
+pre .hljs-number, pre .hljs-built_in, pre .hljs-type, pre .hljs-attr, pre .hljs-variable { color: var(--mote-hl-number); }
+pre .hljs-title, pre .hljs-section, pre .hljs-selector-class, pre .hljs-selector-id { color: var(--mote-hl-title); }
+pre .hljs-name, pre .hljs-symbol, pre .hljs-bullet, pre .hljs-link { color: var(--mote-hl-name); }
+pre .hljs-meta { color: var(--mote-hl-meta); }
+pre .hljs-deletion { color: var(--mote-hl-deletion); }
 pre .hljs-emphasis { font-style: italic; }
 pre .hljs-strong { font-weight: 700; }
-@media (prefers-color-scheme: dark) {
-  pre .hljs-comment, pre .hljs-quote { color: #9ca3af; }
-  pre .hljs-keyword, pre .hljs-selector-tag, pre .hljs-literal, pre .hljs-doctag { color: #ff9caa; }
-  pre .hljs-string, pre .hljs-regexp, pre .hljs-addition { color: #a5d6a7; }
-  pre .hljs-number, pre .hljs-built_in, pre .hljs-type, pre .hljs-attr, pre .hljs-variable { color: #8ecbff; }
-  pre .hljs-title, pre .hljs-section, pre .hljs-selector-class, pre .hljs-selector-id { color: #d2b4ff; }
-  pre .hljs-name, pre .hljs-symbol, pre .hljs-bullet, pre .hljs-link { color: #ffc48c; }
-  pre .hljs-meta { color: #adbbce; }
-  pre .hljs-deletion { color: #ffa0a8; }
-}
 
 blockquote {
   margin-left: 0;
   padding: 0.1em 1.1em;
-  color: #6b7280;
+  color: var(--mote-muted);
   border-left: 3px solid var(--mote-brand);
-}
-@media (prefers-color-scheme: dark) {
-  blockquote { color: var(--mote-muted); }
 }
 blockquote > :first-child { margin-top: 0; }
 blockquote > :last-child { margin-bottom: 0; }
 
 /* Shared presentation for GitHub-style alerts and extended admonitions. */
 .markdown-alert, article details {
-  --alert-color: #0969da;
+  --alert-color: var(--mote-alert-note);
   --alert-padding-x: 1.1em;
   --alert-padding-y: 0.85em;
   margin: 0 0 1.15em;
@@ -311,10 +299,12 @@ blockquote > :last-child { margin-bottom: 0; }
   color: var(--mote-fg);
   overflow-wrap: anywhere;
 }
-.markdown-alert-tip, .markdown-alert-success { --alert-color: #1a7f37; }
-.markdown-alert-important { --alert-color: #8250df; }
-.markdown-alert-warning { --alert-color: #9a6700; }
-.markdown-alert-caution { --alert-color: #cf222e; }
+.markdown-alert-tip, .markdown-alert-success { --alert-color: var(--mote-alert-tip); }
+.markdown-alert-important { --alert-color: var(--mote-alert-important); }
+.markdown-alert-warning { --alert-color: var(--mote-alert-warning); }
+.markdown-alert-caution { --alert-color: var(--mote-alert-caution); }
+/* Examples are neutral supplementary content, not notes. */
+.markdown-alert-example { --alert-color: var(--mote-muted); }
 /* A tinted title band keeps long bodies on the normal reading surface. */
 .markdown-alert > .markdown-alert-title, article details > summary {
   position: relative;
@@ -338,13 +328,6 @@ blockquote > :last-child { margin-bottom: 0; }
 .markdown-alert > .markdown-alert-title:first-child + :is(h1, h2, h3, h4, h5, h6),
 article details > summary:first-child + :is(h1, h2, h3, h4, h5, h6) { margin-top: 0; }
 .markdown-alert > :last-child, article details > :last-child { margin-bottom: 0; }
-@media (prefers-color-scheme: dark) {
-  .markdown-alert, article details { --alert-color: #79c0ff; }
-  .markdown-alert-tip, .markdown-alert-success { --alert-color: #7ee787; }
-  .markdown-alert-important { --alert-color: #d2a8ff; }
-  .markdown-alert-warning { --alert-color: #e3b341; }
-  .markdown-alert-caution { --alert-color: #ff7b72; }
-}
 
 /* Quiet table chrome. Raw HTML tables retain a compact scroll fallback;
    Markdown tables fill their separate scroll container below. */
