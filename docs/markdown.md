@@ -68,10 +68,13 @@ Each specimen states the expected result. GitHub's own preview can differ from
 Mote; publish the source to inspect Mote's rendering. Do not replace these synthetic
 cases with private documents or private sharing URLs.
 
-Reference captures from Chrome: [desktop](assets/markdown-compatibility-desktop.png),
-[mobile viewport](assets/markdown-compatibility-mobile.png) and
-[dark charts](assets/markdown-compatibility-dark.png). These illustrate one browser
+Reference captures from Chrome: [desktop](assets/screenshots/markdown-compatibility-desktop.png),
+[mobile viewport](assets/screenshots/markdown-compatibility-mobile.png) and
+[dark charts](assets/screenshots/markdown-compatibility-dark.png). These illustrate one browser
 and font environment; the numbered expectations define the checks.
+
+See the [screenshot inventory](assets/screenshots/README.md) for capture sources,
+dimensions and the [theme menu preview](assets/screenshots/markdown-theme-menu-dark.png).
 
 ## Chinese emphasis and line breaks
 
@@ -147,7 +150,7 @@ there. Image widths and captions remain available within definitions.
 
 Both features render on the server and work without JavaScript, in dark mode
 and in print. The [typography specimen](examples/markdown-typography.md) shows
-mixed content and literal fallbacks. Reference captures: [desktop](assets/markdown-typography-desktop.png), [narrow viewport](assets/markdown-typography-mobile.png) and [dark theme](assets/markdown-typography-dark.png).
+mixed content and literal fallbacks. Reference captures: [desktop](assets/screenshots/markdown-typography-desktop.png), [narrow viewport](assets/screenshots/markdown-typography-mobile.png) and [dark theme](assets/screenshots/markdown-typography-dark.png).
 
 ## Abbreviations
 
@@ -214,8 +217,8 @@ Without JavaScript or Popover support, references navigate there directly.
 Printing uses the full notes and hides the preview. See the
 [reading specimen](examples/markdown-reading.md) for short, repeated, rich and
 long notes, plus references inside tabs and disclosures. Reference captures:
-[desktop](assets/markdown-reading-desktop.png), [narrow viewport](assets/markdown-reading-mobile.png)
-and [dark theme](assets/markdown-reading-dark.png).
+[desktop](assets/screenshots/markdown-reading-desktop.png), [narrow viewport](assets/screenshots/markdown-reading-mobile.png)
+and [dark theme](assets/screenshots/markdown-reading-dark.png).
 
 ## Heading links
 
@@ -282,7 +285,7 @@ structures follow ordinary Markdown rules.
 
 Loaded standalone large images offer a magnifier in browsers with native dialog
 support. It appears on hover or keyboard focus, and stays visible on touch devices.
-The borderless viewer shows the image and a close icon. When the image is scaled down to fit the window, click it or press
+The borderless viewer shows the image and a close icon. When multiple images are available, previous/next arrows and a position counter appear; Left/Right keys also navigate between images. When the image is scaled down to fit the window, click it or press
 Enter/Space while it is focused to switch between original size and fitting the
 window. Images already displayed at original size have no extra zoom interaction. Click the empty backdrop or press Escape to close and restore focus. Enlarged images scroll with
 keyboard or native touch scrolling; browser zoom remains available. Linked images,
@@ -299,7 +302,7 @@ For different light/dark artwork, use the existing `picture`/`source media` mark
 URL-fragment shortcuts are not interpreted.
 
 Try the [image specimen](examples/markdown-images.md) for widths, captions,
-linked images and images inside tabs and disclosures. Screenshots: [desktop](assets/markdown-images-desktop.png), [narrow viewer](assets/markdown-images-mobile.png), [dark viewer](assets/markdown-images-dark.png).
+linked images and images inside tabs and disclosures. Screenshots: [desktop](assets/screenshots/markdown-images-desktop.png), [narrow viewer with image navigation](assets/screenshots/markdown-images-mobile.png), [dark page](assets/screenshots/markdown-images-dark.png).
 
 ## Alerts
 
@@ -389,8 +392,8 @@ it does not broadly reinterpret indented image examples as uploadable assets.
 
 Publish the [admonition specimen](examples/markdown-admonitions.md) to try both
 syntaxes, custom titles, nesting, image discovery and disclosure navigation.
-Reference screenshots: [desktop](assets/markdown-admonitions-desktop.png) and
-[dark style preview](assets/markdown-admonitions-dark.png).
+Reference screenshots: [desktop](assets/screenshots/markdown-admonitions-desktop.png) and
+[dark example disclosure](assets/screenshots/markdown-admonitions-dark.png).
 
 ## Content tabs
 
@@ -449,7 +452,7 @@ bundled, while image examples in fallback code are not uploaded. Code, tables,
 math and diagrams retain their document-wide limits across panels.
 
 Try the [content tabs specimen](examples/markdown-tabs.md) for independent groups,
-folding, images, long labels and fallback examples. Screenshots: [desktop](assets/markdown-tabs-desktop.png) and [narrow screen](assets/markdown-tabs-mobile.png).
+folding, images, long labels and fallback examples. Screenshots: [desktop](assets/screenshots/markdown-tabs-desktop.png) and [narrow screen](assets/screenshots/markdown-tabs-mobile.png).
 
 ## Code highlighting
 
