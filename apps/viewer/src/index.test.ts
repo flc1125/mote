@@ -127,7 +127,7 @@ describe('GET /{document-id}', () => {
     expect(response.status).toBe(200);
 
     const html = await response.text();
-    expect(html).toContain('<h1 id="hello-mote">Hello Mote</h1>');
+    expect(html).toContain('<h1 id="hello-mote">Hello Mote<a class="heading-anchor"');
     // Local image reference rewritten to the opaque asset URL (§31)
     expect(html).toContain(`src="/${ID}/a/${ASSET_ID}"`);
 

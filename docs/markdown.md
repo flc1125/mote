@@ -228,6 +228,12 @@ from these IDs.
 The contents drawer links to the allocated IDs. Links to previously ambiguous or
 empty IDs may change; normal existing heading links are preserved.
 
+Every heading carries a section anchor that appears on hover or focus (always
+visible on touch devices). With JavaScript and clipboard access, clicking it
+copies the absolute `/{document-id}#section` URL and briefly shows a checkmark,
+without navigating. Otherwise the anchor is a plain in-page link, so the
+address bar picks up the same link. Anchors are hidden when printing.
+
 ## Images and HTML
 
 Local image references are resolved relative to the Markdown file by the CLI.

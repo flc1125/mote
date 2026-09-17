@@ -51,7 +51,7 @@ describe('M3 gate: API publish → Viewer render → asset', () => {
     const pageResponse = await viewerWorker.fetch(new Request(`http://localhost/${id}`), env);
     expect(pageResponse.status).toBe(200);
     const html = await pageResponse.text();
-    expect(html).toContain('<h1 id="m3-联调">M3 联调</h1>');
+    expect(html).toContain('<h1 id="m3-联调">M3 联调<a class="heading-anchor"');
 
     // 3. The rewritten asset URL resolves and serves the bytes.
     const assetMatch = html.match(/src="(\/[^"]+\/a\/[^"]+)"/);

@@ -11,7 +11,7 @@ function render(markdown: string, assets = NO_ASSETS): string {
 describe('renderMarkdown — CommonMark & extensions (§27)', () => {
   it('renders headings, lists, quotes, rules, and inline code', () => {
     const html = render('# Title\n\n- a\n- b\n\n> quote\n\n---\n\nuse `npm i`');
-    expect(html).toContain('<h1 id="title">Title</h1>');
+    expect(html).toContain('<h1 id="title">Title<a class="heading-anchor" href="#title"');
     expect(html).toContain('<ul>');
     expect(html).toContain('<blockquote>');
     expect(html).toContain('<hr>');
@@ -50,8 +50,10 @@ describe('renderMarkdown — CommonMark & extensions (§27)', () => {
 describe('renderMarkdown — heading anchors', () => {
   it('assigns GitHub-style slug ids', () => {
     const html = render('## Hello World!\n\n### 多个 标题');
-    expect(html).toContain('<h2 id="hello-world">Hello World!</h2>');
-    expect(html).toContain('<h3 id="多个-标题">多个 标题</h3>');
+    expect(html).toContain(
+      '<h2 id="hello-world">Hello World!<a class="heading-anchor" href="#hello-world"',
+    );
+    expect(html).toContain('<h3 id="多个-标题">多个 标题<a class="heading-anchor"');
   });
 
   it('deduplicates repeated slugs', () => {

@@ -53,7 +53,9 @@ describe('render (§42)', () => {
       DOCUMENT_ID,
     );
     expect(html).toContain('<title>Body title</title>');
-    expect(html).toContain('<h1 id="body-title">Body title</h1>');
+    expect(html).toContain(
+      '<h1 id="body-title">Body title<a class="heading-anchor" href="#body-title"',
+    );
     expect(html).not.toContain('Metadata title');
     expect(html).not.toContain('missing.png');
     expect(html).toContain('<span class="hljs-keyword">const</span>');
@@ -92,7 +94,7 @@ describe('render (§42)', () => {
     );
     expect(html).toContain('<nav class="toc-nav" aria-label="Table of contents">');
     expect(html).toContain('<a href="#背景">背景</a>');
-    expect(html).toContain('<h2 id="背景">背景</h2>');
+    expect(html).toContain('<h2 id="背景">背景<a class="heading-anchor" href="#背景"');
   });
 
   it('rejects an invalid document ID', () => {

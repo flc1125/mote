@@ -85,6 +85,45 @@ h3 { font-size: 1.22em; }
 h4 { font-size: 1.05em; }
 h5, h6 { font-size: 1em; color: var(--mote-muted); }
 
+/* Section-link anchors: parked in the left gutter where one exists, quiet
+   until the heading is hovered or focused; touch devices keep them visible
+   (no hover), just quieter. */
+:is(h1, h2, h3, h4, h5, h6) { position: relative; }
+.heading-anchor {
+  position: absolute;
+  inset-inline-start: -28px;
+  top: 0;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  color: var(--mote-muted);
+  opacity: 0;
+  transition: opacity var(--mote-duration-fast) var(--mote-ease-standard), color var(--mote-duration-fast) var(--mote-ease-standard);
+}
+/* Anchors are actions, not prose links: no underline bar from article a. */
+article a.heading-anchor { border-bottom: 0; }
+.heading-anchor svg { width: 16px; height: 16px; }
+.heading-anchor:hover { color: var(--mote-accent); }
+.heading-anchor:focus-visible { opacity: 1; outline: 2px solid var(--mote-accent); outline-offset: 2px; border-radius: var(--mote-radius-xs); }
+:is(h1, h2, h3, h4, h5, h6):hover .heading-anchor,
+:is(h1, h2, h3, h4, h5, h6):focus-within .heading-anchor { opacity: 1; }
+.anchor-icon-copied { display: none; }
+.heading-anchor.is-copied { opacity: 1; color: var(--mote-accent); }
+.heading-anchor.is-copied .anchor-icon-link { display: none; }
+.heading-anchor.is-copied .anchor-icon-copied { display: inline; }
+@media (hover: none), (pointer: coarse) { .heading-anchor { opacity: 0.55; } }
+/* No gutter on narrow screens or inside padded containers: inline-end. */
+@media (max-width: 839px) {
+  .heading-anchor { position: static; vertical-align: middle; margin-inline-start: 0.35em; }
+}
+.markdown-alert .heading-anchor,
+.content-panel .heading-anchor,
+blockquote .heading-anchor {
+  position: static;
+  vertical-align: middle;
+  margin-inline-start: 0.35em;
+}
+
 p, ul, ol, blockquote, table, pre { margin: 0 0 1.15em; }
 ul, ol { padding-left: 1.5em; }
 li { margin: 0.5em 0; }
@@ -892,7 +931,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
-  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer { display: none; }
+  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor { display: none; }
   .has-toc:not([data-toc-collapsed]) main,
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin: 0 auto; }
   body[data-toc-modal] { position: static; }
