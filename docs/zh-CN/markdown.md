@@ -55,7 +55,9 @@ mote docs/examples/markdown-admonitions.md
 
 每份示例都说明预期结果。GitHub 预览可能与 Mote 不同，需发布源码来检查 Mote 的呈现。不要用私有文档或私有分享 URL 替换这些合成用例。
 
-参考截图：[桌面](../assets/markdown-compatibility-desktop.png)、[移动视口](../assets/markdown-compatibility-mobile.png)和[深色图表](../assets/markdown-compatibility-dark.png)。截图仅展示一种浏览器与字体环境；检查以编号列出的预期为准。
+参考截图：[桌面](../assets/screenshots/markdown-compatibility-desktop.png)、[移动视口](../assets/screenshots/markdown-compatibility-mobile.png)和[深色图表](../assets/screenshots/markdown-compatibility-dark.png)。截图仅展示一种浏览器与字体环境；检查以编号列出的预期为准。
+
+截图来源、尺寸与拍摄日期见[截图清单](../assets/screenshots/README.md)，另有[主题菜单展开态](../assets/screenshots/markdown-theme-menu-dark.png)供参考。
 
 ## 内容标签页
 
@@ -93,7 +95,7 @@ mote docs/examples/markdown-admonitions.md
 
 HTML 折叠区可以通过空行包围 Markdown 组件，原始 HTML 块本身不会重新解析。每个标签组、每个面板都计入组件数量和嵌套层级，与提示块共用预算。每组最多 16 项，整组超出预算时整体回退；非法语法按普通 Markdown 规则显示。所有有效面板内的图片都会打包，回退代码中的伪图片不会上传。代码、表格、公式和图表继续共享原有文档预算。
 
-可发布[标签页示例（英文）](../examples/markdown-tabs.md)，体验独立分组、折叠、图片、长标签与回退。截图：[桌面](../assets/markdown-tabs-desktop.png)与[窄屏](../assets/markdown-tabs-mobile.png)。
+可发布[标签页示例（英文）](../examples/markdown-tabs.md)，体验独立分组、折叠、图片、长标签与回退。截图：[桌面](../assets/screenshots/markdown-tabs-desktop.png)与[窄屏](../assets/screenshots/markdown-tabs-mobile.png)。
 
 ## 高亮与定义列表
 
@@ -126,7 +128,7 @@ Capability URL
 
 支持一个术语对应多条释义、嵌套定义列表，以及普通列表、引用、脚注、提示块和标签页内的定义列表。定义正文里不激活新的提示块或标签组，其标记遵循普通 Markdown；图片宽度和图注继续可用。
 
-两项能力均由服务端输出静态语义 HTML，无 JavaScript、深色模式和打印时仍可阅读。参阅[高亮与定义列表示例（英文）](../examples/markdown-typography.md)。参考截图：[桌面](../assets/markdown-typography-desktop.png)、[窄屏](../assets/markdown-typography-mobile.png)和[深色](../assets/markdown-typography-dark.png)。
+两项能力均由服务端输出静态语义 HTML，无 JavaScript、深色模式和打印时仍可阅读。参阅[高亮与定义列表示例（英文）](../examples/markdown-typography.md)。参考截图：[桌面](../assets/screenshots/markdown-typography-desktop.png)、[窄屏](../assets/screenshots/markdown-typography-mobile.png)和[深色](../assets/screenshots/markdown-typography-dark.png)。
 
 ## 中文强调与换行
 
@@ -179,7 +181,7 @@ HTML 文档可以使用 API。API 的说明另有文档。
 
 长预览可以滚动；支持文字、列表、表格、链接和图片，代码不带复制按钮和行号。浮层是静态副本，脚注中的标签页与折叠区展开为普通内容。公式、图表、不支持的内容或超预算脚注直接使用原脚注链接。最多增强前 64 个引用；每次预览最多 1,024 个 DOM 节点、32 层、16,384 个文字/属性单位和 8 张图片。
 
-文末始终保留完整脚注和返回链接；无 JavaScript 或不支持 Popover 时，引用直接跳转到文末。打印显示完整脚注并隐藏浮层。参阅[阅读示例（英文）](../examples/markdown-reading.md)，体验短脚注、重复引用、富内容、长脚注，以及标签页和折叠区内的引用。参考截图：[桌面](../assets/markdown-reading-desktop.png)、[窄屏](../assets/markdown-reading-mobile.png)和[深色](../assets/markdown-reading-dark.png)。
+文末始终保留完整脚注和返回链接；无 JavaScript 或不支持 Popover 时，引用直接跳转到文末。打印显示完整脚注并隐藏浮层。参阅[阅读示例（英文）](../examples/markdown-reading.md)，体验短脚注、重复引用、富内容、长脚注，以及标签页和折叠区内的引用。参考截图：[桌面](../assets/screenshots/markdown-reading-desktop.png)、[窄屏](../assets/screenshots/markdown-reading-mobile.png)和[深色](../assets/screenshots/markdown-reading-dark.png)。
 
 ## 标题链接
 
@@ -214,11 +216,11 @@ HTML 经过白名单过滤。脚本、事件处理器、iframe、任意 style/cl
 
 图注处理限制：图片行 4,096、图注正文 4,096、完整段落 8,192 个 UTF-16 单位；每文档最多检查 64 个候选段落、65,536 个单位。非法候选也消耗预算。未支持或超限的结构按普通 Markdown 显示。
 
-支持原生 dialog 的浏览器中，已加载的独立大图在鼠标悬停或键盘聚焦时显示放大镜，触屏设备保持入口可见。无边框查看器只显示图片和右上角关闭图标；仅当图片为适应窗口而缩小时，点击图片或聚焦图片后按 Enter／空格，才可切换原始尺寸与适应窗口；已按原始尺寸显示的图片不提供额外缩放交互。点击空白遮罩或按 Escape 关闭后，焦点返回入口。放大后可用键盘或原生触摸滚动查看，浏览器缩放仍可使用。链接图片、行内图片、小图标、`picture` 与 `srcset` 图片保持原有行为。每页最多增强 64 个符合结构条件的候选。无 JavaScript 时，图片和图注仍可阅读，保留浏览器原生图片操作；打印不显示查看器控件。加载失败时保留替代文字。
+支持原生 dialog 的浏览器中，已加载的独立大图在鼠标悬停或键盘聚焦时显示放大镜，触屏设备保持入口可见。无边框查看器显示图片和右上角关闭图标；有多张可查看图片时，还会显示上一张／下一张箭头和位置计数器，也可用左右方向键切换；仅当图片为适应窗口而缩小时，点击图片或聚焦图片后按 Enter／空格，才可切换原始尺寸与适应窗口；已按原始尺寸显示的图片不提供额外缩放交互。点击空白遮罩或按 Escape 关闭后，焦点返回入口。放大后可用键盘或原生触摸滚动查看，浏览器缩放仍可使用。链接图片、行内图片、小图标、`picture` 与 `srcset` 图片保持原有行为。每页最多增强 64 个符合结构条件的候选。无 JavaScript 时，图片和图注仍可阅读，保留浏览器原生图片操作；打印不显示查看器控件。加载失败时保留替代文字。
 
 首张 Markdown 图片维持默认即时加载，之后使用浏览器原生懒加载，均异步解码。这是按文档顺序的保守策略，不是首屏位置检测。HTML 图片保持浏览器默认加载行为。远程图片和查看器复用原 URL，不代理、不重复上传。明暗模式图片继续使用已有 `picture`/`source media`，不解释 URL fragment 快捷语法。
 
-可体验[图片示例（英文）](../examples/markdown-images.md)，包含尺寸、图注、链接图片及标签页／折叠区中的图片。截图：[桌面](../assets/markdown-images-desktop.png)、[窄屏查看器](../assets/markdown-images-mobile.png)、[深色查看器](../assets/markdown-images-dark.png)。
+可体验[图片示例（英文）](../examples/markdown-images.md)，包含尺寸、图注、链接图片及标签页／折叠区中的图片。截图：[桌面](../assets/screenshots/markdown-images-desktop.png)、[窄屏多图导航](../assets/screenshots/markdown-images-mobile.png)、[深色页面](../assets/screenshots/markdown-images-dark.png)。
 
 ## 提示块
 
@@ -279,7 +281,7 @@ HTML 经过白名单过滤。脚本、事件处理器、iframe、任意 style/cl
 
 新起始标记不会在列表、引用、脚注定义、代码、数学或原始 HTML 块内激活，也不能打断段落。提示块内的 GitHub 标记仍显示为普通引用。未知类型、非法标题、缺少空行、空正文或超出预算时，按普通 Markdown 规则处理，可能显示为段落或缩进代码；不会把所有缩进图片示例重新解释为可上传资产。
 
-可发布[提示块验证示例（英文）](../examples/markdown-admonitions.md)，体验两种语法、自定义标题、嵌套、图片扫描与折叠定位。参考截图：[桌面](../assets/markdown-admonitions-desktop.png)与[深色样式预览](../assets/markdown-admonitions-dark.png)。
+可发布[提示块验证示例（英文）](../examples/markdown-admonitions.md)，体验两种语法、自定义标题、嵌套、图片扫描与折叠定位。参考截图：[桌面](../assets/screenshots/markdown-admonitions-desktop.png)与[深色 example 折叠块](../assets/screenshots/markdown-admonitions-dark.png)。
 
 ## 代码高亮
 

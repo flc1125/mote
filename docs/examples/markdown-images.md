@@ -5,25 +5,26 @@ linked images and small inline icons retain their usual behavior.
 
 ## 1. A readable size and a visible caption
 
-![Mote reading layout with a contents sidebar](../assets/markdown-tabs-desktop.png 'Desktop reading layout'){ width="640" }
+![Mote reading layout with a contents sidebar](../assets/screenshots/markdown-tabs-desktop.png 'Desktop reading layout'){ width="640" }
 /// caption
 **Content tabs** in a Mote document. The caption is visible; the image's alternative text describes the picture. [Read about tabs](../markdown.md#content-tabs).
 ///
 
 Use the magnifier to open the screenshot, then, if it is scaled down to fit
-the window, click the image to toggle its original size. The borderless viewer has only a close icon; Escape also closes it
-and returns focus to the magnifier. On a narrow screen, the image fits the
+the window, click the image to toggle its original size. When multiple images are available,
+use the previous/next arrows or Left/Right keys to navigate; a counter shows your position.
+The close icon or Escape closes the viewer and returns focus to the magnifier. On a narrow screen, the image fits the
 column without horizontal page scrolling.
 
 ## 2. Percentage width and HTML figures
 
-![Desktop layout at half the prose width](../assets/markdown-tabs-desktop.png){ width="50%" }
+![Desktop layout at half the prose width](../assets/screenshots/markdown-tabs-desktop.png){ width="50%" }
 /// caption
 A separate caption at **50%** width. This reference shares the same uploaded asset.
 ///
 
 <figure>
-<img src="../assets/markdown-tabs-desktop.png" alt="The same screenshot inside an HTML figure" width="480">
+<img src="../assets/screenshots/markdown-tabs-desktop.png" alt="The same screenshot inside an HTML figure" width="480">
 <figcaption>An HTML figure keeps its visible caption too.</figcaption>
 </figure>
 
@@ -44,14 +45,14 @@ do not get an image viewer. The standalone small icon below also stays unchanged
 
 === "Screenshot"
 
-    ![Screenshot inside a tab](../assets/markdown-tabs-desktop.png){ width="480" }
+    ![Screenshot inside a tab](../assets/screenshots/markdown-tabs-desktop.png){ width="480" }
     /// caption
     Assets from initially hidden panels are bundled too.
     ///
 
 ??? note "Show an image"
 
-    ![Screenshot inside a disclosure](../assets/markdown-tabs-desktop.png){ width="480" }
+    ![Screenshot inside a disclosure](../assets/screenshots/markdown-tabs-desktop.png){ width="480" }
     /// caption
     A caption and viewer inside a native disclosure.
     ///
