@@ -275,7 +275,7 @@ describe('E2E (§59)', () => {
     expectTocPolicy(response, html, true);
     expect(html.match(/<details id="mote-admonition-/g)).toHaveLength(4);
     expect(html.match(/class="markdown-alert markdown-alert-success" open=""/g)).toHaveLength(1);
-    expect(html).toContain('<h3 id="nested-details">Nested details</h3>');
+    expect(html).toContain('<h3 id="nested-details">Nested details<a class="heading-anchor"');
     expect(html).toContain('<summary>Show the command (HTML)</summary>');
     expect(html).toContain('<details open><summary>Checks completed (HTML)</summary>');
     const paths = assetPaths(html);
@@ -452,7 +452,9 @@ describe('E2E (§59)', () => {
     const page = await view(`/${id}`);
     expect(page.status).toBe(200);
     const html = await page.text();
-    expect(html).toContain('<h1 id="pure-markdown">Pure Markdown</h1>');
+    expect(html).toContain(
+      '<h1 id="pure-markdown">Pure Markdown<a class="heading-anchor" href="#pure-markdown"',
+    );
     expect(html).toContain('<strong>world</strong>');
   });
 
@@ -554,7 +556,9 @@ describe('M4 gate: built binary publishes end to end', () => {
     const page = await view(`/${id}`);
     expect(page.status).toBe(200);
     const html = await page.text();
-    expect(html).toContain('<h1 id="binary-e2e">Binary E2E</h1>');
+    expect(html).toContain(
+      '<h1 id="binary-e2e">Binary E2E<a class="heading-anchor" href="#binary-e2e"',
+    );
     expect(assetPaths(html)).toHaveLength(1);
   }, 60_000);
 });

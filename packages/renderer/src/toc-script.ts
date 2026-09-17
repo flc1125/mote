@@ -32,6 +32,17 @@ ${TABS_INIT_SCRIPT}
     return target;
   }
   // Opening before the native jump also handles repeat clicks on the same hash.
+  // Heading anchors share this listener: they additionally copy the absolute
+  // section link, while the native jump keeps the address bar as fallback.
+  const clipboard =
+    typeof navigator !== 'undefined' &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === 'function'
+      ? navigator.clipboard.writeText.bind(navigator.clipboard)
+      : null;
+  let copyStatus = null;
+  let copiedAnchor = null;
+  let anchorTimer = 0;
   article.addEventListener('click', event => {
     if (!plainClick(event) || event.defaultPrevented) return;
     const link = event.target.closest('a[href]');
@@ -39,6 +50,36 @@ ${TABS_INIT_SCRIPT}
     let url;
     try { url = new URL(link.href, location.href); } catch { return; }
     if (url.origin !== location.origin || url.pathname !== location.pathname || url.search !== location.search) return;
+    const headingAnchor = event.target.closest('a.heading-anchor');
+    if (headingAnchor && clipboard) {
+      // Copy-only: suppress the native jump. Without a clipboard the click
+      // falls through to the jump so the address bar still gets the link.
+      event.preventDefault();
+      if (!copyStatus) {
+        copyStatus = document.createElement('div');
+        copyStatus.className = 'visually-hidden';
+        copyStatus.setAttribute('role', 'status');
+        article.appendChild(copyStatus);
+      }
+      const anchor = link;
+      clipboard(url.href).then(() => {
+        // One timer serves the latest anchor; switching anchors reverts the
+        // previous checkmark immediately instead of stranding it.
+        if (copiedAnchor && copiedAnchor !== anchor) copiedAnchor.classList.remove('is-copied');
+        copiedAnchor = anchor;
+        clearTimeout(anchorTimer);
+        anchor.classList.add('is-copied');
+        copyStatus.textContent = 'Section link copied to clipboard.';
+        anchorTimer = setTimeout(() => {
+          if (copiedAnchor) copiedAnchor.classList.remove('is-copied');
+          copiedAnchor = null;
+          copyStatus.textContent = '';
+        }, 1600);
+      }, () => {
+        copyStatus.textContent = 'Could not copy. The address bar shows the link after the jump.';
+      });
+      return;
+    }
     const target = hashTarget(url.hash);
     if (revealTarget(target)) target.scrollIntoView();
   });

@@ -121,7 +121,7 @@ describe('MCP integration (publish -> view)', () => {
     const page = await viewerWorker.fetch(new Request(structured.url), { DOCUMENTS: bucket });
     expect(page.status).toBe(200);
     const html = await page.text();
-    expect(html).toContain('<h1 id="mcp-e2e">MCP E2E</h1>');
+    expect(html).toContain('<h1 id="mcp-e2e">MCP E2E<a class="heading-anchor"');
     expect(html).not.toContain('demo.png'); // original file name never leaks
     const assetPath = /src="(\/[^"]+\/a\/[^"]+)"/.exec(html)?.[1];
     expect(assetPath).toBeDefined();
