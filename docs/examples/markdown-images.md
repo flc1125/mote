@@ -7,7 +7,7 @@ linked images and small inline icons retain their usual behavior.
 
 ![Mote reading layout with a contents sidebar](../assets/screenshots/markdown-tabs-desktop.png 'Desktop reading layout'){ width="640" }
 /// caption
-**Content tabs** in a Mote document. The caption is visible; the image's alternative text describes the picture. [Read about tabs](../markdown.md#content-tabs).
+**Content tabs** in a Mote document. The caption is visible; the image's alternative text describes the picture. [Read about tabs](https://github.com/flc1125/mote/blob/main/docs/markdown.md#content-tabs).
 ///
 
 Use the magnifier to open the screenshot, then, if it is scaled down to fit

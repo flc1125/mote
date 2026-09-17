@@ -220,7 +220,7 @@ HTML 经过白名单过滤。脚本、事件处理器、iframe、任意 style/cl
 
 首张 Markdown 图片维持默认即时加载，之后使用浏览器原生懒加载，均异步解码。这是按文档顺序的保守策略，不是首屏位置检测。HTML 图片保持浏览器默认加载行为。远程图片和查看器复用原 URL，不代理、不重复上传。明暗模式图片继续使用已有 `picture`/`source media`，不解释 URL fragment 快捷语法。
 
-可体验[图片示例（英文）](../examples/markdown-images.md)，包含尺寸、图注、链接图片及标签页／折叠区中的图片。截图：[桌面](../assets/screenshots/markdown-images-desktop.png)、[窄屏多图导航](../assets/screenshots/markdown-images-mobile.png)、[深色页面](../assets/screenshots/markdown-images-dark.png)。
+可体验[在线图片示例（英文）](https://mote.pub/qAMkdNwYPKfvy8Yi)（[源文件](../examples/markdown-images.md)），包含尺寸、图注、链接图片及标签页／折叠区中的图片。截图：[桌面](../assets/screenshots/markdown-images-desktop.png)、[窄屏多图导航](../assets/screenshots/markdown-images-mobile.png)、[深色页面](../assets/screenshots/markdown-images-dark.png)。
 
 ## 提示块
 
