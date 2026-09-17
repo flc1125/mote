@@ -387,7 +387,7 @@ article figure:has(> img), article figure:has(> .image-frame) { margin: 1.5em 0;
 article figure:has(> img) > figcaption, article figure:has(> .image-frame) > figcaption { margin-top: 0.6em; color: var(--mote-muted); font-size: 0.85em; text-align: center; overflow-wrap: anywhere; }
 .image-frame { display: block; position: relative; max-width: 100%; }
 .image-frame > img { display: block; width: 100%; }
-.image-expand, .image-close { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--mote-radius-pill); cursor: pointer; }
+.image-expand, .image-close, .image-nav { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--mote-radius-pill); cursor: pointer; }
 /* The magnifier stays quiet until the image is hovered or focused; touch
    devices keep it visible via the coarse-pointer media query below. */
 .image-expand {
@@ -413,19 +413,52 @@ article figure:has(> img) > figcaption, article figure:has(> .image-frame) > fig
 .image-viewer[open] { display: flex; flex-direction: column; }
 .image-viewer::backdrop { background: rgb(0 0 0 / 85%); backdrop-filter: blur(2px); }
 .image-viewer[open]::backdrop { animation: image-viewer-fade var(--mote-duration-fast) var(--mote-ease-out); }
-.image-close {
+.image-close, .image-nav {
   position: absolute;
-  top: max(14px, env(safe-area-inset-top));
-  right: max(14px, env(safe-area-inset-right));
   z-index: 1;
   color: white;
-  background: rgb(0 0 0 / 45%);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: background-color var(--mote-duration-fast) var(--mote-ease-standard), box-shadow var(--mote-duration-fast) var(--mote-ease-standard);
 }
+.image-close {
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  background: rgb(0 0 0 / 45%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
+}
 .image-close:hover { background: rgb(0 0 0 / 62%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 38%); }
+/* Quiet chevrons: a soft drop shadow keeps them readable over any image;
+   the circular base only appears on hover/focus. */
+.image-nav {
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.image-nav svg { filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.65)); }
+.image-nav:hover, .image-nav:focus-visible {
+  background: rgb(0 0 0 / 45%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
+}
+.image-nav:hover svg, .image-nav:focus-visible svg { filter: none; }
+.image-prev { left: max(14px, env(safe-area-inset-left)); }
+.image-next { right: max(14px, env(safe-area-inset-right)); }
+.image-nav[hidden], .image-viewer-count[hidden] { display: none; }
+.image-viewer-count {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  margin: 0;
+  text-align: center;
+  color: rgb(255 255 255 / 88%);
+  font-size: 13px;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.65);
+  pointer-events: none;
+}
 .image-viewer-stage { box-sizing: border-box; display: flex; align-items: center; justify-content: center; flex: 1; min-height: 0; overflow: auto; padding: 68px 24px 24px; text-align: center; overscroll-behavior: contain; }
 /* The enlarged image keeps the document's corner radius and floats on the
    dimmed page; clicking it toggles the original size. */
@@ -882,6 +915,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 .footnote-preview {
   position: fixed; inset: auto; margin: 0; padding: 0;
   width: min(28rem, calc(100vw - 24px)); max-height: min(28rem, calc(100vh - 24px));
+  max-height: min(28rem, calc(100dvh - 24px));
   border: 1px solid var(--mote-border); border-radius: var(--mote-radius-lg);
   background: var(--mote-bg); color: var(--mote-fg);
   box-shadow: var(--mote-shadow-pop); font-size: 0.9em; line-height: 1.65;

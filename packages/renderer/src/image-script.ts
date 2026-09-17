@@ -5,14 +5,45 @@ export const IMAGE_SCRIPT = String.raw`(function () {
   var dialog = document.createElement('dialog');
   dialog.className = 'image-viewer';
   dialog.setAttribute('aria-label', 'Image viewer');
-  dialog.innerHTML = '<button type="button" class="image-close" aria-label="Close image viewer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><div class="image-viewer-stage" tabindex="-1" role="region" aria-label="Enlarged image, scrollable at original size"><img alt=""></div><p class="image-viewer-status" role="status"></p>';
+  dialog.innerHTML = '<button type="button" class="image-close" aria-label="Close image viewer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><button type="button" class="image-nav image-prev" aria-label="Previous image" hidden><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 6-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="image-nav image-next" aria-label="Next image" hidden><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="image-viewer-stage" tabindex="-1" role="region" aria-label="Enlarged image, scrollable at original size"><img alt=""></div><p class="image-viewer-status" role="status"></p><p class="image-viewer-count" aria-live="polite" hidden></p>';
   var stage = dialog.querySelector('.image-viewer-stage');
   var large = stage.querySelector('img');
   var status = dialog.querySelector('.image-viewer-status');
   var close = dialog.querySelector('.image-close');
+  var prev = dialog.querySelector('.image-prev');
+  var next = dialog.querySelector('.image-next');
+  var counter = dialog.querySelector('.image-viewer-count');
   var trigger;
   var overflow;
   var zoomable = false;
+  // Candidates in document order; entries gain a button when enhanced.
+  var viewers = [];
+  var current = -1;
+  function available() {
+    return viewers.filter(function (entry) { return entry.button; });
+  }
+  function show(index) {
+    var list = available();
+    var entry = list[index];
+    if (!entry) return;
+    current = index;
+    var img = entry.img;
+    trigger = entry.button;
+    large.alt = img.alt;
+    dialog.setAttribute('aria-label', 'Image viewer' + (img.alt ? ': ' + img.alt : ''));
+    status.textContent = '';
+    large.hidden = false;
+    large.src = img.currentSrc || img.src;
+    var multi = list.length > 1;
+    prev.hidden = next.hidden = counter.hidden = !multi;
+    if (multi) counter.textContent = (current + 1) + ' / ' + list.length;
+    resetSize();
+  }
+  function step(delta) {
+    var list = available();
+    if (list.length < 2) return;
+    show((current + delta + list.length) % list.length);
+  }
   // aria-label overrides alt, so the toggle keeps the image description
   // inside its accessible name instead of losing it.
   function sizeLabel(full) {
@@ -56,6 +87,12 @@ export const IMAGE_SCRIPT = String.raw`(function () {
     }
   });
   close.addEventListener('click', function () { dialog.close(); });
+  prev.addEventListener('click', function () { step(-1); });
+  next.addEventListener('click', function () { step(1); });
+  dialog.addEventListener('keydown', function (event) {
+    if (event.key === 'ArrowLeft') { event.preventDefault(); step(-1); }
+    if (event.key === 'ArrowRight') { event.preventDefault(); step(1); }
+  });
   dialog.addEventListener('click', function (event) { if (event.target === dialog || event.target === stage) dialog.close(); });
   dialog.addEventListener('close', function () {
     document.documentElement.style.overflow = overflow;
@@ -86,6 +123,8 @@ export const IMAGE_SCRIPT = String.raw`(function () {
     var width = img.getAttribute('width');
     if (width && /^\d+$/.test(width) && Number(width) < 160) return;
     if (++count > 64) return;
+    var entry = { img: img, button: null };
+    viewers.push(entry);
     function enhance() {
       if (!img.naturalWidth || img.naturalWidth < 160 || img.naturalHeight < 100 || !img.getAttribute('src')) return;
       if (img.parentElement !== parent) return;
@@ -101,19 +140,15 @@ export const IMAGE_SCRIPT = String.raw`(function () {
       parent.insertBefore(frame, img);
       frame.appendChild(img);
       frame.appendChild(button);
+      entry.button = button;
       button.addEventListener('click', function () {
         if (!img.naturalWidth) return;
         if (!dialog.isConnected) document.body.appendChild(dialog);
-        trigger = button;
-        large.alt = img.alt;
-        dialog.setAttribute('aria-label', 'Image viewer' + (img.alt ? ': ' + img.alt : ''));
-        status.textContent = '';
-        large.hidden = false;
-        large.src = img.currentSrc || img.src;
         overflow = document.documentElement.style.overflow;
         dialog.showModal();
         document.documentElement.style.overflow = 'hidden';
-        resetSize();
+        // show() must run after showModal: zoom detection needs layout.
+        show(available().indexOf(entry));
         close.focus();
       });
       img.addEventListener('error', function () { button.hidden = true; });

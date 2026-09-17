@@ -43,7 +43,21 @@ describe('renderMarkdown — CommonMark & extensions (§27)', () => {
 
   it('linkifies bare URLs', () => {
     const html = render('see https://example.com/docs');
-    expect(html).toContain('<a href="https://example.com/docs">https://example.com/docs</a>');
+    expect(html).toContain(
+      '<a href="https://example.com/docs" target="_blank" rel="noopener noreferrer">https://example.com/docs</a>',
+    );
+  });
+
+  it('opens only absolute http(s) links in a new tab', () => {
+    const html = render(
+      '[ext](https://example.com) [secure](#x) [rel](./local.md) [mail](mailto:a@b.c)',
+    );
+    expect(html).toContain(
+      '<a href="https://example.com" target="_blank" rel="noopener noreferrer">ext</a>',
+    );
+    expect(html).toContain('<a href="#x">secure</a>');
+    expect(html).toContain('<a href="./local.md">rel</a>');
+    expect(html).toContain('<a href="mailto:a@b.c">mail</a>');
   });
 });
 

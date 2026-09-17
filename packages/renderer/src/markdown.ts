@@ -173,6 +173,8 @@ export function renderMarkdown(
   // Dangerous link href stripping (§57), defense in depth. Note that
   // markdown-it already refuses to parse invalid-protocol destinations
   // (javascript:, data:, ...) as links — they remain inert literal text.
+  // Absolute http(s) links open in a new tab so readers keep their place;
+  // fragments and relative paths stay in-page.
   const defaultLinkOpen = md.renderer.rules.link_open;
   md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
     const token = tokens[idx];
@@ -181,6 +183,10 @@ export function renderMarkdown(
       if (href !== '') {
         const safe = safeLinkUrl(href);
         token.attrSet('href', safe ?? '');
+        if (safe && /^https?:\/\//.test(safe)) {
+          token.attrSet('target', '_blank');
+          token.attrSet('rel', 'noopener noreferrer');
+        }
       }
     }
     return defaultLinkOpen

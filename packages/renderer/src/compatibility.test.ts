@@ -135,7 +135,9 @@ describe('common document combinations', () => {
     expect(html).toBe(render(source).html);
     expect(html.match(/<strong>检查：<\/strong>/g)).toHaveLength(1);
     expect(html).not.toContain('**');
-    expect(html).toContain('<a href="https://example.com">链接</a>');
+    expect(html).toContain(
+      '<a href="https://example.com" target="_blank" rel="noopener noreferrer">链接</a>',
+    );
     expect(html).toContain('<code>code</code>');
     expect(html.match(/disabled/g)).toHaveLength(2);
     expect(html.match(/<label>/g)).toHaveLength(2);

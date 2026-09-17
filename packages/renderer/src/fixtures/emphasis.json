@@ -25,6 +25,6 @@
   { "source": "**使用 `code`：**正文", "html": "<strong>使用 <code>code</code>：</strong>正文" },
   {
     "source": "[**说明：**文档](https://example.com)",
-    "html": "<a href=\"https://example.com\"><strong>说明：</strong>文档</a>"
+    "html": "<a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\"><strong>说明：</strong>文档</a>"
   }
 ]
