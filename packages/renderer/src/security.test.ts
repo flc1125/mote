@@ -4,6 +4,7 @@ import type { DocumentManifest } from '@mote/protocol';
 
 import { render } from './index.js';
 import { THEME_SCRIPT } from './theme-script.js';
+import { PAGE_SCRIPT } from './page-script.js';
 
 const DOCUMENT_ID = '7Vk3mQ9x2NFaP4Ls';
 
@@ -35,6 +36,7 @@ describe('XSS security tests (§57)', () => {
     // The only script on the page is the fixed first-party theme script.
     expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
       THEME_SCRIPT,
+      PAGE_SCRIPT,
     ]);
     // The allowlist sanitizer drops the script subtree entirely.
     expect(html).not.toContain('alert(1)');

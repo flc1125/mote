@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { renderMarkdown } from './markdown.js';
 import { renderHtmlPage } from './template.js';
 import { THEME_SCRIPT } from './theme-script.js';
+import { PAGE_SCRIPT } from './page-script.js';
 
 const render = (source: string) => renderMarkdown(source, new Map([['photo.png', '/asset/photo']]));
 
@@ -14,6 +15,7 @@ describe('typography rendering', () => {
     const page = renderHtmlPage({ title: 'Typography', tocHtml: '', contentHtml: html });
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
       THEME_SCRIPT,
+      PAGE_SCRIPT,
     ]);
   });
   it('sanitizes HTML within marks and definitions while rewriting real images', () => {

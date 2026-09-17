@@ -33,14 +33,20 @@ describe('trusted document script policy', () => {
     const { IMAGE_SCRIPT } = await import('./image-script.js');
     const { FOOTNOTE_SCRIPT } = await import('./footnote-script.js');
     const { THEME_SCRIPT } = await import('./theme-script.js');
+    const { PAGE_SCRIPT } = await import('./page-script.js');
     const { tocDocumentSecurityHeaders } = await import('./headers.js');
     const { renderHtmlPage } = await import('./template.js');
     const html = renderHtmlPage({ title: 'TOC', tocHtml: '<nav></nav>', contentHtml: '' });
     const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
-    expect(scripts).toEqual([THEME_SCRIPT, TOC_SCRIPT]);
-    const hashes = [TOC_SCRIPT, COPY_SCRIPT, IMAGE_SCRIPT, FOOTNOTE_SCRIPT, THEME_SCRIPT].map(
-      (script) => `'sha256-${createHash('sha256').update(script).digest('base64')}'`,
-    );
+    expect(scripts).toEqual([THEME_SCRIPT, TOC_SCRIPT, PAGE_SCRIPT]);
+    const hashes = [
+      TOC_SCRIPT,
+      COPY_SCRIPT,
+      IMAGE_SCRIPT,
+      FOOTNOTE_SCRIPT,
+      THEME_SCRIPT,
+      PAGE_SCRIPT,
+    ].map((script) => `'sha256-${createHash('sha256').update(script).digest('base64')}'`);
     const headers = await tocDocumentSecurityHeaders();
     expect(headers['Content-Security-Policy']).toBe(
       CONTENT_SECURITY_POLICY.replace("script-src 'none'", `script-src ${hashes.join(' ')}`),

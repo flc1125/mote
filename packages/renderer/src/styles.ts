@@ -572,8 +572,10 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
 /* Static anchors work without JavaScript. Enhancement adds state, focus
    management and scroll position; it never changes the rendered article. */
 /* Banner theme menu (plan 012 control spec): pill button + popover list. */
-.theme-menu { position: relative; margin-left: auto; }
-.theme-toggle {
+.banner-spacer { flex: 1; }
+.theme-menu { position: relative; }
+.theme-toggle,
+.page-copy {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -589,9 +591,42 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
   cursor: pointer;
   transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
-.theme-toggle[hidden] { display: none; }
-.theme-toggle:hover { color: var(--mote-accent); background: var(--mote-tint); }
-.theme-toggle:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.theme-toggle[hidden], .page-copy[hidden] { display: none; }
+.theme-toggle:hover, .page-copy:hover { color: var(--mote-accent); background: var(--mote-tint); }
+.theme-toggle:focus-visible, .page-copy:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.page-copy .page-icon-copied { display: none; }
+.page-copy.is-copied { color: var(--mote-accent); }
+.page-copy.is-copied .page-icon-link { display: none; }
+.page-copy.is-copied .page-icon-copied { display: inline; }
+
+/* Back to top: quiet floating action, clear of the desktop contents rail. */
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mote-control-size);
+  height: var(--mote-control-size);
+  padding: 0;
+  border: 1px solid var(--mote-border);
+  border-radius: var(--mote-radius-pill);
+  background: color-mix(in srgb, var(--mote-bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--mote-muted);
+  cursor: pointer;
+  box-shadow: var(--mote-shadow-pop);
+  transition: color var(--mote-duration-fast) var(--mote-ease-standard), border-color var(--mote-duration-fast) var(--mote-ease-standard);
+}
+.to-top[hidden] { display: none; }
+.to-top:hover { color: var(--mote-accent); border-color: var(--mote-accent); }
+.to-top:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+@media (min-width: 1140px) {
+  .has-toc:not([data-toc-collapsed]) .to-top { bottom: 88px; }
+}
 .theme-toggle[aria-expanded="true"] { color: var(--mote-fg); }
 .theme-chevron { flex-shrink: 0; }
 /* SVG ignores the hidden attribute without an explicit rule. */
@@ -931,7 +966,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
-  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor { display: none; }
+  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor, .page-copy, .to-top { display: none; }
   .has-toc:not([data-toc-collapsed]) main,
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin: 0 auto; }
   body[data-toc-modal] { position: static; }

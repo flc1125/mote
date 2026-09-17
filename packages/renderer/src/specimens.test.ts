@@ -1,5 +1,6 @@
 import { FOOTNOTE_SCRIPT } from './footnote-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
+import { PAGE_SCRIPT } from './page-script.js';
 import { IMAGE_SCRIPT } from './image-script.js';
 import { readFileSync } from 'node:fs';
 import { Parser } from 'htmlparser2';
@@ -76,10 +77,12 @@ describe('committed compatibility specimens', () => {
       COPY_SCRIPT,
       IMAGE_SCRIPT,
       FOOTNOTE_SCRIPT,
+      PAGE_SCRIPT,
     ]);
     expect(
       html
         .replace(`<script>${THEME_SCRIPT}</script>`, '')
+        .replace(`<script>${PAGE_SCRIPT}</script>`, '')
         .replace(`<script>${TOC_SCRIPT}</script>`, '')
         .replace(`<script>${COPY_SCRIPT}</script>`, '')
         .replace(`<script>${IMAGE_SCRIPT}</script>`, '')

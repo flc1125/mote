@@ -3,6 +3,7 @@ import { IMAGE_SCRIPT } from './image-script.js';
 import { COPY_SCRIPT } from './copy-script.js';
 import { FOOTNOTE_SCRIPT } from './footnote-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
+import { PAGE_SCRIPT } from './page-script.js';
 
 /** Base policy: surfaces opt into an exact trusted script hash where needed. */
 export const CONTENT_SECURITY_POLICY = [
@@ -35,10 +36,12 @@ let tocHeaders: Promise<Record<string, string>> | undefined;
 export async function tocDocumentSecurityHeaders(): Promise<Record<string, string>> {
   // Web Crypto runs on the first request, not during Worker module initialization.
   tocHeaders ??= Promise.all(
-    [TOC_SCRIPT, COPY_SCRIPT, IMAGE_SCRIPT, FOOTNOTE_SCRIPT, THEME_SCRIPT].map(async (script) => {
-      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(script));
-      return `'sha256-${btoa(String.fromCharCode(...new Uint8Array(digest)))}'`;
-    }),
+    [TOC_SCRIPT, COPY_SCRIPT, IMAGE_SCRIPT, FOOTNOTE_SCRIPT, THEME_SCRIPT, PAGE_SCRIPT].map(
+      async (script) => {
+        const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(script));
+        return `'sha256-${btoa(String.fromCharCode(...new Uint8Array(digest)))}'`;
+      },
+    ),
   ).then((hashes) => ({
     ...documentSecurityHeaders(),
     'Content-Security-Policy': CONTENT_SECURITY_POLICY.replace(

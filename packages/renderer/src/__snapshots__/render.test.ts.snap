@@ -716,8 +716,10 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
 /* Static anchors work without JavaScript. Enhancement adds state, focus
    management and scroll position; it never changes the rendered article. */
 /* Banner theme menu (plan 012 control spec): pill button + popover list. */
-.theme-menu { position: relative; margin-left: auto; }
-.theme-toggle {
+.banner-spacer { flex: 1; }
+.theme-menu { position: relative; }
+.theme-toggle,
+.page-copy {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -733,9 +735,42 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
   cursor: pointer;
   transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
-.theme-toggle[hidden] { display: none; }
-.theme-toggle:hover { color: var(--mote-accent); background: var(--mote-tint); }
-.theme-toggle:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.theme-toggle[hidden], .page-copy[hidden] { display: none; }
+.theme-toggle:hover, .page-copy:hover { color: var(--mote-accent); background: var(--mote-tint); }
+.theme-toggle:focus-visible, .page-copy:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.page-copy .page-icon-copied { display: none; }
+.page-copy.is-copied { color: var(--mote-accent); }
+.page-copy.is-copied .page-icon-link { display: none; }
+.page-copy.is-copied .page-icon-copied { display: inline; }
+
+/* Back to top: quiet floating action, clear of the desktop contents rail. */
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mote-control-size);
+  height: var(--mote-control-size);
+  padding: 0;
+  border: 1px solid var(--mote-border);
+  border-radius: var(--mote-radius-pill);
+  background: color-mix(in srgb, var(--mote-bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--mote-muted);
+  cursor: pointer;
+  box-shadow: var(--mote-shadow-pop);
+  transition: color var(--mote-duration-fast) var(--mote-ease-standard), border-color var(--mote-duration-fast) var(--mote-ease-standard);
+}
+.to-top[hidden] { display: none; }
+.to-top:hover { color: var(--mote-accent); border-color: var(--mote-accent); }
+.to-top:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+@media (min-width: 1140px) {
+  .has-toc:not([data-toc-collapsed]) .to-top { bottom: 88px; }
+}
 .theme-toggle[aria-expanded="true"] { color: var(--mote-fg); }
 .theme-chevron { flex-shrink: 0; }
 /* SVG ignores the hidden attribute without an explicit rule. */
@@ -1075,7 +1110,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
-  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor { display: none; }
+  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor, .page-copy, .to-top { display: none; }
   .has-toc:not([data-toc-collapsed]) main,
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin: 0 auto; }
   body[data-toc-modal] { position: static; }
@@ -1211,7 +1246,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 <a class="toc-scrim" href="#!" aria-hidden="true" tabindex="-1"></a>
 <header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/" target="_blank" rel="noopener noreferrer"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-<span class="theme-menu"><button type="button" class="theme-toggle" aria-haspopup="menu" aria-expanded="false" aria-label="Theme: Auto" title="Theme: Auto" hidden><svg class="theme-icon theme-icon-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="theme-icon theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.3 4.3l1.4 1.4M18.3 18.3l1.4 1.4M2.5 12h2M19.5 12h2M4.3 19.7l1.4-1.4M18.3 5.7l1.4-1.4"/></svg><svg class="theme-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5a7 7 0 0 0 10 10z"/></svg><svg class="theme-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 10 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="theme-menu-list" role="menu" aria-label="Theme" hidden><button type="button" role="menuitemradio" aria-checked="true" data-theme-value="auto"><svg class="theme-icon theme-item-icon theme-icon-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>Auto</button><button type="button" role="menuitemradio" aria-checked="false" data-theme-value="light"><svg class="theme-icon theme-item-icon theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.3 4.3l1.4 1.4M18.3 18.3l1.4 1.4M2.5 12h2M19.5 12h2M4.3 19.7l1.4-1.4M18.3 5.7l1.4-1.4"/></svg>Light</button><button type="button" role="menuitemradio" aria-checked="false" data-theme-value="dark"><svg class="theme-icon theme-item-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5a7 7 0 0 0 10 10z"/></svg>Dark</button></span></span><a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="Open table of contents" title="Show contents"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><g fill="currentColor"><circle cx="4" cy="6" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="4" cy="18" r="1.3"/></g></svg></a></div></header>
+<span class="banner-spacer"></span><button type="button" class="page-copy" aria-label="Copy page link" title="Copy page link" hidden><svg class="page-icon-link" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="page-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><span class="theme-menu"><button type="button" class="theme-toggle" aria-haspopup="menu" aria-expanded="false" aria-label="Theme: Auto" title="Theme: Auto" hidden><svg class="theme-icon theme-icon-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="theme-icon theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.3 4.3l1.4 1.4M18.3 18.3l1.4 1.4M2.5 12h2M19.5 12h2M4.3 19.7l1.4-1.4M18.3 5.7l1.4-1.4"/></svg><svg class="theme-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5a7 7 0 0 0 10 10z"/></svg><svg class="theme-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 10 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="theme-menu-list" role="menu" aria-label="Theme" hidden><button type="button" role="menuitemradio" aria-checked="true" data-theme-value="auto"><svg class="theme-icon theme-item-icon theme-icon-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>Auto</button><button type="button" role="menuitemradio" aria-checked="false" data-theme-value="light"><svg class="theme-icon theme-item-icon theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.3 4.3l1.4 1.4M18.3 18.3l1.4 1.4M2.5 12h2M19.5 12h2M4.3 19.7l1.4-1.4M18.3 5.7l1.4-1.4"/></svg>Light</button><button type="button" role="menuitemradio" aria-checked="false" data-theme-value="dark"><svg class="theme-icon theme-item-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5a7 7 0 0 0 10 10z"/></svg>Dark</button></span></span><a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="Open table of contents" title="Show contents"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><g fill="currentColor"><circle cx="4" cy="6" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="4" cy="18" r="1.3"/></g></svg></a></div></header>
 <main>
 <article>
 <h1 id="mote-设计文档">Mote 设计文档<a class="heading-anchor" href="#mote-设计文档" aria-label="Copy link to this section" title="Copy link to this section"><svg class="anchor-icon-link" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="anchor-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></a></h1>
@@ -1854,6 +1889,49 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
   });
 })();</script>
 
+<button type="button" class="to-top" aria-label="Back to top" title="Back to top" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+<script>(() => {
+  const copyButton = document.querySelector('.page-copy');
+  const toTop = document.querySelector('.to-top');
+
+  const clipboard =
+    typeof navigator !== 'undefined' &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === 'function'
+      ? navigator.clipboard.writeText.bind(navigator.clipboard)
+      : null;
+
+  if (copyButton && clipboard) {
+    let timer = 0;
+    copyButton.addEventListener('click', () => {
+      const url = location.origin + location.pathname;
+      clipboard(url).then(() => {
+        clearTimeout(timer);
+        copyButton.classList.add('is-copied');
+        timer = setTimeout(() => copyButton.classList.remove('is-copied'), 1600);
+      }, () => {});
+    });
+    copyButton.hidden = false;
+  }
+
+  if (toTop) {
+    const reduceMotion =
+      typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let frame = 0;
+    const sync = () => {
+      frame = 0;
+      // Show once the reader is roughly two viewports down the page.
+      toTop.hidden = window.scrollY <= window.innerHeight * 2;
+    };
+    window.addEventListener('scroll', () => {
+      if (!frame) frame = requestAnimationFrame(sync);
+    }, { passive: true });
+    toTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+    sync();
+  }
+})();</script>
 </body>
 </html>
 "

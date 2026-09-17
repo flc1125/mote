@@ -4,6 +4,7 @@ import { renderMarkdown } from './markdown.js';
 import { renderHtmlPage } from './template.js';
 import { FOOTNOTE_SCRIPT } from './footnote-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
+import { PAGE_SCRIPT } from './page-script.js';
 
 describe('abbreviations and footnote reading', () => {
   it('keeps visible heading anchors and escapes abbreviation explanations', () => {
@@ -22,6 +23,7 @@ describe('abbreviations and footnote reading', () => {
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
       THEME_SCRIPT,
       FOOTNOTE_SCRIPT,
+      PAGE_SCRIPT,
     ]);
     expect(html).toContain('href="#fn1"');
     expect(html).toContain('href="#fnref1"');
@@ -29,6 +31,7 @@ describe('abbreviations and footnote reading', () => {
     const plain = renderHtmlPage({ title: 'Plain', tocHtml: '', contentHtml: '<p>No notes</p>' });
     expect([...plain.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
       THEME_SCRIPT,
+      PAGE_SCRIPT,
     ]);
   });
   it('renders the mixed specimen with one real asset and protected code', () => {

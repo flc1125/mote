@@ -3,6 +3,7 @@ import { renderMarkdown } from './markdown.js';
 import { renderHtmlPage } from './template.js';
 import { IMAGE_SCRIPT } from './image-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
+import { PAGE_SCRIPT } from './page-script.js';
 
 const render = (source: string) => renderMarkdown(source, new Map([['photo.png', '/asset/photo']]));
 describe('image presentation', () => {
@@ -29,6 +30,7 @@ describe('image presentation', () => {
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
       THEME_SCRIPT,
       IMAGE_SCRIPT,
+      PAGE_SCRIPT,
     ]);
     expect(html).not.toMatch(/button|dialog|hidden/);
     expect(

@@ -3,6 +3,7 @@ import { IMAGE_SCRIPT } from '../../../packages/renderer/src/image-script.js';
 import { createHash } from 'node:crypto';
 import { TOC_SCRIPT } from '../../../packages/renderer/src/toc-script.js';
 import { THEME_SCRIPT } from '../../../packages/renderer/src/theme-script.js';
+import { PAGE_SCRIPT } from '../../../packages/renderer/src/page-script.js';
 import { COPY_SCRIPT } from '../../../packages/renderer/src/copy-script.js';
 import { execFile } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
@@ -143,10 +144,16 @@ function expectTocPolicy(response: Response, html: string, copy = false): void {
     ...(copy ? [COPY_SCRIPT] : []),
     ...(html.includes('<img ') ? [IMAGE_SCRIPT] : []),
     ...(html.includes('class="footnote-ref"') ? [FOOTNOTE_SCRIPT] : []),
+    PAGE_SCRIPT,
   ]);
-  const hashes = [TOC_SCRIPT, COPY_SCRIPT, IMAGE_SCRIPT, FOOTNOTE_SCRIPT, THEME_SCRIPT].map(
-    (script) => `'sha256-${createHash('sha256').update(script).digest('base64')}'`,
-  );
+  const hashes = [
+    TOC_SCRIPT,
+    COPY_SCRIPT,
+    IMAGE_SCRIPT,
+    FOOTNOTE_SCRIPT,
+    THEME_SCRIPT,
+    PAGE_SCRIPT,
+  ].map((script) => `'sha256-${createHash('sha256').update(script).digest('base64')}'`);
   const policy = response.headers.get('Content-Security-Policy')!;
   expect(policy.split('; ').find((directive) => directive.startsWith('script-src '))).toBe(
     `script-src ${hashes.join(' ')}`,
