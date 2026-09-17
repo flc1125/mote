@@ -101,7 +101,15 @@ function setup(
     }
   }
   const selectors = new Map<string, Element>();
-  for (const name of ['.image-viewer-stage', 'img', '.image-viewer-status', '.image-close'])
+  for (const name of [
+    '.image-viewer-stage',
+    'img',
+    '.image-viewer-status',
+    '.image-close',
+    '.image-prev',
+    '.image-next',
+    '.image-viewer-count',
+  ])
     selectors.set(name, new Element(name === 'img' ? 'IMG' : 'DIV'));
   const figureCaption = new Element('FIGCAPTION');
   figureCaption.textContent = 'Visible <caption>';
@@ -250,5 +258,41 @@ describe('fixed image viewer', () => {
     expect(
       setup({ count: 80 }).created.filter((node) => node.className === 'image-expand'),
     ).toHaveLength(64);
+  });
+
+  it('keeps navigation hidden for a single image', () => {
+    const ui = setup();
+    ui.button().fire('click');
+    expect(ui.selectors.get('.image-prev')!.hidden).toBe(true);
+    expect(ui.selectors.get('.image-next')!.hidden).toBe(true);
+    expect(ui.selectors.get('.image-viewer-count')!.hidden).toBe(true);
+  });
+
+  it('navigates multiple images with buttons, counter and arrow keys', () => {
+    const ui = setup({ count: 2 });
+    const large = ui.selectors.get('img')!;
+    ui.images[1]!.src = '/assets/second.png';
+    ui.images[1]!.currentSrc = '/assets/second.png';
+    const buttons = ui.created.filter((node) => node.className === 'image-expand');
+    expect(buttons).toHaveLength(2);
+    buttons[0]!.fire('click');
+    expect(ui.dialog().open).toBe(true);
+    expect(large.src).toBe('/assets/original.png');
+    const prev = ui.selectors.get('.image-prev')!;
+    const next = ui.selectors.get('.image-next')!;
+    const counter = ui.selectors.get('.image-viewer-count')!;
+    expect(prev.hidden).toBe(false);
+    expect(next.hidden).toBe(false);
+    expect(counter.hidden).toBe(false);
+    expect(counter.textContent).toBe('1 / 2');
+    next.fire('click');
+    expect(large.src).toBe('/assets/second.png');
+    expect(counter.textContent).toBe('2 / 2');
+    // Arrow keys wrap around.
+    ui.dialog().fire('keydown', { key: 'ArrowRight', preventDefault: () => {} });
+    expect(large.src).toBe('/assets/original.png');
+    expect(counter.textContent).toBe('1 / 2');
+    ui.dialog().fire('keydown', { key: 'ArrowLeft', preventDefault: () => {} });
+    expect(large.src).toBe('/assets/second.png');
   });
 });

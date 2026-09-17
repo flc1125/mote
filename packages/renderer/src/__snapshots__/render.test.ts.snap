@@ -589,7 +589,7 @@ article figure:has(> img), article figure:has(> .image-frame) { margin: 1.5em 0;
 article figure:has(> img) > figcaption, article figure:has(> .image-frame) > figcaption { margin-top: 0.6em; color: var(--mote-muted); font-size: 0.85em; text-align: center; overflow-wrap: anywhere; }
 .image-frame { display: block; position: relative; max-width: 100%; }
 .image-frame > img { display: block; width: 100%; }
-.image-expand, .image-close { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--mote-radius-pill); cursor: pointer; }
+.image-expand, .image-close, .image-nav { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--mote-radius-pill); cursor: pointer; }
 /* The magnifier stays quiet until the image is hovered or focused; touch
    devices keep it visible via the coarse-pointer media query below. */
 .image-expand {
@@ -615,19 +615,52 @@ article figure:has(> img) > figcaption, article figure:has(> .image-frame) > fig
 .image-viewer[open] { display: flex; flex-direction: column; }
 .image-viewer::backdrop { background: rgb(0 0 0 / 85%); backdrop-filter: blur(2px); }
 .image-viewer[open]::backdrop { animation: image-viewer-fade var(--mote-duration-fast) var(--mote-ease-out); }
-.image-close {
+.image-close, .image-nav {
   position: absolute;
-  top: max(14px, env(safe-area-inset-top));
-  right: max(14px, env(safe-area-inset-right));
   z-index: 1;
   color: white;
-  background: rgb(0 0 0 / 45%);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: background-color var(--mote-duration-fast) var(--mote-ease-standard), box-shadow var(--mote-duration-fast) var(--mote-ease-standard);
 }
+.image-close {
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  background: rgb(0 0 0 / 45%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
+}
 .image-close:hover { background: rgb(0 0 0 / 62%); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 38%); }
+/* Quiet chevrons: a soft drop shadow keeps them readable over any image;
+   the circular base only appears on hover/focus. */
+.image-nav {
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.image-nav svg { filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.65)); }
+.image-nav:hover, .image-nav:focus-visible {
+  background: rgb(0 0 0 / 45%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
+}
+.image-nav:hover svg, .image-nav:focus-visible svg { filter: none; }
+.image-prev { left: max(14px, env(safe-area-inset-left)); }
+.image-next { right: max(14px, env(safe-area-inset-right)); }
+.image-nav[hidden], .image-viewer-count[hidden] { display: none; }
+.image-viewer-count {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  margin: 0;
+  text-align: center;
+  color: rgb(255 255 255 / 88%);
+  font-size: 13px;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.65);
+  pointer-events: none;
+}
 .image-viewer-stage { box-sizing: border-box; display: flex; align-items: center; justify-content: center; flex: 1; min-height: 0; overflow: auto; padding: 68px 24px 24px; text-align: center; overscroll-behavior: contain; }
 /* The enlarged image keeps the document's corner radius and floats on the
    dimmed page; clicking it toggles the original size. */
@@ -1084,6 +1117,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 .footnote-preview {
   position: fixed; inset: auto; margin: 0; padding: 0;
   width: min(28rem, calc(100vw - 24px)); max-height: min(28rem, calc(100vh - 24px));
+  max-height: min(28rem, calc(100dvh - 24px));
   border: 1px solid var(--mote-border); border-radius: var(--mote-radius-lg);
   background: var(--mote-bg); color: var(--mote-fg);
   box-shadow: var(--mote-shadow-pop); font-size: 0.9em; line-height: 1.65;
@@ -1292,7 +1326,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 <article>
 <h1 id="mote-设计文档">Mote 设计文档<a class="heading-anchor" href="#mote-设计文档" aria-label="Copy link to this section" title="Copy link to this section"><svg class="anchor-icon-link" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="anchor-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></a></h1>
 <h2 id="背景">背景<a class="heading-anchor" href="#背景" aria-label="Copy link to this section" title="Copy link to this section"><svg class="anchor-icon-link" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="anchor-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></a></h2>
-<p>一些 <strong>加粗</strong> 文字与 <code>code</code>，见 <a href="https://example.com">https://example.com</a> 。</p>
+<p>一些 <strong>加粗</strong> 文字与 <code>code</code>，见 <a href="https://example.com" target="_blank" rel="noopener noreferrer">https://example.com</a> 。</p>
 <p><img src="/7Vk3mQ9x2NFaP4Ls/a/Aq8K3pLm92Xq" alt="Architecture" decoding="async"></p>
 <div class="table-scroll" role="region" aria-label="表格 / Table" tabindex="0">
 <table>
@@ -1812,14 +1846,45 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
   var dialog = document.createElement('dialog');
   dialog.className = 'image-viewer';
   dialog.setAttribute('aria-label', 'Image viewer');
-  dialog.innerHTML = '<button type="button" class="image-close" aria-label="Close image viewer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><div class="image-viewer-stage" tabindex="-1" role="region" aria-label="Enlarged image, scrollable at original size"><img alt=""></div><p class="image-viewer-status" role="status"></p>';
+  dialog.innerHTML = '<button type="button" class="image-close" aria-label="Close image viewer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><button type="button" class="image-nav image-prev" aria-label="Previous image" hidden><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 6-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="image-nav image-next" aria-label="Next image" hidden><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="image-viewer-stage" tabindex="-1" role="region" aria-label="Enlarged image, scrollable at original size"><img alt=""></div><p class="image-viewer-status" role="status"></p><p class="image-viewer-count" aria-live="polite" hidden></p>';
   var stage = dialog.querySelector('.image-viewer-stage');
   var large = stage.querySelector('img');
   var status = dialog.querySelector('.image-viewer-status');
   var close = dialog.querySelector('.image-close');
+  var prev = dialog.querySelector('.image-prev');
+  var next = dialog.querySelector('.image-next');
+  var counter = dialog.querySelector('.image-viewer-count');
   var trigger;
   var overflow;
   var zoomable = false;
+  // Candidates in document order; entries gain a button when enhanced.
+  var viewers = [];
+  var current = -1;
+  function available() {
+    return viewers.filter(function (entry) { return entry.button; });
+  }
+  function show(index) {
+    var list = available();
+    var entry = list[index];
+    if (!entry) return;
+    current = index;
+    var img = entry.img;
+    trigger = entry.button;
+    large.alt = img.alt;
+    dialog.setAttribute('aria-label', 'Image viewer' + (img.alt ? ': ' + img.alt : ''));
+    status.textContent = '';
+    large.hidden = false;
+    large.src = img.currentSrc || img.src;
+    var multi = list.length > 1;
+    prev.hidden = next.hidden = counter.hidden = !multi;
+    if (multi) counter.textContent = (current + 1) + ' / ' + list.length;
+    resetSize();
+  }
+  function step(delta) {
+    var list = available();
+    if (list.length < 2) return;
+    show((current + delta + list.length) % list.length);
+  }
   // aria-label overrides alt, so the toggle keeps the image description
   // inside its accessible name instead of losing it.
   function sizeLabel(full) {
@@ -1863,6 +1928,12 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
     }
   });
   close.addEventListener('click', function () { dialog.close(); });
+  prev.addEventListener('click', function () { step(-1); });
+  next.addEventListener('click', function () { step(1); });
+  dialog.addEventListener('keydown', function (event) {
+    if (event.key === 'ArrowLeft') { event.preventDefault(); step(-1); }
+    if (event.key === 'ArrowRight') { event.preventDefault(); step(1); }
+  });
   dialog.addEventListener('click', function (event) { if (event.target === dialog || event.target === stage) dialog.close(); });
   dialog.addEventListener('close', function () {
     document.documentElement.style.overflow = overflow;
@@ -1893,6 +1964,8 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
     var width = img.getAttribute('width');
     if (width && /^\\d+$/.test(width) && Number(width) < 160) return;
     if (++count > 64) return;
+    var entry = { img: img, button: null };
+    viewers.push(entry);
     function enhance() {
       if (!img.naturalWidth || img.naturalWidth < 160 || img.naturalHeight < 100 || !img.getAttribute('src')) return;
       if (img.parentElement !== parent) return;
@@ -1908,19 +1981,15 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
       parent.insertBefore(frame, img);
       frame.appendChild(img);
       frame.appendChild(button);
+      entry.button = button;
       button.addEventListener('click', function () {
         if (!img.naturalWidth) return;
         if (!dialog.isConnected) document.body.appendChild(dialog);
-        trigger = button;
-        large.alt = img.alt;
-        dialog.setAttribute('aria-label', 'Image viewer' + (img.alt ? ': ' + img.alt : ''));
-        status.textContent = '';
-        large.hidden = false;
-        large.src = img.currentSrc || img.src;
         overflow = document.documentElement.style.overflow;
         dialog.showModal();
         document.documentElement.style.overflow = 'hidden';
-        resetSize();
+        // show() must run after showModal: zoom detection needs layout.
+        show(available().indexOf(entry));
         close.focus();
       });
       img.addEventListener('error', function () { button.hidden = true; });

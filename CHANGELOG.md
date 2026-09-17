@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - Example admonitions now use a neutral gray instead of sharing the note blue, and all alert, syntax-highlight and blockquote colors come from shared design tokens with paired light/dark values. ([#75](https://github.com/flc1125/mote/pull/75))
+- Absolute http(s) links in document content open in a new tab (`target="_blank" rel="noopener noreferrer"`), so readers keep their place; fragments, relative links and mailto stay in-page, and raw HTML links keep the author's attributes. ([#76](https://github.com/flc1125/mote/pull/76))
+- The image viewer gains multi-image navigation: previous/next buttons, a position counter and ArrowLeft/ArrowRight, wrapping around at the ends. Single-image documents are unchanged. The footnote preview caps its height against the dynamic viewport for mobile browser chrome. ([#76](https://github.com/flc1125/mote/pull/76))
 
 ### Added
 
