@@ -43,4 +43,19 @@ describe('PAGE_CSS design tokens', () => {
   it('clears the sticky banner for footnote jumps in both directions', () => {
     expect(PAGE_CSS).toContain('article [id^="fn"] { scroll-margin-top: 76px; }');
   });
+
+  it('routes alert semantics and syntax colors through shared tokens', () => {
+    expect(PAGE_CSS).toContain('--alert-color: var(--mote-alert-note)');
+    expect(PAGE_CSS).toContain('--alert-color: var(--mote-alert-tip)');
+    expect(PAGE_CSS).toContain('--alert-color: var(--mote-alert-important)');
+    expect(PAGE_CSS).toContain('--alert-color: var(--mote-alert-warning)');
+    expect(PAGE_CSS).toContain('--alert-color: var(--mote-alert-caution)');
+    // Example admonitions are neutral, not note-blue.
+    expect(PAGE_CSS).toContain('.markdown-alert-example { --alert-color: var(--mote-muted); }');
+    // No per-palette alert/hljs override blocks remain in the document layer.
+    expect(PAGE_CSS).not.toMatch(/\.markdown-alert-\w+ \{ --alert-color: #/);
+    expect(PAGE_CSS).not.toMatch(/pre \.hljs-\w+[^;]*\{ color: #/);
+    // Blockquote uses the muted token in both palettes.
+    expect(PAGE_CSS).not.toContain('color: #6b7280;\n  border-left');
+  });
 });

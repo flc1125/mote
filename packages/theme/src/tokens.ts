@@ -32,6 +32,21 @@ const LIGHT_TOKENS = `
   --mote-shadow-pop: 0 8px 32px rgb(0 0 0 / 0.13);
   --mote-shadow-drawer: -16px 0 48px rgb(15 17 21 / 0.1);
   --mote-scrim: rgb(15 17 21 / 0.32);
+
+  /* Alert semantics (GitHub-style) and syntax highlighting. */
+  --mote-alert-note: #0969da;
+  --mote-alert-tip: #1a7f37;
+  --mote-alert-important: #8250df;
+  --mote-alert-warning: #9a6700;
+  --mote-alert-caution: #cf222e;
+  --mote-hl-comment: #6b7280;
+  --mote-hl-keyword: #a6263c;
+  --mote-hl-string: #24633b;
+  --mote-hl-number: #075985;
+  --mote-hl-title: #6f42c1;
+  --mote-hl-name: #9a4d00;
+  --mote-hl-meta: #52647a;
+  --mote-hl-deletion: #b42332;
 `;
 
 const DARK_TOKENS = `
@@ -54,6 +69,20 @@ const DARK_TOKENS = `
   --mote-shadow-pop: 0 8px 32px rgb(0 0 0 / 0.5);
   --mote-shadow-drawer: -16px 0 48px rgb(0 0 0 / 0.45);
   --mote-scrim: rgb(0 0 0 / 0.55);
+
+  --mote-alert-note: #79c0ff;
+  --mote-alert-tip: #7ee787;
+  --mote-alert-important: #d2a8ff;
+  --mote-alert-warning: #e3b341;
+  --mote-alert-caution: #ff7b72;
+  --mote-hl-comment: #9ca3af;
+  --mote-hl-keyword: #ff9caa;
+  --mote-hl-string: #a5d6a7;
+  --mote-hl-number: #8ecbff;
+  --mote-hl-title: #d2b4ff;
+  --mote-hl-name: #ffc48c;
+  --mote-hl-meta: #adbbce;
+  --mote-hl-deletion: #ffa0a8;
 `;
 
 export const TOKENS_CSS = `
