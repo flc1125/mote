@@ -301,7 +301,7 @@ images and the viewer reuse the original URLs without a proxy or a separate uplo
 For different light/dark artwork, use the existing `picture`/`source media` markup;
 URL-fragment shortcuts are not interpreted.
 
-Try the [image specimen](examples/markdown-images.md) for widths, captions,
+Try the [published image specimen](https://mote.pub/qAMkdNwYPKfvy8Yi) ([source](examples/markdown-images.md)) for widths, captions,
 linked images and images inside tabs and disclosures. Screenshots: [desktop](assets/screenshots/markdown-images-desktop.png), [narrow viewer with image navigation](assets/screenshots/markdown-images-mobile.png), [dark page](assets/screenshots/markdown-images-dark.png).
 
 ## Alerts

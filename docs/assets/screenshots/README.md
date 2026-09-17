@@ -7,7 +7,7 @@ Keep screenshots here; logos, icons, favicons and the brand manifest remain in t
 
 - Captured on 2026-09-17 in Chrome 152.0.7977.83 on macOS, with a device scale factor of 1 and reduced motion enabled.
 - Existing PNG names and pixel dimensions are preserved. These are viewport captures, without browser chrome, account details or local paths.
-- The two light compatibility captures and the theme menu use the existing [public compatibility specimen](https://mote.pub/PBqEnukxpQrkamSi). No new documents were published.
+- The two light compatibility captures and the theme menu use the existing [public compatibility specimen](https://mote.pub/PBqEnukxpQrkamSi). These captures predate the image specimen publication below.
 - All other captures use local previews of the linked sources with the renderer and its exact CSP headers from `a5eb179`. Local assets are collected by the CLI bundle builder. The image specimen includes the refreshed tabs desktop capture and the updated navigation description.
 - Dark captures emulate `prefers-color-scheme: dark`. The theme-menu capture shows Auto selected while the system preference is dark.
 
@@ -37,8 +37,12 @@ Keep screenshots here; logos, icons, favicons and the brand manifest remain in t
 
 The public specimen was checked at 1440px and 375px widths: all three theme choices, persistence after reload, Auto following the system preference, heading-anchor hover visibility, and back-to-top visibility and activation. The local image viewer was checked for next-button navigation, the Left key, counter updates and Escape closing. Local footnote previews stayed inside their desktop/mobile viewports and closed with Escape. Captured pages had no horizontal page overflow; wide diagrams retain their own scrolling area.
 
-The final local preview checks reported no page or console errors. The public specimen emitted CSP-blocked inline-script and Cloudflare Insights beacon messages; these are recorded separately from the successful control checks. No CSP or deployment settings were changed.
+The final local preview checks reported no page or console errors. The public specimen emitted CSP-blocked Cloudflare JavaScript Detections and Web Analytics beacon messages; these are recorded separately from the successful control checks. No CSP or deployment settings were changed.
 
-These captures do not establish Firefox, Safari, touch-device, printing or JavaScript-disabled compatibility. Publishing remains pending because the CLI reported missing saved credentials.
+These captures do not establish Firefox, Safari, touch-device, printing or JavaScript-disabled compatibility.
+
+The updated [image specimen](https://mote.pub/qAMkdNwYPKfvy8Yi) was published on 2026-09-17 with CLI 0.7.0, including the refreshed tabs image. The earlier missing-credential result came from restricted execution; the normal system keyring worked and online OAuth authentication succeeded. No new login was needed. The image captures above remain local-preview captures, not captures of this new URL. Other specimens do not need republication solely for Viewer styling changes.
+
+The published image specimen was checked in the same Chrome version at 1280 × 960 and 390 × 844: its three bundled assets matched the local files by SHA-256, and next-image navigation, the Left key, counter updates and Escape closing worked without horizontal page overflow. The caption links to the public Markdown guide. The two Cloudflare script injections remained CSP-blocked.
 
 Refresh the tabs desktop capture before rendering the image specimen so that its bundled screenshot is current. Preserve a capture only while it illustrates a documented feature or serves as a referenced specimen asset.
