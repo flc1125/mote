@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { TOC_SCRIPT } from './toc-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
+import { PAGE_SCRIPT } from './page-script.js';
 import { renderHtmlPage } from './template.js';
 
 const page = renderHtmlPage({
@@ -23,6 +24,7 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
     expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
       THEME_SCRIPT,
       TOC_SCRIPT,
+      PAGE_SCRIPT,
     ]);
   });
 
@@ -90,6 +92,7 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
     // The theme script stays: the toggle lives on every document page.
     expect([...bare.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
       THEME_SCRIPT,
+      PAGE_SCRIPT,
     ]);
   });
 

@@ -5,6 +5,7 @@ import { renderMarkdown } from './markdown.js';
 import { render } from './index.js';
 import { TOC_SCRIPT } from './toc-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
+import { PAGE_SCRIPT } from './page-script.js';
 import { COPY_SCRIPT } from './copy-script.js';
 
 const source = '=== "npm"\n\n    ```sh\n    npm install\n    ```\n\n=== "pnpm"\n\n    Second.';
@@ -28,6 +29,7 @@ describe('content tab rendering', () => {
       THEME_SCRIPT,
       TOC_SCRIPT,
       COPY_SCRIPT,
+      PAGE_SCRIPT,
     ]);
     const fragment = renderMarkdown(source, new Map()).html;
     expect(fragment).not.toMatch(/role="tab|<section[^>]* hidden/);

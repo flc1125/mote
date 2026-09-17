@@ -5,6 +5,7 @@ import { IMAGE_SCRIPT } from './image-script.js';
 import { COPY_SCRIPT } from './copy-script.js';
 import { FOOTNOTE_SCRIPT } from './footnote-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
+import { PAGE_SCRIPT } from './page-script.js';
 
 export interface PageInput {
   title: string;
@@ -38,6 +39,12 @@ export function renderHtmlPage({
   const themeItem = (value: string, label: string, checked: boolean) =>
     `<button type="button" role="menuitemradio" aria-checked="${checked}" data-theme-value="${value}">${themeIcon(value, true, false)}${label}</button>`;
   const themeToggle = `<span class="theme-menu"><button type="button" class="theme-toggle" aria-haspopup="menu" aria-expanded="false" aria-label="Theme: Auto" title="Theme: Auto" hidden>${themeIcon('auto', false, false)}${themeIcon('light', false, true)}${themeIcon('dark', false, true)}<svg class="theme-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 10 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="theme-menu-list" role="menu" aria-label="Theme" hidden>${themeItem('auto', 'Auto', true)}${themeItem('light', 'Light', false)}${themeItem('dark', 'Dark', false)}</span></span>`;
+  const linkIcon =
+    '<svg class="page-icon-link" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+  const checkIcon =
+    '<svg class="page-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+  const pageCopy = `<button type="button" class="page-copy" aria-label="Copy page link" title="Copy page link" hidden>${linkIcon}${checkIcon}</button>`;
+  const toTop = `<button type="button" class="to-top" aria-label="Back to top" title="Back to top" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>`;
   const tocTrigger =
     tocHtml === ''
       ? ''
@@ -66,7 +73,7 @@ ${tocHtml}</aside>
 <body${tocHtml === '' ? '' : ' class="has-toc"'}>
 ${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/" target="_blank" rel="noopener noreferrer"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-${themeToggle}${tocTrigger}</div></header>
+<span class="banner-spacer"></span>${pageCopy}${themeToggle}${tocTrigger}</div></header>
 <main>
 <article>
 ${contentHtml}</article>
@@ -78,6 +85,8 @@ ${tocHtml !== '' || contentHtml.includes('<details') || contentHtml.includes('cl
 ${codeCopy ? `<script>${COPY_SCRIPT}</script>` : ''}
 ${contentHtml.includes('<img ') ? `<script>${IMAGE_SCRIPT}</script>` : ''}
 ${contentHtml.includes('class="footnote-ref"') ? `<script>${FOOTNOTE_SCRIPT}</script>` : ''}
+${toTop}
+<script>${PAGE_SCRIPT}</script>
 </body>
 </html>
 `;

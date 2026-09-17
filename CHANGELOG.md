@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Section anchors on every heading: revealed on hover or focus (always visible on touch), click copies the absolute section URL with a checkmark confirmation and no navigation. Without JavaScript or clipboard access the anchor degrades to a plain in-page link; anchors are hidden when printing. ([#73](https://github.com/flc1125/mote/pull/73))
+- Page tools on document pages: a banner button copies the canonical page URL (hash and query dropped) with a checkmark confirmation, and a floating back-to-top control appears after two viewport heights, honoring reduced-motion and staying clear of the desktop contents rail. Both stay hidden without JavaScript or clipboard access and are excluded from print. ([#74](https://github.com/flc1125/mote/pull/74))
 
 - Reader theme switching on document pages: a banner toggle cycles auto (system), light and dark, persists the choice per browser and applies it before first paint without flashing. With JavaScript disabled the page still follows the system theme, and printing always uses the light palette. The fixed theme script is authorized by its exact CSP hash, shared across GET and HEAD. ([#72](https://github.com/flc1125/mote/pull/72))
 

@@ -95,6 +95,7 @@ documents/
 
 - Viewer 在请求时用 markdown-it 把 Markdown 渲染为 HTML（GFM：表格、删除线、任务列表、脚注；Raw HTML 经白名单净化器处理，见[安全模型](security.md)），本地图片引用按 manifest 重写为 `/{document-id}/a/{asset-id}`。
 - 文档页明暗主题默认跟随系统（`prefers-color-scheme`）；读者可通过 banner 的主题按钮在 auto/light/dark 间循环，选择按浏览器存入 `localStorage["mote-theme"]`，由固定的第一方脚本在首帧前设置 `<html data-theme>` 避免闪烁，无 JavaScript 时回退系统主题；打印始终使用亮色配色。主题脚本按其精确 CSP 哈希授权，GET/HEAD 策略一致。
+- 页面工具由另一个固定脚本提供：banner 复制链接按钮复制规范 URL（丢弃 hash/query），返回顶部控件在滚动约两屏后出现且避开桌面目录侧栏；标题节锚点点击只复制不跳转。无 JavaScript 或剪贴板不可用时这些控件保持隐藏，文档完整可读。
 - 缩写定义与匹配均有文档级预算，输出静态 abbr；脚注预览由固定脚本按需增强，仅复制已净化 DOM 的静态子集，删除 ID/控件/运行时状态，超限或复杂内容保持原始锚点跳转。文末脚注与回链始终保留。
 - 渲染结果交给 Workers Cache（非 Cache API）：Document 边缘缓存 1 年，Asset `immutable`。
 - 保持 Workers Cache 默认的「Worker Version 纳入 Cache Key」行为：Renderer/Theme 发新版自动使用新缓存，无需 purge。
