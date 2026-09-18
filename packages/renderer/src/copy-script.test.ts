@@ -5,22 +5,29 @@ import { COPY_SCRIPT } from './copy-script.js';
 function setup(writeText?: (text: string) => Promise<void>) {
   let click: (() => Promise<void>) | undefined;
   let reset: (() => void) | undefined;
+  const classListOf = () => {
+    const classes = new Set<string>();
+    return {
+      add: (name: string) => classes.add(name),
+      remove: (name: string) => classes.delete(name),
+      contains: (name: string) => classes.has(name),
+    };
+  };
   const button = {
     hidden: true,
     disabled: false,
-    textContent: 'Copy',
+    attrs: {} as Record<string, string>,
+    classList: classListOf(),
+    setAttribute: (name: string, value: string) => {
+      button.attrs[name] = value;
+    },
     addEventListener: (_: string, fn: () => Promise<void>) => {
       click = fn;
     },
   };
-  const classes = new Set<string>();
   const status = {
     textContent: '',
-    classList: {
-      add: (name: string) => classes.add(name),
-      remove: (name: string) => classes.delete(name),
-      contains: (name: string) => classes.has(name),
-    },
+    classList: classListOf(),
   };
   const code = { textContent: '<script>literal</script>\n\n' };
   const elements: Record<string, unknown> = {
@@ -51,10 +58,13 @@ describe('fixed copy enhancement', () => {
     expect(ui.button.hidden).toBe(false);
     await ui.click();
     expect(write).toHaveBeenCalledExactlyOnceWith(ui.code.textContent);
-    expect(ui.button.textContent).toBe('Copied');
+    expect(ui.button.classList.contains('is-copied')).toBe(true);
+    expect(ui.button.attrs['aria-label']).toBe('Code copied');
+    expect(ui.button.attrs['title']).toBe('Code copied');
     expect(ui.status.textContent).toBe('Code copied to clipboard.');
     ui.reset();
-    expect(ui.button.textContent).toBe('Copy');
+    expect(ui.button.classList.contains('is-copied')).toBe(false);
+    expect(ui.button.attrs['aria-label']).toBe('Copy code');
   });
   it('keeps the button hidden and explains manual copying without Clipboard API', () => {
     const ui = setup();
@@ -67,7 +77,8 @@ describe('fixed copy enhancement', () => {
       throw new Error('Permission denied');
     });
     await ui.click();
-    expect(ui.button.textContent).toBe('Copy failed');
+    expect(ui.button.attrs['aria-label']).toBe('Copy failed');
+    expect(ui.button.classList.contains('is-copied')).toBe(false);
     expect(ui.status.textContent).toContain('Select the code');
     expect(ui.status.classList.contains('is-error')).toBe(true);
     ui.reset();
@@ -96,10 +107,12 @@ describe('fixed copy enhancement', () => {
     finish();
     await retry;
     expect(write).toHaveBeenNthCalledWith(2, ui.code.textContent);
-    expect(ui.button.textContent).toBe('Copied');
+    expect(ui.button.classList.contains('is-copied')).toBe(true);
+    expect(ui.button.attrs['aria-label']).toBe('Code copied');
     expect(ui.status.textContent).toBe('Code copied to clipboard.');
     ui.reset();
-    expect(ui.button.textContent).toBe('Copy');
+    expect(ui.button.classList.contains('is-copied')).toBe(false);
+    expect(ui.button.attrs['aria-label']).toBe('Copy code');
     expect(ui.status.textContent).toBe('');
   });
   it('prevents overlapping clipboard writes', async () => {
