@@ -793,7 +793,9 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
 .banner-spacer { flex: 1; }
 .theme-menu { position: relative; }
 .theme-toggle,
-.page-copy {
+.page-copy,
+.markdown-copy,
+.markdown-source-close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -809,13 +811,71 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
   cursor: pointer;
   transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
-.theme-toggle[hidden], .page-copy[hidden] { display: none; }
-.theme-toggle:hover, .page-copy:hover { color: var(--mote-accent); background: var(--mote-tint); }
-.theme-toggle:focus-visible, .page-copy:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
-.page-copy .page-icon-copied { display: none; }
-.page-copy.is-copied { color: var(--mote-accent); }
+.theme-toggle[hidden], .page-copy[hidden], .markdown-copy[hidden] { display: none; }
+.theme-toggle:hover, .page-copy:hover, .markdown-copy:hover, .markdown-source-close:hover { color: var(--mote-accent); background: var(--mote-tint); }
+.theme-toggle:focus-visible, .page-copy:focus-visible, .markdown-copy:focus-visible, .markdown-source-close:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.page-copy .page-icon-copied, .markdown-copy .page-icon-copied { display: none; }
+.page-copy.is-copied, .markdown-copy.is-copied { color: var(--mote-accent); }
 .page-copy.is-copied .page-icon-link { display: none; }
-.page-copy.is-copied .page-icon-copied { display: inline; }
+.page-copy.is-copied .page-icon-copied, .markdown-copy.is-copied .page-icon-copied { display: inline; }
+.markdown-copy.is-copied .markdown-copy-icon { display: none; }
+.markdown-copy[aria-disabled="true"] { cursor: wait; }
+.markdown-tools { position: relative; display: inline-flex; flex-shrink: 0; }
+.markdown-copy-hint, .markdown-copy-status:not(:empty) {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 40px));
+  padding: 6px 10px;
+  border: 1px solid var(--mote-border);
+  border-radius: var(--mote-radius-md);
+  background: var(--mote-bg);
+  box-shadow: var(--mote-shadow-pop);
+  color: var(--mote-fg);
+  font-size: 12px;
+  line-height: 1.5;
+  pointer-events: none;
+}
+.markdown-copy-hint { visibility: hidden; }
+.markdown-tools:hover .markdown-copy-hint, .markdown-tools:focus-within .markdown-copy-hint { visibility: visible; }
+.markdown-tools:has(.markdown-copy-status:not(:empty)) .markdown-copy-hint { visibility: hidden; }
+.markdown-source-dialog {
+  box-sizing: border-box;
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  padding: 20px;
+  border: 1px solid var(--mote-border);
+  border-radius: var(--mote-radius-lg);
+  background: var(--mote-bg);
+  color: var(--mote-fg);
+  box-shadow: var(--mote-shadow-pop);
+  overflow: auto;
+}
+.markdown-source-dialog::backdrop { background: var(--mote-scrim); }
+.markdown-source-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.markdown-source-heading h2 { margin: 0; font-size: 18px; }
+.markdown-source-dialog p { margin: 8px 0 16px; color: var(--mote-muted); font-size: 14px; }
+.markdown-source-text {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 45vh;
+  height: 45dvh;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid var(--mote-border);
+  border-radius: var(--mote-radius-sm);
+  background: var(--mote-code-bg);
+  color: var(--mote-fg);
+  font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  resize: none;
+}
+.markdown-source-text:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+@media (max-width: 480px) {
+  .mote-banner-inner { gap: 6px; padding-left: 16px; padding-right: 16px; }
+}
 
 /* Back to top: quiet floating action, clear of the desktop contents rail. */
 .to-top {
@@ -1185,7 +1245,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
-  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor, .page-copy, .to-top { display: none; }
+  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor, .page-copy, .markdown-tools, .markdown-source-dialog, .to-top { display: none; }
   .has-toc:not([data-toc-collapsed]) main,
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin: 0 auto; }
   body[data-toc-modal] { position: static; }
@@ -1321,7 +1381,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 <a class="toc-scrim" href="#!" aria-hidden="true" tabindex="-1"></a>
 <header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/" target="_blank" rel="noopener noreferrer"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-<span class="banner-spacer"></span><button type="button" class="page-copy" aria-label="Copy page link" title="Copy page link" hidden><svg class="page-icon-link" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="page-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><span class="theme-menu"><button type="button" class="theme-toggle" aria-haspopup="menu" aria-expanded="false" aria-label="Theme: Auto" title="Theme: Auto" hidden><svg class="theme-icon theme-icon-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="theme-icon theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.3 4.3l1.4 1.4M18.3 18.3l1.4 1.4M2.5 12h2M19.5 12h2M4.3 19.7l1.4-1.4M18.3 5.7l1.4-1.4"/></svg><svg class="theme-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5a7 7 0 0 0 10 10z"/></svg><svg class="theme-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 10 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="theme-menu-list" role="menu" aria-label="Theme" hidden><button type="button" role="menuitemradio" aria-checked="true" data-theme-value="auto"><svg class="theme-icon theme-item-icon theme-icon-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>Auto</button><button type="button" role="menuitemradio" aria-checked="false" data-theme-value="light"><svg class="theme-icon theme-item-icon theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.3 4.3l1.4 1.4M18.3 18.3l1.4 1.4M2.5 12h2M19.5 12h2M4.3 19.7l1.4-1.4M18.3 5.7l1.4-1.4"/></svg>Light</button><button type="button" role="menuitemradio" aria-checked="false" data-theme-value="dark"><svg class="theme-icon theme-item-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5a7 7 0 0 0 10 10z"/></svg>Dark</button></span></span><a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="Open table of contents" title="Show contents"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><g fill="currentColor"><circle cx="4" cy="6" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="4" cy="18" r="1.3"/></g></svg></a></div></header>
+<span class="banner-spacer"></span><button type="button" class="page-copy" aria-label="Copy page link" title="Copy page link" hidden><svg class="page-icon-link" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="page-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><span class="markdown-tools"><button type="button" class="markdown-copy" aria-label="Copy Markdown source" hidden><svg class="markdown-copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17V7l4 5 4-5v10M18 7v10m-3-3 3 3 3-3"/></svg><svg class="page-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><span class="markdown-copy-hint" aria-hidden="true">Copy Markdown source</span><span class="markdown-copy-status" role="status" aria-live="polite"></span></span><span class="theme-menu"><button type="button" class="theme-toggle" aria-haspopup="menu" aria-expanded="false" aria-label="Theme: Auto" title="Theme: Auto" hidden><svg class="theme-icon theme-icon-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="theme-icon theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.3 4.3l1.4 1.4M18.3 18.3l1.4 1.4M2.5 12h2M19.5 12h2M4.3 19.7l1.4-1.4M18.3 5.7l1.4-1.4"/></svg><svg class="theme-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5a7 7 0 0 0 10 10z"/></svg><svg class="theme-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 10 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="theme-menu-list" role="menu" aria-label="Theme" hidden><button type="button" role="menuitemradio" aria-checked="true" data-theme-value="auto"><svg class="theme-icon theme-item-icon theme-icon-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>Auto</button><button type="button" role="menuitemradio" aria-checked="false" data-theme-value="light"><svg class="theme-icon theme-item-icon theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.3 4.3l1.4 1.4M18.3 18.3l1.4 1.4M2.5 12h2M19.5 12h2M4.3 19.7l1.4-1.4M18.3 5.7l1.4-1.4"/></svg>Light</button><button type="button" role="menuitemradio" aria-checked="false" data-theme-value="dark"><svg class="theme-icon theme-item-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5a7 7 0 0 0 10 10z"/></svg>Dark</button></span></span><a class="toc-trigger" href="#mote-toc" aria-controls="mote-toc" aria-label="Open table of contents" title="Show contents"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><g fill="currentColor"><circle cx="4" cy="6" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="4" cy="18" r="1.3"/></g></svg></a></div></header>
 <main>
 <article>
 <h1 id="mote-设计文档">Mote 设计文档<a class="heading-anchor" href="#mote-设计文档" aria-label="Copy link to this section" title="Copy link to this section"><svg class="anchor-icon-link" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="anchor-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></a></h1>
@@ -2000,6 +2060,8 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 })();</script>
 
 <button type="button" class="to-top" aria-label="Back to top" title="Back to top" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+<input type="hidden" class="markdown-source" value="IyBNb3RlIOiuvuiuoeaWh+ahowoKIyMg6IOM5pmvCgrkuIDkupsgKirliqDnspcqKiDmloflrZfkuI4gYGNvZGVg77yM6KeBIGh0dHBzOi8vZXhhbXBsZS5jb20g44CCCgohW0FyY2hpdGVjdHVyZV0oLi9pbWFnZXMvYXJjaGl0ZWN0dXJlLnBuZykKCnwg5YiXQSB8IOWIl0IgfAp8LS0tfC0tLXwKfCAxIHwgMiB8CgpgYGB0cwpjb25zdCB4ID0gMTsKYGBgCgojIyDlsI/nu5MKCj4g5a6M44CCCg==">
+<dialog class="markdown-source-dialog" aria-label="Markdown source"><div class="markdown-source-heading"><h2>Markdown source</h2><button type="button" class="markdown-source-close" aria-label="Close Markdown source"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div><p>Automatic copying is unavailable. Select the source below and copy it manually.</p><textarea class="markdown-source-text" aria-label="Markdown source text" readonly spellcheck="false"></textarea></dialog>
 <script>(() => {
   const copyButton = document.querySelector('.page-copy');
   const toTop = document.querySelector('.to-top');
@@ -2022,6 +2084,76 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
       }, () => {});
     });
     copyButton.hidden = false;
+  }
+
+  const markdownButton = document.querySelector('.markdown-copy');
+  const source = document.querySelector('.markdown-source');
+  if (markdownButton && source) {
+    const status = document.querySelector('.markdown-copy-status');
+    const dialog = document.querySelector('.markdown-source-dialog');
+    const text = document.querySelector('.markdown-source-text');
+    const close = document.querySelector('.markdown-source-close');
+    const canOpen = dialog && text && close && typeof dialog.showModal === 'function';
+    let markdown;
+    let timer = 0;
+    let copying = false;
+    const reset = () => {
+      markdownButton.classList.remove('is-copied');
+      markdownButton.setAttribute('aria-label', 'Copy Markdown source');
+      if (status) status.textContent = '';
+    };
+    const manualCopy = () => {
+      if (status) status.textContent = 'Copy failed';
+      if (!canOpen) return;
+      text.value = markdown;
+      if (!dialog.open) dialog.showModal();
+      text.focus();
+      text.select();
+      text.scrollTop = 0;
+      text.scrollLeft = 0;
+    };
+    if (canOpen) {
+      close.addEventListener('click', () => dialog.close());
+      dialog.addEventListener('close', () => {
+        text.value = '';
+        reset();
+        markdownButton.focus();
+      });
+    }
+    markdownButton.addEventListener('click', async () => {
+      if (copying) return;
+      clearTimeout(timer);
+      reset();
+      copying = true;
+      markdownButton.setAttribute('aria-disabled', 'true');
+      try {
+        if (markdown === undefined) {
+          const binary = atob(source.value);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          markdown = new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes);
+        }
+        if (!clipboard) {
+          manualCopy();
+          return;
+        }
+        try {
+          await clipboard(markdown);
+          markdownButton.classList.add('is-copied');
+          markdownButton.setAttribute('aria-label', 'Markdown copied');
+          if (status) status.textContent = 'Markdown copied';
+          timer = setTimeout(reset, 2000);
+        } catch {
+          manualCopy();
+        }
+      } catch {
+        if (status) status.textContent = 'Could not read Markdown source';
+      } finally {
+        copying = false;
+        markdownButton.setAttribute('aria-disabled', 'false');
+      }
+    });
+    if (clipboard || canOpen) markdownButton.hidden = false;
   }
 
   if (toTop) {

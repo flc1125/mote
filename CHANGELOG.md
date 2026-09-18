@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- A banner button copies the original Markdown source, including metadata, comments and collapsed content, with a confirmation and a manual-copy dialog when clipboard access is unavailable. Image paths remain unchanged; the control is hidden without JavaScript and in print.
+
 - Section anchors on every heading: revealed on hover or focus (always visible on touch), click copies the absolute section URL with a checkmark confirmation and no navigation. Without JavaScript or clipboard access the anchor degrades to a plain in-page link; anchors are hidden when printing. ([#73](https://github.com/flc1125/mote/pull/73))
 - Page tools on document pages: a banner button copies the canonical page URL (hash and query dropped) with a checkmark confirmation, and a floating back-to-top control appears after two viewport heights, honoring reduced-motion and staying clear of the desktop contents rail. Both stay hidden without JavaScript or clipboard access and are excluded from print. ([#74](https://github.com/flc1125/mote/pull/74))
 
