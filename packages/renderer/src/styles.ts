@@ -34,6 +34,7 @@ const DOCUMENT_CSS = `
 
 .mote-banner-inner {
   max-width: 760px;
+  min-height: var(--mote-control-size);
   margin: 0 auto;
   padding: 12px 20px;
   display: flex;
@@ -218,7 +219,8 @@ pre code {
 .content-tab-list {
   display: flex;
   overflow-x: auto;
-  border-bottom: 1px solid var(--mote-border);
+  /* Paint the divider inside the row so the active underline covers it. */
+  box-shadow: inset 0 -1px var(--mote-border);
   border-radius: calc(var(--mote-radius-md) - 1px) calc(var(--mote-radius-md) - 1px) 0 0;
   background: var(--mote-code-bg);
   padding: 0 .5em;
@@ -621,22 +623,25 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
 .markdown-tools { position: relative; display: inline-flex; flex-shrink: 0; }
 .markdown-copy-hint, .markdown-copy-status:not(:empty) {
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  top: calc(100% + 6px);
+  right: 50%;
+  transform: translateX(50%);
   width: max-content;
   max-width: min(240px, calc(100vw - 40px));
-  padding: 6px 10px;
-  border: 1px solid var(--mote-border);
-  border-radius: var(--mote-radius-md);
-  background: var(--mote-bg);
-  box-shadow: var(--mote-shadow-pop);
-  color: var(--mote-fg);
-  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: var(--mote-radius-sm);
+  background: var(--mote-fg);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.12);
+  color: var(--mote-bg);
+  font-size: 11px;
   line-height: 1.5;
   pointer-events: none;
 }
 .markdown-copy-hint { visibility: hidden; }
-.markdown-tools:hover .markdown-copy-hint, .markdown-tools:focus-within .markdown-copy-hint { visibility: visible; }
+@media (hover: hover) {
+  .markdown-tools:hover .markdown-copy-hint { visibility: visible; transition: visibility 0s 180ms; }
+}
+.markdown-tools:has(.markdown-copy:focus-visible) .markdown-copy-hint { visibility: visible; transition: none; }
 .markdown-tools:has(.markdown-copy-status:not(:empty)) .markdown-copy-hint { visibility: hidden; }
 .markdown-source-dialog {
   box-sizing: border-box;
@@ -771,6 +776,28 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
 .toc-trigger:hover { color: var(--mote-accent); background: var(--mote-tint); }
 .toc-trigger[aria-expanded="true"] { color: var(--mote-fg); }
 
+/* Compact banner tools; larger touch targets do not enlarge the artwork. */
+.banner-actions {
+  --mote-control-size: 36px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 4px;
+}
+.banner-actions :is(.page-copy, .markdown-copy, .theme-toggle, .toc-trigger) {
+  padding: 6px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.banner-actions :is(.page-copy, .markdown-copy, .theme-toggle, .toc-trigger) > svg {
+  width: 16px;
+  height: 16px;
+}
+.banner-actions .theme-toggle > .theme-chevron { width: 10px; height: 10px; }
+@media (any-pointer: coarse) {
+  .banner-actions { --mote-control-size: 40px; }
+}
+
 .toc-scrim {
   position: fixed;
   inset: 0;
@@ -820,9 +847,11 @@ body[data-toc-modal] { position: fixed; left: 0; right: 0; }
 }
 .toc-title { font-size: 12px; font-weight: 600; color: var(--mote-muted); }
 .toc-close {
+  --mote-control-size: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   min-width: var(--mote-control-size);
   min-height: var(--mote-control-size);
   border-radius: var(--mote-radius-sm);
@@ -830,7 +859,11 @@ body[data-toc-modal] { position: fixed; left: 0; right: 0; }
   text-decoration: none;
   transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
-.toc-close:hover { color: var(--mote-accent); background: var(--mote-tint); }
+.toc-close > svg { width: 16px; height: 16px; }
+.toc-close:hover { color: var(--mote-fg); background: var(--mote-pre-bg); }
+@media (any-pointer: coarse) {
+  .toc-close { --mote-control-size: 40px; }
+}
 .toc-nav {
   min-height: 0;
   overflow-y: auto;
