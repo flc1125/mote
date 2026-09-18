@@ -14,20 +14,33 @@ export const COPY_SCRIPT = String.raw`(() => {
       continue;
     }
     let timer;
+    // The icon-only button has no text to flip: state lives in the
+    // .is-copied class (icon swap + accent color) and the aria-label/title,
+    // mirroring the banner page-copy tool.
+    const setLabel = (label) => {
+      button.setAttribute('aria-label', label);
+      button.setAttribute('title', label);
+    };
     button.addEventListener('click', async () => {
       if (button.disabled) return;
       clearTimeout(timer);
       button.disabled = true;
-      button.textContent = 'Copy';
+      button.classList.remove('is-copied');
+      setLabel('Copy code');
       status.textContent = '';
       status.classList.remove('is-error');
       try {
         await navigator.clipboard.writeText(code.textContent);
-        button.textContent = 'Copied';
+        button.classList.add('is-copied');
+        setLabel('Code copied');
         status.textContent = 'Code copied to clipboard.';
-        timer = setTimeout(() => { button.textContent = 'Copy'; status.textContent = ''; }, 2500);
+        timer = setTimeout(() => {
+          button.classList.remove('is-copied');
+          setLabel('Copy code');
+          status.textContent = '';
+        }, 2500);
       } catch {
-        button.textContent = 'Copy failed';
+        setLabel('Copy failed');
         status.textContent = 'Could not copy. Select the code and copy it manually.';
         status.classList.add('is-error');
       } finally {

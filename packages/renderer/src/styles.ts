@@ -177,11 +177,15 @@ pre code {
 .code-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0.5rem 0.75rem; padding: 0.5rem 1.15rem; border-bottom: 1px solid var(--mote-border); min-width: 0; }
 .code-toolbar[hidden], .code-copy[hidden] { display: none; }
 .code-title { grid-column: 1; grid-row: 1; align-self: center; min-width: 0; overflow-wrap: anywhere; font-family: monospace; font-size: 0.8em; color: var(--mote-muted); }
-.code-copy { grid-column: 2; grid-row: 1; margin-left: auto; padding: 0.3em 0.65em; border: 1px solid var(--mote-border); border-radius: var(--mote-radius-sm); color: var(--mote-fg); background: var(--mote-bg); font: inherit; font-size: 0.75em; cursor: pointer; transition: border-color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard), color var(--mote-duration-fast) var(--mote-ease-standard); }
+.code-copy { grid-column: 2; grid-row: 1; margin-left: auto; display: inline-flex; align-items: center; justify-content: center; padding: 0.3em; border: 1px solid var(--mote-border); border-radius: var(--mote-radius-sm); color: var(--mote-fg); background: var(--mote-bg); font: inherit; font-size: 0.75em; cursor: pointer; transition: border-color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard), color var(--mote-duration-fast) var(--mote-ease-standard); }
 .code-copy:hover { border-color: var(--mote-accent); color: var(--mote-accent); }
 .code-copy:active { background: var(--mote-tint); }
 .code-copy:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
 .code-copy:disabled { opacity: 0.6; cursor: wait; }
+.code-copy .code-icon-copied { display: none; }
+.code-copy.is-copied { color: var(--mote-accent); border-color: var(--mote-accent); }
+.code-copy.is-copied .code-icon-copy { display: none; }
+.code-copy.is-copied .code-icon-copied { display: inline; }
 .code-copy-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .code-copy-status.is-error { grid-column: 1 / -1; position: static; width: auto; height: auto; clip-path: none; white-space: normal; font-size: 0.75em; color: var(--mote-muted); }
 .code-block.is-compact { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; }

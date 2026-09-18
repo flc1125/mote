@@ -379,11 +379,15 @@ pre code {
 .code-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0.5rem 0.75rem; padding: 0.5rem 1.15rem; border-bottom: 1px solid var(--mote-border); min-width: 0; }
 .code-toolbar[hidden], .code-copy[hidden] { display: none; }
 .code-title { grid-column: 1; grid-row: 1; align-self: center; min-width: 0; overflow-wrap: anywhere; font-family: monospace; font-size: 0.8em; color: var(--mote-muted); }
-.code-copy { grid-column: 2; grid-row: 1; margin-left: auto; padding: 0.3em 0.65em; border: 1px solid var(--mote-border); border-radius: var(--mote-radius-sm); color: var(--mote-fg); background: var(--mote-bg); font: inherit; font-size: 0.75em; cursor: pointer; transition: border-color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard), color var(--mote-duration-fast) var(--mote-ease-standard); }
+.code-copy { grid-column: 2; grid-row: 1; margin-left: auto; display: inline-flex; align-items: center; justify-content: center; padding: 0.3em; border: 1px solid var(--mote-border); border-radius: var(--mote-radius-sm); color: var(--mote-fg); background: var(--mote-bg); font: inherit; font-size: 0.75em; cursor: pointer; transition: border-color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard), color var(--mote-duration-fast) var(--mote-ease-standard); }
 .code-copy:hover { border-color: var(--mote-accent); color: var(--mote-accent); }
 .code-copy:active { background: var(--mote-tint); }
 .code-copy:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
 .code-copy:disabled { opacity: 0.6; cursor: wait; }
+.code-copy .code-icon-copied { display: none; }
+.code-copy.is-copied { color: var(--mote-accent); border-color: var(--mote-accent); }
+.code-copy.is-copied .code-icon-copy { display: none; }
+.code-copy.is-copied .code-icon-copied { display: inline; }
 .code-copy-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .code-copy-status.is-error { grid-column: 1 / -1; position: static; width: auto; height: auto; clip-path: none; white-space: normal; font-size: 0.75em; color: var(--mote-muted); }
 .code-block.is-compact { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
@@ -1438,7 +1442,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 </table>
 </div>
 <div class="code-block is-compact"><pre tabindex="0" aria-label="Code"><code class="language-ts"><span class="hljs-keyword">const</span> x = <span class="hljs-number">1</span>;
-</code></pre><button type="button" class="code-copy" aria-label="Copy code" hidden>Copy</button><span class="code-copy-status" role="status"></span></div>
+</code></pre><button type="button" class="code-copy" aria-label="Copy code" title="Copy code" hidden><svg class="code-icon-copy" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><svg class="code-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></button><span class="code-copy-status" role="status"></span></div>
 <h2 id="小结">小结<a class="heading-anchor" href="#小结" aria-label="Copy link to this section" title="Copy link to this section"><svg class="anchor-icon-link" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><svg class="anchor-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></a></h2>
 <blockquote>
 <p>完。</p>
@@ -1910,20 +1914,33 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
       continue;
     }
     let timer;
+    // The icon-only button has no text to flip: state lives in the
+    // .is-copied class (icon swap + accent color) and the aria-label/title,
+    // mirroring the banner page-copy tool.
+    const setLabel = (label) => {
+      button.setAttribute('aria-label', label);
+      button.setAttribute('title', label);
+    };
     button.addEventListener('click', async () => {
       if (button.disabled) return;
       clearTimeout(timer);
       button.disabled = true;
-      button.textContent = 'Copy';
+      button.classList.remove('is-copied');
+      setLabel('Copy code');
       status.textContent = '';
       status.classList.remove('is-error');
       try {
         await navigator.clipboard.writeText(code.textContent);
-        button.textContent = 'Copied';
+        button.classList.add('is-copied');
+        setLabel('Code copied');
         status.textContent = 'Code copied to clipboard.';
-        timer = setTimeout(() => { button.textContent = 'Copy'; status.textContent = ''; }, 2500);
+        timer = setTimeout(() => {
+          button.classList.remove('is-copied');
+          setLabel('Copy code');
+          status.textContent = '';
+        }, 2500);
       } catch {
-        button.textContent = 'Copy failed';
+        setLabel('Copy failed');
         status.textContent = 'Could not copy. Select the code and copy it manually.';
         status.classList.add('is-error');
       } finally {
