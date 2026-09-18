@@ -85,7 +85,7 @@ ${tocHtml}</aside>
 <body${tocHtml === '' ? '' : ' class="has-toc"'}>
 ${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/" target="_blank" rel="noopener noreferrer"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-<span class="banner-spacer"></span>${pageCopy}${markdownCopy}${themeToggle}${tocTrigger}</div></header>
+<span class="banner-spacer"></span><div class="banner-actions">${pageCopy}${markdownCopy}${themeToggle}${tocTrigger}</div></div></header>
 <main>
 <article>
 ${contentHtml}</article>

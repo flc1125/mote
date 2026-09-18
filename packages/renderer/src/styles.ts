@@ -34,6 +34,7 @@ const DOCUMENT_CSS = `
 
 .mote-banner-inner {
   max-width: 760px;
+  min-height: var(--mote-control-size);
   margin: 0 auto;
   padding: 12px 20px;
   display: flex;
@@ -771,6 +772,28 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
 .toc-trigger:hover { color: var(--mote-accent); background: var(--mote-tint); }
 .toc-trigger[aria-expanded="true"] { color: var(--mote-fg); }
 
+/* Compact banner tools; larger touch targets do not enlarge the artwork. */
+.banner-actions {
+  --mote-control-size: 36px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 4px;
+}
+.banner-actions :is(.page-copy, .markdown-copy, .theme-toggle, .toc-trigger) {
+  padding: 6px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.banner-actions :is(.page-copy, .markdown-copy, .theme-toggle, .toc-trigger) > svg {
+  width: 16px;
+  height: 16px;
+}
+.banner-actions .theme-toggle > .theme-chevron { width: 10px; height: 10px; }
+@media (any-pointer: coarse) {
+  .banner-actions { --mote-control-size: 40px; }
+}
+
 .toc-scrim {
   position: fixed;
   inset: 0;
@@ -820,9 +843,11 @@ body[data-toc-modal] { position: fixed; left: 0; right: 0; }
 }
 .toc-title { font-size: 12px; font-weight: 600; color: var(--mote-muted); }
 .toc-close {
+  --mote-control-size: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   min-width: var(--mote-control-size);
   min-height: var(--mote-control-size);
   border-radius: var(--mote-radius-sm);
@@ -830,7 +855,11 @@ body[data-toc-modal] { position: fixed; left: 0; right: 0; }
   text-decoration: none;
   transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
-.toc-close:hover { color: var(--mote-accent); background: var(--mote-tint); }
+.toc-close > svg { width: 16px; height: 16px; }
+.toc-close:hover { color: var(--mote-fg); background: var(--mote-pre-bg); }
+@media (any-pointer: coarse) {
+  .toc-close { --mote-control-size: 40px; }
+}
 .toc-nav {
   min-height: 0;
   overflow-y: auto;
