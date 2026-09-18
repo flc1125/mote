@@ -421,7 +421,8 @@ pre code {
 .content-tab-list {
   display: flex;
   overflow-x: auto;
-  border-bottom: 1px solid var(--mote-border);
+  /* Paint the divider inside the row so the active underline covers it. */
+  box-shadow: inset 0 -1px var(--mote-border);
   border-radius: calc(var(--mote-radius-md) - 1px) calc(var(--mote-radius-md) - 1px) 0 0;
   background: var(--mote-code-bg);
   padding: 0 .5em;
@@ -824,22 +825,25 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
 .markdown-tools { position: relative; display: inline-flex; flex-shrink: 0; }
 .markdown-copy-hint, .markdown-copy-status:not(:empty) {
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  top: calc(100% + 6px);
+  right: 50%;
+  transform: translateX(50%);
   width: max-content;
   max-width: min(240px, calc(100vw - 40px));
-  padding: 6px 10px;
-  border: 1px solid var(--mote-border);
-  border-radius: var(--mote-radius-md);
-  background: var(--mote-bg);
-  box-shadow: var(--mote-shadow-pop);
-  color: var(--mote-fg);
-  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: var(--mote-radius-sm);
+  background: var(--mote-fg);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.12);
+  color: var(--mote-bg);
+  font-size: 11px;
   line-height: 1.5;
   pointer-events: none;
 }
 .markdown-copy-hint { visibility: hidden; }
-.markdown-tools:hover .markdown-copy-hint, .markdown-tools:focus-within .markdown-copy-hint { visibility: visible; }
+@media (hover: hover) {
+  .markdown-tools:hover .markdown-copy-hint { visibility: visible; transition: visibility 0s 180ms; }
+}
+.markdown-tools:has(.markdown-copy:focus-visible) .markdown-copy-hint { visibility: visible; transition: none; }
 .markdown-tools:has(.markdown-copy-status:not(:empty)) .markdown-copy-hint { visibility: hidden; }
 .markdown-source-dialog {
   box-sizing: border-box;
