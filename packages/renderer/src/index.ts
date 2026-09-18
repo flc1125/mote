@@ -19,7 +19,13 @@ export function render(markdown: string, manifest: DocumentManifest, documentId:
   const { html, headings, codeCopy } = renderMarkdown(markdown, assetUrls);
   const title = headings.find((heading) => heading.level === 1)?.text ?? manifest.source.name;
 
-  return renderHtmlPage({ title, tocHtml: renderToc(headings), contentHtml: html, codeCopy });
+  return renderHtmlPage({
+    title,
+    tocHtml: renderToc(headings),
+    contentHtml: html,
+    codeCopy,
+    markdown,
+  });
 }
 
 export * from './assets.js';

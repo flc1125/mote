@@ -237,6 +237,15 @@ copies the absolute `/{document-id}#section` URL and briefly shows a checkmark,
 without navigating. Otherwise the anchor is a plain in-page link, so the
 address bar picks up the same link. Anchors are hidden when printing.
 
+The banner's **Copy Markdown source** button copies the original document text,
+including front matter, comments, code fences, footnotes and content inside tabs
+or disclosures. Image paths are preserved as written; relative paths may not work
+when pasted elsewhere. Success briefly shows a checkmark and confirmation. If
+clipboard access is unavailable or denied, a read-only source dialog allows manual
+selection and copying; close it with Escape or the close button. The control needs
+JavaScript and is omitted from print. Source text is available to readers even when
+some of it is not displayed in the rendered article.
+
 ## Images and HTML
 
 Local image references are resolved relative to the Markdown file by the CLI.

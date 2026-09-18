@@ -6,12 +6,14 @@ import { COPY_SCRIPT } from './copy-script.js';
 import { FOOTNOTE_SCRIPT } from './footnote-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
 import { PAGE_SCRIPT } from './page-script.js';
+import { encodeMarkdownSource } from './markdown-source.js';
 
 export interface PageInput {
   title: string;
   tocHtml: string;
   contentHtml: string;
   codeCopy?: boolean;
+  markdown?: string;
 }
 
 /** Static document content with a responsive, progressively enhanced outline. */
@@ -20,6 +22,7 @@ export function renderHtmlPage({
   tocHtml,
   contentHtml,
   codeCopy = false,
+  markdown,
 }: PageInput): string {
   const safeTitle = escapeHtml(title);
   const tocIcon =
@@ -44,6 +47,15 @@ export function renderHtmlPage({
   const checkIcon =
     '<svg class="page-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
   const pageCopy = `<button type="button" class="page-copy" aria-label="Copy page link" title="Copy page link" hidden>${linkIcon}${checkIcon}</button>`;
+  const markdownCopy =
+    markdown === undefined
+      ? ''
+      : `<span class="markdown-tools"><button type="button" class="markdown-copy" aria-label="Copy Markdown source" hidden><svg class="markdown-copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17V7l4 5 4-5v10M18 7v10m-3-3 3 3 3-3"/></svg>${checkIcon}</button><span class="markdown-copy-hint" aria-hidden="true">Copy Markdown source</span><span class="markdown-copy-status" role="status" aria-live="polite"></span></span>`;
+  const markdownSource =
+    markdown === undefined
+      ? ''
+      : `<input type="hidden" class="markdown-source" value="${encodeMarkdownSource(markdown)}">
+<dialog class="markdown-source-dialog" aria-label="Markdown source"><div class="markdown-source-heading"><h2>Markdown source</h2><button type="button" class="markdown-source-close" aria-label="Close Markdown source">${closeIcon}</button></div><p>Automatic copying is unavailable. Select the source below and copy it manually.</p><textarea class="markdown-source-text" aria-label="Markdown source text" readonly spellcheck="false"></textarea></dialog>`;
   const toTop = `<button type="button" class="to-top" aria-label="Back to top" title="Back to top" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>`;
   const tocTrigger =
     tocHtml === ''
@@ -73,7 +85,7 @@ ${tocHtml}</aside>
 <body${tocHtml === '' ? '' : ' class="has-toc"'}>
 ${tocDrawer}<header class="mote-banner"><div class="mote-banner-inner">
 <a class="mote-brand" href="/" target="_blank" rel="noopener noreferrer"><span class="mote-brand-dot" aria-hidden="true"></span>mote</a>
-<span class="banner-spacer"></span>${pageCopy}${themeToggle}${tocTrigger}</div></header>
+<span class="banner-spacer"></span>${pageCopy}${markdownCopy}${themeToggle}${tocTrigger}</div></header>
 <main>
 <article>
 ${contentHtml}</article>
@@ -86,6 +98,7 @@ ${codeCopy ? `<script>${COPY_SCRIPT}</script>` : ''}
 ${contentHtml.includes('<img ') ? `<script>${IMAGE_SCRIPT}</script>` : ''}
 ${contentHtml.includes('class="footnote-ref"') ? `<script>${FOOTNOTE_SCRIPT}</script>` : ''}
 ${toTop}
+${markdownSource}
 <script>${PAGE_SCRIPT}</script>
 </body>
 </html>

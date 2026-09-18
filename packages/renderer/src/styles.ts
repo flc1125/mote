@@ -591,7 +591,9 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
 .banner-spacer { flex: 1; }
 .theme-menu { position: relative; }
 .theme-toggle,
-.page-copy {
+.page-copy,
+.markdown-copy,
+.markdown-source-close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -607,13 +609,71 @@ article details > summary:focus-visible { outline: 2px solid var(--alert-color);
   cursor: pointer;
   transition: color var(--mote-duration-fast) var(--mote-ease-standard), background-color var(--mote-duration-fast) var(--mote-ease-standard);
 }
-.theme-toggle[hidden], .page-copy[hidden] { display: none; }
-.theme-toggle:hover, .page-copy:hover { color: var(--mote-accent); background: var(--mote-tint); }
-.theme-toggle:focus-visible, .page-copy:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
-.page-copy .page-icon-copied { display: none; }
-.page-copy.is-copied { color: var(--mote-accent); }
+.theme-toggle[hidden], .page-copy[hidden], .markdown-copy[hidden] { display: none; }
+.theme-toggle:hover, .page-copy:hover, .markdown-copy:hover, .markdown-source-close:hover { color: var(--mote-accent); background: var(--mote-tint); }
+.theme-toggle:focus-visible, .page-copy:focus-visible, .markdown-copy:focus-visible, .markdown-source-close:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.page-copy .page-icon-copied, .markdown-copy .page-icon-copied { display: none; }
+.page-copy.is-copied, .markdown-copy.is-copied { color: var(--mote-accent); }
 .page-copy.is-copied .page-icon-link { display: none; }
-.page-copy.is-copied .page-icon-copied { display: inline; }
+.page-copy.is-copied .page-icon-copied, .markdown-copy.is-copied .page-icon-copied { display: inline; }
+.markdown-copy.is-copied .markdown-copy-icon { display: none; }
+.markdown-copy[aria-disabled="true"] { cursor: wait; }
+.markdown-tools { position: relative; display: inline-flex; flex-shrink: 0; }
+.markdown-copy-hint, .markdown-copy-status:not(:empty) {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 40px));
+  padding: 6px 10px;
+  border: 1px solid var(--mote-border);
+  border-radius: var(--mote-radius-md);
+  background: var(--mote-bg);
+  box-shadow: var(--mote-shadow-pop);
+  color: var(--mote-fg);
+  font-size: 12px;
+  line-height: 1.5;
+  pointer-events: none;
+}
+.markdown-copy-hint { visibility: hidden; }
+.markdown-tools:hover .markdown-copy-hint, .markdown-tools:focus-within .markdown-copy-hint { visibility: visible; }
+.markdown-tools:has(.markdown-copy-status:not(:empty)) .markdown-copy-hint { visibility: hidden; }
+.markdown-source-dialog {
+  box-sizing: border-box;
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  padding: 20px;
+  border: 1px solid var(--mote-border);
+  border-radius: var(--mote-radius-lg);
+  background: var(--mote-bg);
+  color: var(--mote-fg);
+  box-shadow: var(--mote-shadow-pop);
+  overflow: auto;
+}
+.markdown-source-dialog::backdrop { background: var(--mote-scrim); }
+.markdown-source-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.markdown-source-heading h2 { margin: 0; font-size: 18px; }
+.markdown-source-dialog p { margin: 8px 0 16px; color: var(--mote-muted); font-size: 14px; }
+.markdown-source-text {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 45vh;
+  height: 45dvh;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid var(--mote-border);
+  border-radius: var(--mote-radius-sm);
+  background: var(--mote-code-bg);
+  color: var(--mote-fg);
+  font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  resize: none;
+}
+.markdown-source-text:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+@media (max-width: 480px) {
+  .mote-banner-inner { gap: 6px; padding-left: 16px; padding-right: 16px; }
+}
 
 /* Back to top: quiet floating action, clear of the desktop contents rail. */
 .to-top {
@@ -983,7 +1043,7 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
-  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor, .page-copy, .to-top { display: none; }
+  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor, .page-copy, .markdown-tools, .markdown-source-dialog, .to-top { display: none; }
   .has-toc:not([data-toc-collapsed]) main,
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin: 0 auto; }
   body[data-toc-modal] { position: static; }

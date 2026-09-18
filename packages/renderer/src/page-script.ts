@@ -1,7 +1,7 @@
 /**
- * Page tools (plan 012 phase 4): banner copy-link button and back-to-top.
+ * Page tools: banner copy-link/Markdown buttons and back-to-top.
  * Fixed first-party script, authorized by its exact CSP hash; document
- * content never enters it. Without JS both controls stay hidden.
+ * content never enters it. Without JS the controls stay hidden.
  *
  * Copy uses the canonical page URL (origin + pathname): any hash or query
  * the reader arrived with is dropped on purpose.
@@ -28,6 +28,76 @@ export const PAGE_SCRIPT = String.raw`(() => {
       }, () => {});
     });
     copyButton.hidden = false;
+  }
+
+  const markdownButton = document.querySelector('.markdown-copy');
+  const source = document.querySelector('.markdown-source');
+  if (markdownButton && source) {
+    const status = document.querySelector('.markdown-copy-status');
+    const dialog = document.querySelector('.markdown-source-dialog');
+    const text = document.querySelector('.markdown-source-text');
+    const close = document.querySelector('.markdown-source-close');
+    const canOpen = dialog && text && close && typeof dialog.showModal === 'function';
+    let markdown;
+    let timer = 0;
+    let copying = false;
+    const reset = () => {
+      markdownButton.classList.remove('is-copied');
+      markdownButton.setAttribute('aria-label', 'Copy Markdown source');
+      if (status) status.textContent = '';
+    };
+    const manualCopy = () => {
+      if (status) status.textContent = 'Copy failed';
+      if (!canOpen) return;
+      text.value = markdown;
+      if (!dialog.open) dialog.showModal();
+      text.focus();
+      text.select();
+      text.scrollTop = 0;
+      text.scrollLeft = 0;
+    };
+    if (canOpen) {
+      close.addEventListener('click', () => dialog.close());
+      dialog.addEventListener('close', () => {
+        text.value = '';
+        reset();
+        markdownButton.focus();
+      });
+    }
+    markdownButton.addEventListener('click', async () => {
+      if (copying) return;
+      clearTimeout(timer);
+      reset();
+      copying = true;
+      markdownButton.setAttribute('aria-disabled', 'true');
+      try {
+        if (markdown === undefined) {
+          const binary = atob(source.value);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          markdown = new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes);
+        }
+        if (!clipboard) {
+          manualCopy();
+          return;
+        }
+        try {
+          await clipboard(markdown);
+          markdownButton.classList.add('is-copied');
+          markdownButton.setAttribute('aria-label', 'Markdown copied');
+          if (status) status.textContent = 'Markdown copied';
+          timer = setTimeout(reset, 2000);
+        } catch {
+          manualCopy();
+        }
+      } catch {
+        if (status) status.textContent = 'Could not read Markdown source';
+      } finally {
+        copying = false;
+        markdownButton.setAttribute('aria-disabled', 'false');
+      }
+    });
+    if (clipboard || canOpen) markdownButton.hidden = false;
   }
 
   if (toTop) {
