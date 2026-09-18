@@ -43,14 +43,14 @@ export function renderHtmlPage({
     `<button type="button" role="menuitemradio" aria-checked="${checked}" data-theme-value="${value}">${themeIcon(value, true, false)}${label}</button>`;
   const themeToggle = `<span class="theme-menu"><button type="button" class="theme-toggle" aria-haspopup="menu" aria-expanded="false" aria-label="Theme: Auto" title="Theme: Auto" hidden>${themeIcon('auto', false, false)}${themeIcon('light', false, true)}${themeIcon('dark', false, true)}<svg class="theme-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 10 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="theme-menu-list" role="menu" aria-label="Theme" hidden>${themeItem('auto', 'Auto', true)}${themeItem('light', 'Light', false)}${themeItem('dark', 'Dark', false)}</span></span>`;
   const linkIcon =
-    '<svg class="page-icon-link" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+    '<svg class="page-icon-link" width="18" height="18" viewBox="-2 -2 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
   const checkIcon =
     '<svg class="page-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
   const pageCopy = `<button type="button" class="page-copy" aria-label="Copy page link" title="Copy page link" hidden>${linkIcon}${checkIcon}</button>`;
   const markdownCopy =
     markdown === undefined
       ? ''
-      : `<span class="markdown-tools"><button type="button" class="markdown-copy" aria-label="Copy Markdown source" hidden><svg class="markdown-copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17V7l4 5 4-5v10M18 7v10m-3-3 3 3 3-3"/></svg>${checkIcon}</button><span class="markdown-copy-hint" aria-hidden="true">Copy Markdown source</span><span class="markdown-copy-status" role="status" aria-live="polite"></span></span>`;
+      : `<span class="markdown-tools"><button type="button" class="markdown-copy" aria-label="Copy Markdown source" hidden><svg class="markdown-copy-icon" width="18" height="18" viewBox="1 1 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17V7l4 5 4-5v10M18 7v10m-3-3 3 3 3-3"/></svg>${checkIcon}</button><span class="markdown-copy-hint" aria-hidden="true">Copy Markdown source</span><span class="markdown-copy-status" role="status" aria-live="polite"></span></span>`;
   const markdownSource =
     markdown === undefined
       ? ''
