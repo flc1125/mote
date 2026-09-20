@@ -552,7 +552,46 @@ article dd > :last-child { margin-bottom: 0; }
 .diagram-scroll .mote-xychart-line-shadow { stroke-width: 5; opacity: 0.12; }
 .diagram-scroll .mote-xychart-dot { fill: var(--chart-color); stroke: var(--mote-bg); stroke-width: 2; }
 .math-display:focus-visible, .diagram-scroll:focus-visible { outline: 2px solid var(--mote-accent); outline-offset: 3px; }
-article .mermaid-diagram details { margin-top: 0.6em; font-size: 0.85em; }
+
+/* Diagram source disclosure: an icon-only toggle parked on the diagram frame's
+   top-right corner (the figure's border gives it an anchor), quiet until the
+   figure is hovered or focused — touch keeps it visible, quieter, same
+   contract as the heading anchors. The open panel reuses the code-block
+   chrome and stays in flow below the figure. */
+.mermaid-diagram { position: relative; }
+.mermaid-diagram details.diagram-source { margin-top: 0; padding: 0; border: 0; background: none; }
+.mermaid-diagram details.diagram-source > summary {
+  position: absolute;
+  top: 0.45em;
+  inset-inline-end: 0.45em;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75em;
+  height: 1.75em;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--mote-border);
+  border-radius: var(--mote-radius-sm);
+  background: var(--mote-bg);
+  color: var(--mote-muted);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity var(--mote-duration-fast) var(--mote-ease-standard), color var(--mote-duration-fast) var(--mote-ease-standard), border-color var(--mote-duration-fast) var(--mote-ease-standard);
+}
+/* The generic disclosure chevron and the tinted title band stay with raw
+   HTML details; this toggle renders its own icon instead. */
+.mermaid-diagram details.diagram-source > summary::after { content: none; }
+.mermaid-diagram details.diagram-source > summary:hover { color: var(--mote-accent); border-color: var(--mote-accent); }
+.mermaid-diagram details.diagram-source > summary:focus-visible { opacity: 1; outline: 2px solid var(--mote-accent); outline-offset: 2px; }
+.mermaid-diagram:hover details.diagram-source:not([open]) > summary,
+.mermaid-diagram:focus-within details.diagram-source:not([open]) > summary,
+.mermaid-diagram details.diagram-source[open] > summary { opacity: 1; }
+@media (hover: none), (pointer: coarse) { .mermaid-diagram details.diagram-source > summary { opacity: 0.55; } }
+.diagram-source-icon { transition: transform var(--mote-duration-fast) var(--mote-ease-standard); }
+.mermaid-diagram details.diagram-source[open] > summary .diagram-source-icon { transform: rotate(180deg); }
+.mermaid-diagram details.diagram-source > .code-block { margin: 0.5em 0 0; }
 
 /* Raw HTML and generated disclosures share the same title/body treatment. */
 .markdown-alert .markdown-alert, .markdown-alert details,
@@ -1081,6 +1120,10 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
   .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor, .page-copy, .markdown-tools, .markdown-source-dialog, .to-top { display: none; }
+  /* The corner toggle's base rule (.mermaid-diagram details.diagram-source >
+     summary) outranks the shared list above, so it needs an equally specific
+     override or print keeps showing the button. */
+  .mermaid-diagram details.diagram-source > summary { display: none; }
   .has-toc:not([data-toc-collapsed]) main,
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin: 0 auto; }
   body[data-toc-modal] { position: static; }

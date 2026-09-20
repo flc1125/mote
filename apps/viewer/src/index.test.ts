@@ -74,7 +74,7 @@ describe('GET /{document-id}', () => {
     }
   });
 
-  it('renders static math and diagrams with only the trusted TOC script', async () => {
+  it('renders static math and diagrams with only the trusted scripts', async () => {
     const id = 'Q9vLm2NkR7xB4PaS';
     const source =
       '# Static extensions\n\n$E=mc^2$\n\n~~~mermaid\nflowchart LR\n A-->B\n~~~\n\n~~~mermaid\nsequenceDiagram\n Alice->>Bob: Hello\n~~~';
@@ -106,12 +106,14 @@ describe('GET /{document-id}', () => {
       expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
         THEME_SCRIPT,
         TOC_SCRIPT,
+        COPY_SCRIPT,
         PAGE_SCRIPT,
       ]);
       expect(
         html
           .replace(`<script>${THEME_SCRIPT}</script>`, '')
           .replace(`<script>${TOC_SCRIPT}</script>`, '')
+          .replace(`<script>${COPY_SCRIPT}</script>`, '')
           .replace(`<script>${PAGE_SCRIPT}</script>`, ''),
       ).not.toMatch(/<(?:script|foreignObject|image)\b/);
       if (previous) expect(html).toBe(previous);
