@@ -1,6 +1,7 @@
 import { parseMermaid, renderMermaidSVG } from 'beautiful-mermaid';
 import type { MarkdownIt } from 'markdown-it';
 
+import { CODE_COPY_BUTTON } from './code-blocks.js';
 import { sanitizeDiagramSvg } from './diagram-svg.js';
 import { escapeHtml } from './escape.js';
 import { normalizeFlowchart } from './flowchart.js';
@@ -91,7 +92,14 @@ export function diagrams(md: MarkdownIt): void {
       }
       const svg = sanitizeDiagramSvg(renderSvg(layoutSource), `mote-diagram:${count}:`);
       if (!svg) return fallback();
-      return `<figure class="mermaid-diagram"><div class="diagram-scroll" role="region" aria-label="图表 / Diagram" tabindex="0">${svg}</div><details><summary>查看 Mermaid 源码</summary><pre><code class="language-mermaid">${escapeHtml(source)}</code></pre></details></figure>\n`;
+      // Source panel reuses the .code-block chrome so COPY_SCRIPT binds it;
+      // env.codeCopy drives the script's inclusion in the page template.
+      if (env) env.codeCopy = true;
+      const sourceToggle =
+        '<details class="diagram-source"><summary aria-label="Show Mermaid source" title="Show Mermaid source">' +
+        '<svg class="diagram-source-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 10 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        `</summary><div class="code-block"><div class="code-toolbar"><span class="code-title">Mermaid</span>${CODE_COPY_BUTTON}<span class="code-copy-status" role="status"></span></div><pre tabindex="0" aria-label="Code"><code class="language-mermaid">${escapeHtml(source)}</code></pre></div></details>`;
+      return `<figure class="mermaid-diagram"><div class="diagram-scroll" role="region" aria-label="图表 / Diagram" tabindex="0">${svg}</div>${sourceToggle}</figure>\n`;
     } catch {
       return fallback();
     }

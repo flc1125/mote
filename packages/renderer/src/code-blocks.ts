@@ -4,6 +4,17 @@ import type { MarkdownIt } from 'markdown-it';
 import { escapeHtml } from './escape.js';
 import { parseFenceMeta } from './fence-meta.js';
 
+/**
+ * Icon-only copy button (standalone-button spec: 18px, viewBox 24, stroke 1.8).
+ * The script swaps .code-icon-copy for .code-icon-copied via .is-copied.
+ * Shared with the Mermaid source panel, which reuses the .code-block chrome.
+ */
+export const CODE_COPY_BUTTON =
+  '<button type="button" class="code-copy" aria-label="Copy code" title="Copy code" hidden>' +
+  '<svg class="code-icon-copy" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+  '<svg class="code-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>' +
+  '</button>';
+
 /** Reopen highlighter spans at line boundaries, preserving decoded text exactly. */
 function linesOf(html: string): string[] | null {
   const lines = [''];
@@ -88,15 +99,7 @@ export function codeBlocks(md: MarkdownIt): void {
         .join('');
     }
     const title = meta.title ? `<span class="code-title">${escapeHtml(meta.title)}</span>` : '';
-    // Icon-only button (standalone-button spec: 18px, viewBox 24, stroke 1.8).
-    // The script swaps .code-icon-copy for .code-icon-copied via .is-copied.
-    const copy =
-      source === ''
-        ? ''
-        : '<button type="button" class="code-copy" aria-label="Copy code" title="Copy code" hidden>' +
-          '<svg class="code-icon-copy" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
-          '<svg class="code-icon-copied" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>' +
-          '</button><span class="code-copy-status" role="status"></span>';
+    const copy = source === '' ? '' : `${CODE_COPY_BUTTON}<span class="code-copy-status" role="status"></span>`;
     const toolbar = title ? `<div class="code-toolbar">${title}${copy}</div>` : '';
     const lineDigits =
       meta.start !== undefined && count ? String(meta.start + count - 1).length : 0;

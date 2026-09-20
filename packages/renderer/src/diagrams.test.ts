@@ -53,11 +53,19 @@ describe('static Mermaid subset', () => {
   it.each(samples)('renders %s without external resources or scripts', (_name, source) => {
     const html = render(source!);
     expect(html).toContain('<svg');
-    expect(html).toContain('查看 Mermaid 源码');
+    expect(html).toContain('class="diagram-source"');
+    expect(html).toContain('class="code-toolbar"');
+    expect(html).toContain('<span class="code-title">Mermaid</span>');
+    expect(html).toContain('aria-label="Show Mermaid source"');
+    expect(html).toContain('class="code-copy"');
     expect(html).not.toMatch(/<(?:script|style|foreignObject|image|a)\b/);
     expect(html).not.toContain('fonts.googleapis');
     expect(html).not.toContain(' style=');
     expect(html).toContain('role="img"');
+  });
+  it('marks codeCopy so the page template inlines COPY_SCRIPT', () => {
+    const { codeCopy } = renderMarkdown('~~~mermaid\nflowchart LR\n A-->B\n~~~', new Map());
+    expect(codeCopy).toBe(true);
   });
   it('allocates diagram-local marker IDs and renders deterministically', () => {
     const source = '~~~mermaid\nflowchart LR\n A-->B\n~~~\n\n~~~mermaid\nflowchart LR\n A-->B\n~~~';
@@ -104,7 +112,7 @@ describe('static Mermaid subset', () => {
       '~~~mermaid\nflowchart LR\n A-->B\n~~~\n\n'.repeat(6),
       new Map(),
     ).html;
-    expect(html.match(/<svg/g)).toHaveLength(4);
+    expect(html.match(/<div class="diagram-scroll"/g)).toHaveLength(4);
   });
   it('enforces the node limit at exactly 32 nodes, including implicit targets', () => {
     const graph =
