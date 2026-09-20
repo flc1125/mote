@@ -1321,7 +1321,11 @@ abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.18em; 
 
 @media print {
   .mote-banner { position: static; background: none; backdrop-filter: none; }
-  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor, .page-copy, .markdown-tools, .markdown-source-dialog, .to-top, .diagram-source > summary { display: none; }
+  .theme-menu, .toc-trigger, .toc-scrim, .toc-drawer, .heading-anchor, .page-copy, .markdown-tools, .markdown-source-dialog, .to-top { display: none; }
+  /* The corner toggle's base rule (.mermaid-diagram details.diagram-source >
+     summary) outranks the shared list above, so it needs an equally specific
+     override or print keeps showing the button. */
+  .mermaid-diagram details.diagram-source > summary { display: none; }
   .has-toc:not([data-toc-collapsed]) main,
   .has-toc:not([data-toc-collapsed]) .mote-colophon-inner { margin: 0 auto; }
   body[data-toc-modal] { position: static; }
