@@ -99,7 +99,10 @@ export function codeBlocks(md: MarkdownIt): void {
         .join('');
     }
     const title = meta.title ? `<span class="code-title">${escapeHtml(meta.title)}</span>` : '';
-    const copy = source === '' ? '' : `${CODE_COPY_BUTTON}<span class="code-copy-status" role="status"></span>`;
+    const copy =
+      source === ''
+        ? ''
+        : `${CODE_COPY_BUTTON}<span class="code-copy-status" role="status"></span>`;
     const toolbar = title ? `<div class="code-toolbar">${title}${copy}</div>` : '';
     const lineDigits =
       meta.start !== undefined && count ? String(meta.start + count - 1).length : 0;
