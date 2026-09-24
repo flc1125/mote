@@ -492,7 +492,7 @@ const config = {
 - `linenums`: the starting display number; omitted by default.
 - `hl_lines`: space-separated physical line numbers or inclusive ranges, counted from 1 regardless of `linenums`. Overlapping ranges merge; positions beyond the code are ignored.
 
-Keys are case-sensitive and values require double quotes; only `\"` and `\\` escapes are accepted. Unknown or duplicate keys, invalid values or oversized metadata discard the entire parameter tail while preserving the language and code. Attribute lists and metadata without an explicit language are not supported. Indented code, raw HTML code and Mermaid fences/source disclosures do not receive these controls; `mermaid title="..."` retains the existing source fallback.
+Keys are case-sensitive and values require double quotes; only `\"` and `\\` escapes are accepted. Unknown or duplicate keys, invalid values or oversized metadata discard the entire parameter tail while preserving the language and code. Attribute lists and metadata without an explicit language are not supported. Indented code, raw HTML code and Mermaid fences do not receive title/line-number controls; rendered Mermaid diagrams instead have a copyable source disclosure. `mermaid title="..."` retains the existing source fallback.
 
 Parameters are limited to 1,024 text units in total, titles to 240, and line numbers/range endpoints to positive integers up to 1,000,000 (at most 64 range items). Code controls and line decoration have separate budgets listed below. Empty code may show a title but has no copy control or line numbers. Long code scrolls within its block; print output wraps it and omits copy controls.
 
@@ -554,7 +554,7 @@ This uses a static Mermaid subset, not the full browser-based Mermaid engine.
 Unsupported diagram families, configuration directives, interactive links and
 arbitrary styling fall back to source. Other advanced syntax may differ from the
 Mermaid reference renderer; inspect relationships and labels before publishing.
-Each rendered diagram also includes a disclosure with its original source.
+Each rendered diagram also includes an icon-only disclosure at the frame corner with its original source and a copy button. The disclosure opens without JavaScript; the copy button requires JavaScript and clipboard access and is hidden in print.
 
 Diagrams adapt to the prose width on desktop and can scroll within their region on
 narrow screens. Generated SVG is sanitized separately from user HTML; no remote

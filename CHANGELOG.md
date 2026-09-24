@@ -6,25 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-24
+
 ### Changed
 
 - Example admonitions now use a neutral gray instead of sharing the note blue, and all alert, syntax-highlight and blockquote colors come from shared design tokens with paired light/dark values. ([#75](https://github.com/flc1125/mote/pull/75))
 - Absolute http(s) links in document content open in a new tab (`target="_blank" rel="noopener noreferrer"`), so readers keep their place; fragments, relative links and mailto stay in-page, and raw HTML links keep the author's attributes. ([#76](https://github.com/flc1125/mote/pull/76))
-- The image viewer gains multi-image navigation: previous/next buttons, a position counter and ArrowLeft/ArrowRight, wrapping around at the ends. Single-image documents are unchanged. The footnote preview caps its height against the dynamic viewport for mobile browser chrome. ([#76](https://github.com/flc1125/mote/pull/76))
+- Code-block copy buttons now use compact icons with accessible labels and copied-state feedback. Mermaid diagrams show an icon-only source toggle at the frame corner, with a copyable source panel that remains accessible as a native disclosure without JavaScript. ([#81](https://github.com/flc1125/mote/pull/81), [#82](https://github.com/flc1125/mote/pull/82))
 
 ### Added
 
-- A banner button copies the original Markdown source, including metadata, comments and collapsed content, with a confirmation and a manual-copy dialog when clipboard access is unavailable. Image paths remain unchanged; the control is hidden without JavaScript and in print.
-
+- Reader theme switching on document pages: a banner toggle cycles auto (system), light and dark, persists the choice per browser and applies it before first paint without flashing. With JavaScript disabled the page still follows the system theme, and printing always uses the light palette. The fixed theme script is authorized by its exact CSP hash, shared across GET and HEAD. ([#72](https://github.com/flc1125/mote/pull/72))
 - Section anchors on every heading: revealed on hover or focus (always visible on touch), click copies the absolute section URL with a checkmark confirmation and no navigation. Without JavaScript or clipboard access the anchor degrades to a plain in-page link; anchors are hidden when printing. ([#73](https://github.com/flc1125/mote/pull/73))
 - Page tools on document pages: a banner button copies the canonical page URL (hash and query dropped) with a checkmark confirmation, and a floating back-to-top control appears after two viewport heights, honoring reduced-motion and staying clear of the desktop contents rail. Both stay hidden without JavaScript or clipboard access and are excluded from print. ([#74](https://github.com/flc1125/mote/pull/74))
-
-- Reader theme switching on document pages: a banner toggle cycles auto (system), light and dark, persists the choice per browser and applies it before first paint without flashing. With JavaScript disabled the page still follows the system theme, and printing always uses the light palette. The fixed theme script is authorized by its exact CSP hash, shared across GET and HEAD. ([#72](https://github.com/flc1125/mote/pull/72))
+- The image viewer gains multi-image navigation: previous/next buttons, a position counter and ArrowLeft/ArrowRight, wrapping around at the ends. Single-image documents are unchanged. ([#76](https://github.com/flc1125/mote/pull/76))
+- A banner button copies the original Markdown source, including metadata, comments and collapsed content, with a confirmation and a manual-copy dialog when clipboard access is unavailable. Image paths remain unchanged; the control is hidden without JavaScript and in print. ([#79](https://github.com/flc1125/mote/pull/79))
 
 ### Fixed
 
 - Footnote fragment jumps (reference → definition and back) now clear the sticky banner, matching heading anchors. ([#71](https://github.com/flc1125/mote/pull/71))
 - Footnote popover shadow, TOC scrim and drawer shadow deepen in dark mode so overlays stay visible. ([#71](https://github.com/flc1125/mote/pull/71))
+- Footnote previews stay within the dynamic viewport on mobile browsers. ([#76](https://github.com/flc1125/mote/pull/76))
+- Compact banner and contents controls, balanced copy icons, clearer copy tooltips and tab underlines. Mermaid source toggles are hidden when printing. ([#80](https://github.com/flc1125/mote/pull/80), [#82](https://github.com/flc1125/mote/pull/82))
+- Release automation now distinguishes delayed npm registry visibility from publish failures and retains bounded diagnostics for uncertain outcomes. ([#70](https://github.com/flc1125/mote/pull/70))
+
+### Upgrade notes
+
+- Upgrade to `mote-cli@0.8.0` if you want the matching CLI release. The Markdown parsing and publication format have not changed since 0.7.0; the new reading controls are provided by the Viewer Worker. Local stdio MCP remains a private workspace package.
+- Existing document URLs gain the updated reading controls when the Viewer is deployed; the stored Markdown and assets are unchanged, and Viewer-only presentation changes do not require republication. The Copy Markdown source control exposes the original source, including hidden metadata and comments, to anyone who can read the document. Review source content before sharing a capability URL. ([#79](https://github.com/flc1125/mote/pull/79))
+- The stable tag publishes the CLI and GitHub Release only. API and Viewer deploy independently through Workers Builds on `main`; check both production revisions separately before tagging. See the [deployment and release checklist](https://github.com/flc1125/mote/blob/v0.8.0/docs/deployment.md#markdown-release-checklist).
 
 ## [0.7.0] - 2026-09-16
 
@@ -191,7 +201,8 @@ Published manually to npm without a matching Git tag or GitHub Release; v0.1.1 i
 - **Docs** — architecture, publish protocol, security model, self-hosting guide, CLI and MCP references (English + 中文) ([initial commit](https://github.com/flc1125/mote/commit/214ded08ef6f19483e8cba460ba268e756fe49d5); no PR)
 - **Infrastructure** — Cloudflare Workers + R2 only; Workers Cache with per-version cache namespaces; runs on the free tier ([initial commit](https://github.com/flc1125/mote/commit/214ded08ef6f19483e8cba460ba268e756fe49d5); no PR)
 
-[Unreleased]: https://github.com/flc1125/mote/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/flc1125/mote/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/flc1125/mote/releases/tag/v0.8.0
 [0.7.0]: https://github.com/flc1125/mote/releases/tag/v0.7.0
 [0.6.0]: https://github.com/flc1125/mote/releases/tag/v0.6.0
 [0.5.0]: https://github.com/flc1125/mote/releases/tag/v0.5.0
