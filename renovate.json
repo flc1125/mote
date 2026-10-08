@@ -1,0 +1,47 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "enabledManagers": ["npm", "github-actions"],
+  "timezone": "Asia/Shanghai",
+  "schedule": ["* 0-6 * * 1"],
+  "minimumReleaseAge": "3 days",
+  "prConcurrentLimit": 3,
+  "automerge": false,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["* 0-6 * * 1"]
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "rangeStrategy": "update-lockfile"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "@eslint/**",
+        "@typescript-eslint/**",
+        "eslint",
+        "eslint-config-prettier",
+        "typescript-eslint"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "eslint tooling"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@cloudflare/vitest-pool-workers", "miniflare", "vitest", "wrangler"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "cloudflare test tooling"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "github actions"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "groupName": null
+    }
+  ]
+}
