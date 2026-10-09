@@ -5,7 +5,9 @@ description: Publish Markdown as an immutable web page with a shareable URL via 
 
 # Mote — Markdown in, URL out
 
-Mote 把 Markdown 发布为**不可变、不可枚举、浏览器可读**的在线页面，返回一个 URL。本 Skill 只指导何时以及如何使用 Mote；发布协议由 CLI / MCP 实现，**不要自己实现上传逻辑**。
+Mote 将 Markdown 发布为可在浏览器阅读的网页，并返回 URL。已存储的 Markdown 和已上传资产不可修改；文档 URL 使用高熵随机 ID，以抵抗猜测。
+
+本 Skill 只指导何时以及如何使用 Mote。发布协议由 CLI / MCP 实现，**不要自己实现上传逻辑**。
 
 ## 何时使用
 
@@ -57,7 +59,7 @@ CLI 会自动处理 Markdown 和受支持 HTML 中的本地图片引用、路径
 
 - **原样把 URL 返回给用户**，不要截断、不要改写；
 - 一句话说明即可，例如「已发布：<url>」；
-- 页面设置了禁止搜索引擎索引的指令，这不是访问控制或绝对不被收录的保证；可访问性取决于实例和存储持续运行；
+- 页面设置了禁止搜索引擎索引的指令，但这不是访问控制，也不能保证页面不会被收录；页面可用性取决于实例和存储是否正常运行；
 - 如果用户后续要求「更新这个页面」：说明已存储的 Markdown 和已上传资产不可变，重新发布会得到新 URL；Viewer 更新可能改变呈现效果，远程图片依赖来源站点。
 
 ## 限制（发布前自检）
@@ -71,6 +73,9 @@ CLI 会自动处理 Markdown 和受支持 HTML 中的本地图片引用、路径
 - 登录失效：引导用户针对同一实例完成交互登录；用户已明确要求协助登录时，按授权范围继续。不因发布失败擅自发起浏览器登录、不读取其他客户端的凭据、不切换回旧 token。具体步骤见[鉴权说明](https://github.com/flc1125/mote/blob/main/docs/authentication.md)；
 - `no publish token configured`：确认实例的鉴权模式。静态模式需要实例管理员提供 token；Access 实例需要 OAuth 登录或显式机器模式，不能把 Cloudflare 管理 API token 当发布密钥；不自行生成凭据；
 - 机器模式：需要显式 `MOTE_AUTH_MODE=service` 及目标匹配的 `MOTE_SERVICE_API_URL`、`MOTE_SERVICE_CLIENT_ID`、`MOTE_SERVICE_CLIENT_SECRET`。缺失或无效时停止，不用用户登录态替代；
-- 超时、5xx 或结果未知：不自动重试发布，可能已经生成不可变文档；先核对结果，再由用户决定是否重新发布；
+- 超时、5xx 或结果未知：不自动重试发布，可能已经生成不可变文档。
+  - 未收到 URL 时，保留错误信息、发生时间和实例地址，请实例管理员协助核查。
+  - 不记录凭据或私密文档 URL，不声称已有查询命令。
+  - 若仍无法确认结果，说明重发可能创建重复文档。只有用户明确选择承担这一风险时，才重新发布。
 - `asset not found: <path>`：Markdown 引用的本地图片不存在，提醒用户检查相对路径；
 - `unsupported image type`：引用了 SVG 等不支持格式，建议用户转换为 png/webp 后重试。

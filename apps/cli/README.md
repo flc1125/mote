@@ -1,6 +1,6 @@
 # mote-cli
 
-> **Mote = Markdown in, URL out.** Publish Markdown as immutable, unguessable, browser-readable web pages.
+> **Mote = Markdown in, URL out.** Publish Markdown as browser-readable web pages with hard-to-guess URLs.
 
 ## Install
 

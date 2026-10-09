@@ -85,14 +85,17 @@ You have published your first document. Editing the local file does not update t
 
 ## If a step fails
 
-| Symptom                                                     | Next step                                                                                                                                                                    |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Browser authorization is denied                             | Confirm that the instance administrator has allowed your identity. See [authentication](authentication.md#user-login-cli-and-local-stdio).                                   |
-| Login cannot open the browser or save credentials           | Use the displayed link on the same computer; check [login and credential troubleshooting](cli.md#troubleshooting).                                                           |
-| Status or publication selects another instance or auth mode | Check [configuration selection](authentication.md#configuration-selection), including inherited environment variables.                                                       |
-| `hello.md` is not found                                     | Run from the folder where you saved it, or pass its full path.                                                                                                               |
-| Session expired or login is required                        | Run the login command again with your instance's explicit `--api`.                                                                                                           |
-| A publication times out or returns a server error           | Resolve the outcome before publishing again; the first write may already have succeeded and retries create new documents. See [CLI troubleshooting](cli.md#troubleshooting). |
+| Symptom                                                     | Next step                                                                                                                                  |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Browser authorization is denied                             | Confirm that the instance administrator has allowed your identity. See [authentication](authentication.md#user-login-cli-and-local-stdio). |
+| Login cannot open the browser or save credentials           | Use the displayed link on the same computer; check [login and credential troubleshooting](cli.md#troubleshooting).                         |
+| Status or publication selects another instance or auth mode | Check [configuration selection](authentication.md#configuration-selection), including inherited environment variables.                     |
+| `hello.md` is not found                                     | Run from the folder where you saved it, or pass its full path.                                                                             |
+| Session expired or login is required                        | Run the login command again with your instance's explicit `--api`.                                                                         |
+| A publication times out or returns a server error           | Do not automatically retry. The write may have succeeded; follow [Unknown publication outcome](cli.md#unknown-publication-outcome).        |
+
+If no URL was returned, preserve the error, request time and instance address. Ask the instance administrator to investigate.
+Keep credentials and private document URLs out of shared logs.
 
 ## Next steps
 

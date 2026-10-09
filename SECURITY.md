@@ -63,6 +63,8 @@ Never commit real tokens, `.dev.vars`, or wrangler local config. Tests must use 
 
 仅支持最新发布版本（`v0.x`），请升级到最新版。
 
-### 贡献者秘钥规范
+<a id="贡献者秘钥规范"></a>
+
+### 贡献者凭据保护规范
 
 严禁提交真实 token、`.dev.vars`、wrangler 本地配置；测试一律使用显式假 token（如 `test-only-*`）。详见 [docs/security.md](docs/security.md)。

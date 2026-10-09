@@ -104,6 +104,7 @@ Checker regression tests run with `pnpm test`; for focused work use `pnpm exec v
 - Prefer dependency injection at network and storage boundaries.
 - Add meaningful regression coverage for behavior changes, especially authentication, path/URL validation, limits, manifest-last commits, caching and XSS defenses.
 - Write user guides as direct descriptions of product behavior and usable steps. Keep release-specific differences in the [changelog](CHANGELOG.md) and [migration notes](docs/migrations.md).
+- Use short sentences and one main action per procedure step. Define technical terms and use them consistently. Give the next action after an error or warning. Do not promise permanent availability or absolute privacy.
 - Update corresponding translations when changing shared instructions. Preserve old heading anchors when moving linked sections.
 
 Preserve authentication-before-body-read, capability-URL privacy, raw-HTML blocking, MIME magic-byte checks and immutable publication semantics. Use explicit fake credentials in tests. Keep tokens, OAuth credentials, `.dev.vars`, private keys and local Wrangler/config files out of commits.

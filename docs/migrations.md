@@ -51,4 +51,6 @@ Old-domain redirects, if present, are temporary. Recovery must not depend on tha
 5. Verify old credentials cannot publish in Access mode and anonymous reading still works. Keep rollback secrets in an operator-controlled store until the approved rollback window closes; do not keep them as a hidden client fallback.
 6. Revoke retired credentials only after accounting for their remaining users. For rollback, restore a working token-mode Worker first, then remove Access protection and explicitly restore clients; never expose an unauthenticated publishing interval.
 
-Every publish is immutable and creates a new document. Do not retry timeouts, 5xx responses or uncertain outcomes automatically: a write may already have succeeded. Resolve the outcome before deciding to publish again.
+Each publication creates a new immutable document. Do not automatically retry timeouts, 5xx responses or uncertain outcomes: the write may have succeeded.
+If no URL was returned, preserve the error, request time and instance address for the administrator to investigate.
+Keep credentials and private document URLs out of shared logs. Follow [Unknown publication outcome](cli.md#unknown-publication-outcome) before publishing again.

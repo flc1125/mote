@@ -9,7 +9,7 @@
 
 <p align="center">
   <strong>Markdown in, URL out.</strong><br>
-  Publish local Markdown documents as immutable, unguessable, browser-readable web pages.
+  Publish local Markdown as browser-readable web pages with hard-to-guess URLs.
 </p>
 
 <p align="center">
@@ -38,7 +38,7 @@
 - ⚡ **Fast** — Cloudflare Workers + R2 + CDN cache; no database, server-rendered documents
 - 🤖 **Agent-ready** — CLI `--json` output, plus remote and local MCP servers
 
-Availability depends on the instance and storage remaining operational. Viewer updates can change presentation; remote images depend on their hosts. Search-engine directives are not access control or a guarantee against indexing.
+Pages remain available only while the instance and its storage operate. Viewer updates can change presentation; remote images depend on their hosts. Search-engine directives are not access control and do not guarantee exclusion from search results.
 
 ## 🚀 Quick Start
 
@@ -97,12 +97,12 @@ The skill drives the CLI or MCP tools — details: [docs/skill.md](docs/skill.md
 
 ## 📝 Markdown support
 
-Tables, task lists, alerts and foldable admonitions, content tabs, code titles and
-line highlighting, image widths and captions, text highlights, definition lists,
-abbreviations and footnotes. Chinese emphasis compatibility, math formulas and a
-bounded Mermaid subset are also supported. Server-rendered content stays readable
-without JavaScript; fixed, CSP-restricted scripts enhance navigation, code copying,
-image viewing and footnote previews. Document content cannot run scripts.
+- Tables, task lists, alerts, foldable admonitions and content tabs.
+- Code titles and line highlighting; image widths and captions.
+- Text highlights, definition lists, abbreviations, footnotes and Chinese emphasis compatibility.
+- Math formulas and a supported subset of Mermaid diagrams, with processing limits.
+
+Server-rendered content stays readable without JavaScript. Fixed scripts enhance navigation, code copying, image viewing and footnote previews. CSP restricts these scripts. Document content cannot run scripts.
 
 [Compatibility reference and limits](docs/markdown.md) · [Live compatibility specimen](https://mote.pub/PBqEnukxpQrkamSi) · [Markdown source](docs/examples/markdown-compatibility.md)
 

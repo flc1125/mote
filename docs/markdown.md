@@ -14,27 +14,30 @@ remain available when JavaScript is disabled.
 
 ## Support matrix
 
-| Feature                                          | Support                     | Behavior                                                                                                                                                                                                       |
-| ------------------------------------------------ | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Headings, paragraphs, emphasis, quotes and lists | Supported                   | Includes nested content, ordered-list starts and explicit hard breaks.                                                                                                                                         |
-| Tables, strikethrough and automatic links        | Supported                   | Escaped pipes, alignment and inline formatting; wide content can scroll. Absolute http(s) links open in a new tab; fragments and relative links stay in-page. Raw HTML links keep the author's own attributes. |
-| Task lists and footnotes                         | Supported                   | Read-only checkboxes; footnote previews retain full notes and return links.                                                                                                                                    |
-| Highlights and definition lists                  | Supported                   | `==text==` and term/definition blocks; rendered as static semantic HTML.                                                                                                                                       |
-| Abbreviations                                    | Bounded enhancement         | Document-local definitions produce static, case-sensitive abbreviation hints.                                                                                                                                  |
-| Chinese emphasis boundaries                      | Limited extension           | Double-asterisk emphasis next to CJK text or East Asian punctuation; details below.                                                                                                                            |
-| Local Markdown and HTML images                   | Supported                   | CLI uploads referenced assets, including encoded paths; identical assets are deduplicated.                                                                                                                     |
-| Image widths, captions and viewing               | Bounded enhancement         | Explicit widths and image-only captions; image viewing keeps a static fallback.                                                                                                                                |
-| Presentational HTML                              | Allowlisted                 | Includes details/summary, picture, tables, kbd, sub and sup. Arbitrary HTML/CSS is excluded.                                                                                                                   |
-| GitHub-style alerts                              | Supported at document level | NOTE, TIP, IMPORTANT, WARNING and CAUTION. Nested list/quote markers remain ordinary quotes.                                                                                                                   |
-| Extended admonitions                             | Bounded enhancement         | Custom titles, seven types, nested content and native folding with `!!!`, `???` and `???+`.                                                                                                                    |
-| Content tabs                                     | Bounded enhancement         | Independent groups, keyboard switching, linkable panels and a complete static reading fallback.                                                                                                                |
-| Code highlighting                                | Selected languages          | Static coloring for explicitly named languages; otherwise escaped source.                                                                                                                                      |
-| Code titles, line numbers and copying            | Bounded enhancement         | Optional titles and physical-line emphasis; browser copy controls exclude decorative text.                                                                                                                     |
-| YAML front matter                                | Conservative recognition    | Valid metadata at the start is hidden; malformed or ambiguous content stays visible.                                                                                                                           |
-| Mathematical formulas                            | TeX subset                  | Inline and display formulas rendered with KaTeX as native MathML.                                                                                                                                              |
-| Mermaid diagrams                                 | Static subset               | Six diagram families with rendering budgets; source remains inspectable.                                                                                                                                       |
-| MDX, Dataview and executable embeds              | Not supported               | No code execution or editor-specific runtime.                                                                                                                                                                  |
-| Uploaded or raw HTML SVG                         | Not supported               | Generated diagram SVG has a separate sanitizer; it does not enable user SVG uploads.                                                                                                                           |
+**Supported** means the documented format is available. **Partial** means only the listed subset or conditions are supported.
+All supported features remain subject to syntax rules and processing limits. The last column describes the scope and fallback behavior.
+
+| Feature                                          | Support       | Scope and fallback                                                                                                                                                                                                      |
+| ------------------------------------------------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Headings, paragraphs, emphasis, quotes and lists | Supported     | Nested content, ordered-list starts and explicit hard breaks.                                                                                                                                                           |
+| Tables, strikethrough and automatic links        | Supported     | Escaped pipes, alignment and inline formatting. Wide content can scroll. Absolute HTTP(S) links open in a new tab; fragments and relative links stay in-page. Raw HTML links retain only allowlisted author attributes. |
+| Task lists and footnotes                         | Supported     | Read-only checkboxes. Full footnotes and return links remain available, including when previews are unavailable.                                                                                                        |
+| Highlights and definition lists                  | Supported     | `==text==` and term/definition blocks produce static semantic HTML.                                                                                                                                                     |
+| Abbreviations                                    | Partial       | Document-local, case-sensitive definitions. Invalid or over-limit definitions follow ordinary Markdown rules.                                                                                                           |
+| Chinese emphasis boundaries                      | Partial       | Double-asterisk emphasis next to CJK text or East Asian punctuation. Other delimiter forms retain standard behavior.                                                                                                    |
+| Local Markdown and HTML images                   | Supported     | CLI uploads referenced images in supported formats, including encoded paths, and deduplicates identical content.                                                                                                        |
+| Image widths, captions and viewing               | Partial       | Supported width values and image-only captions. Unsupported attributes stay visible; images remain readable without viewer controls.                                                                                    |
+| Presentational HTML                              | Partial       | Allowlisted tags include details/summary, picture, tables, kbd, sub and sup. Unsupported tags and attributes are removed.                                                                                               |
+| GitHub-style alerts                              | Partial       | NOTE, TIP, IMPORTANT, WARNING and CAUTION at document level. Unknown or nested list/quote markers stay ordinary quotes.                                                                                                 |
+| Extended admonitions                             | Partial       | Seven types with plain-text titles, supported nesting and native folding. Invalid or over-limit structures follow ordinary Markdown rules.                                                                              |
+| Content tabs                                     | Partial       | Supported groups switch independently. All panels remain visible without JavaScript; invalid or over-limit syntax follows ordinary Markdown rules.                                                                      |
+| Code highlighting                                | Partial       | Explicitly named supported languages. Unknown languages and over-limit code remain escaped source.                                                                                                                      |
+| Code titles, line numbers and copying            | Partial       | Supported fence parameters add titles and line emphasis. Invalid parameters are ignored; copying excludes decorative text.                                                                                              |
+| YAML front matter                                | Partial       | Recognized, valid metadata at the start is hidden. Malformed or ambiguous blocks stay visible.                                                                                                                          |
+| Mathematical formulas                            | Partial       | Configured TeX subset rendered with KaTeX as MathML. Invalid or over-limit formulas remain escaped source.                                                                                                              |
+| Mermaid diagrams                                 | Partial       | Static subsets of six diagram families. Unsupported or over-limit diagrams remain source; rendered diagrams also retain their source.                                                                                   |
+| MDX, Dataview and executable embeds              | Not supported | No code execution or editor-specific runtime.                                                                                                                                                                           |
+| Uploaded or raw HTML SVG                         | Not supported | Generated diagram SVG has a separate sanitizer and does not enable user SVG uploads.                                                                                                                                    |
 
 ## Publishable specimens
 
@@ -237,14 +240,42 @@ copies the absolute `/{document-id}#section` URL and briefly shows a checkmark,
 without navigating. Otherwise the anchor is a plain in-page link, so the
 address bar picks up the same link. Anchors are hidden when printing.
 
-The banner's **Copy Markdown source** button copies the original document text,
-including front matter, comments, code fences, footnotes and content inside tabs
-or disclosures. Image paths are preserved as written; relative paths may not work
-when pasted elsewhere. Success briefly shows a checkmark and confirmation. If
-clipboard access is unavailable or denied, a read-only source dialog allows manual
-selection and copying; close it with Escape or the close button. The control needs
-JavaScript and is omitted from print. Source text is available to readers even when
-some of it is not displayed in the rendered article.
+## Reading controls
+
+These controls require JavaScript and are hidden when printing. Without JavaScript, the document remains readable with static links.
+
+### Choose a theme
+
+Click the theme button in the page header, then select **Auto**, **Light** or **Dark**.
+Auto follows the system preference. Light and Dark override it.
+The browser saves the choice when local storage is available. Auto removes the saved override.
+
+In the menu, Up/Down moves focus between choices. Enter or Space selects the focused choice; Escape closes the menu.
+Without JavaScript, the page follows the system theme. Printing always uses the light palette.
+
+### Copy the page link
+
+Click **Copy page link** in the page header. It copies the page URL without a query string or fragment.
+Success briefly shows a checkmark. The button is hidden if the browser has no clipboard API.
+If copying fails, copy the URL from the address bar instead.
+For a section-specific link, use a [heading anchor](#heading-links).
+
+### Copy the Markdown source
+
+Click **Copy Markdown source** in the page header. It copies the original document text, including front matter, comments, code fences and footnotes.
+Content inside tabs or disclosures is included. Image paths stay as written; relative paths may not work when pasted elsewhere.
+Success briefly shows a checkmark and confirmation.
+
+If clipboard access is unavailable or denied, browsers with native dialog support offer a read-only source dialog.
+Select and copy the source manually. Close the dialog with Escape or its close button.
+
+**Anyone with the document URL can read the complete source, including content hidden in the rendered article.**
+Check the full source before publishing; hidden metadata and comments are not private.
+
+### Return to the top
+
+The **Back to top** button appears after scrolling approximately two window heights. Activate it to return to the page header.
+It remains available without clipboard access. With reduced motion enabled, the page returns without smooth scrolling.
 
 ## Images and HTML
 
@@ -292,15 +323,18 @@ complete paragraph 8,192; at most 64 candidate paragraphs and 65,536 units per
 document. Attempts consume the budget even when invalid. Unsupported or oversized
 structures follow ordinary Markdown rules.
 
-Loaded standalone large images offer a magnifier in browsers with native dialog
-support. It appears on hover or keyboard focus, and stays visible on touch devices.
-The borderless viewer shows the image and a close icon. When multiple images are available, previous/next arrows and a position counter appear; Left/Right keys also navigate between images. When the image is scaled down to fit the window, click it or press
-Enter/Space while it is focused to switch between original size and fitting the
-window. Images already displayed at original size have no extra zoom interaction. Click the empty backdrop or press Escape to close and restore focus. Enlarged images scroll with
-keyboard or native touch scrolling; browser zoom remains available. Linked images,
-inline images, small icons, `picture` and `srcset` images retain their original
-behavior. At most 64 eligible candidates receive controls. Without JavaScript,
-images and captions remain readable with the browser's native image actions.
+#### Open and use the image viewer
+
+Browsers with native dialog support offer a magnifier for loaded standalone large images.
+It appears on hover or keyboard focus, and stays visible on touch devices. Activate it to open the borderless viewer.
+
+- **Change images:** use the previous/next arrows or Left/Right keys. A counter shows your position when multiple images are available.
+- **Change size:** when an image is scaled down, click it to switch between original size and fitting the window. With image focus, Enter or Space does the same. An image already shown at original size has no extra zoom action.
+- **Move around:** use keyboard or native touch scrolling for enlarged images. Browser zoom remains available.
+- **Close:** click the empty backdrop or close icon, or press Escape. Focus returns to the magnifier.
+
+Linked images, inline images, small icons, `picture` and `srcset` images retain their original behavior.
+At most 64 eligible candidates receive controls. Without JavaScript, images and captions remain readable with the browser's native image actions.
 Printing omits viewer controls. A failed image retains its alternative text.
 
 The first Markdown image keeps default eager loading; later Markdown images use
@@ -562,9 +596,9 @@ rendering service, page script or external font is required.
 
 ## Rendering budgets
 
-These are processing limits, not publication size limits. Exceeding a rendering
-budget keeps the affected source readable. Text counts use JavaScript string units;
-see the README for Markdown and asset upload byte limits.
+Rendering budgets are processing limits, not publication size limits. Exceeding one keeps the affected source readable.
+Text counts use UTF-16 code units, as counted by JavaScript string length: `A` and `中` each use one unit; `😀` uses two.
+These counts are not UTF-8 byte sizes. See [upload limits](protocol.md#大小与数量限额) for Markdown and asset byte limits.
 
 | Feature           | Per item                                                                           | Per document                                                                    |
 | ----------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |

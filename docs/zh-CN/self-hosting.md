@@ -2,9 +2,22 @@
 
 [English](../self-hosting.md)
 
-Mote 运行在 Cloudflare 上：两个 Worker + 一个 R2 bucket，无需管理数据库或服务器。本指南带你从零部署到自己的 `https://<your-domain>`。小规模负载可能在免费额度内运行，详见下方[成本](#成本)与渲染容量说明。
+Mote 使用 Cloudflare 上的两个 Worker 和一个 R2 存储桶，无需管理数据库或服务器。
+本指南说明如何部署自己的 `https://<your-domain>` 实例。
+小规模负载可能在免费额度内运行，详见下方[成本](#成本)与渲染容量说明。
 
-步骤 1–8 部署使用 **token** 鉴权的实例。需要浏览器登录或 Service Token 时，按下方 [Access 部署](#access-部署)及[鉴权指南](authentication.md)操作。安装 npm 包不会部署 Worker；仓库工作流见[部署自动化](#部署自动化)。
+## 选择部署流程
+
+| 目标                                             | 操作流程                                                                   |
+| ------------------------------------------------ | -------------------------------------------------------------------------- |
+| 新建 token 模式实例                              | 按下方步骤 1–8 操作。                                                      |
+| 新建 Access 实例，使用浏览器登录或 Service Token | 按步骤 1–3 和 6 配置资源与 DNS，然后完成 [Access 部署流程](#access-部署)。 |
+| 将已有 token 实例迁移到 Access                   | 按顺序执行[迁移与回退流程](migrations.md#将已有实例迁移到-access)。        |
+
+新建 Access 实例无需先部署 token 模式。
+步骤 1 的鉴权变量使用 [Access 配置](#access-部署)，不要使用 token 配置。
+跳过 token 专用的步骤 4、7 和 8。
+客户端配置见[鉴权指南](authentication.md)。安装 npm 包不会部署 Worker，仓库工作流见[部署自动化](#部署自动化)。
 
 > 下文命令中的 `<your-domain>` 是占位符——替换成你自己的（子）域名，如 `mote.example.com`。
 
@@ -12,7 +25,7 @@ Mote 运行在 Cloudflare 上：两个 Worker + 一个 R2 bucket，无需管理�
 
 - 一个 [Cloudflare 账号](https://dash.cloudflare.com/sign-up)，且域名已作为 **zone** 托管在 Cloudflare（NS 指向 Cloudflare）
 - Node.js 24（CI 开发基线）与根 `package.json` 固定的 pnpm 11.23.0
-- 本仓库的检出：
+- 克隆本仓库并安装依赖：
 
 ```bash
 git clone https://github.com/flc1125/mote.git
@@ -37,7 +50,9 @@ binding = "DOCUMENTS"
 bucket_name = "mote-documents"
 ```
 
-在 `apps/api/wrangler.toml` 中修改已有顶层字段、`[vars]` 和 R2 绑定。将 `MOTE_AUTH_MODE` 改成 `token`，移除本项目 Access 部署使用的 `MOTE_ACCESS_ISSUER`、`MOTE_ACCESS_AUD` 和 `MOTE_ACCESS_HOSTNAME`：
+在 `apps/api/wrangler.toml` 中修改已有顶层字段和 R2 绑定。
+**token 模式**使用下方 `[vars]`，并移除本项目 Access 部署使用的 `MOTE_ACCESS_ISSUER`、`MOTE_ACCESS_AUD` 和 `MOTE_ACCESS_HOSTNAME`。
+**Access 模式**不要使用这些 token 设置，改用自己的 [Access 配置](#access-部署)。
 
 ```toml
 name = "mote-api"
@@ -56,7 +71,8 @@ bucket_name = "mote-documents"
 
 `<your-zone>` 为 DNS zone 名，如 `example.com`。API 占有 `/api/*`，其余路径由 Viewer 处理。两个 Worker 均使用 Routes 与代理 DNS，最具体路由优先；同一主机名下 Routes 优先于 Custom Domains。
 
-**fork 构建检查：**`pnpm build` 会精确核对本项目的生产与测试配置。fork 要使用此命令和 CI，需要在 `scripts/workers/targets.json` 中修改资源名称、域名、zone 与账号，并在 `scripts/workers/config.mjs` 中适配鉴权变量及环境。当前 API 预期配置固定为 Access，只改 Wrangler 域名或切换 token 模式会导致检查失败。步骤 5 的应用级 Wrangler dry-run 可独立于这些项目白名单检查打包结果。
+在 fork 中使用 `pnpm build` 或启用 CI 前，先适配 [fork 构建检查](#fork-构建检查)。
+步骤 5 的应用级 Wrangler dry-run 可独立检查打包结果，不依赖项目目标白名单。
 
 仅 token 模式的 staging 可移除路由并启用 `workers_dev = true`，同时将 API 的 `VIEWER_BASE_URL` 指向 Viewer 域名。Access 模式需使用受保护域名并关闭 workers.dev 和 preview URLs。
 
@@ -122,7 +138,7 @@ curl https://<your-domain>/health          # viewer: {"status":"ok"}
 curl https://<your-domain>/api/health      # API:    {"status":"ok"}
 ```
 
-从仓库根目录使用步骤 4 保存的 token，发布一篇小型合成示例：
+从仓库根目录使用步骤 4 保存的 token，发布一篇内容虚构的小型测试文档：
 
 ```bash
 export MOTE_TOKEN="<你的 token>"
@@ -171,7 +187,11 @@ Header: Authorization: Bearer <你的 token>
 
 1. 配置 Zero Trust 登录源及明确的发布者 Allow 策略。同一应用仅保护 `<your-domain>/api/mcp`、`<your-domain>/api/v1/publish`、`<your-domain>/api/auth/*`；阅读页面、图片、健康检查和必要 OAuth 发现元数据保持公开，不保护整个 Viewer 域名。
 2. 启用 Managed OAuth 与实际客户端需要的 localhost/loopback 回调，不添加任意公网回调通配。核对完整 `/api/mcp` resource 和 issuer。Codex 沿用预注册 public client 与精确回调，见 [MCP 指南（英文）](../mcp.md#codex)。
-3. 按实例风险选择 token 和授权会话时长，在 `oauth_configuration` 下设置 `grant.access_token_lifetime` 和 `grant.session_duration`，不是应用普通会话时长。API 更新必须先 GET、保留其他配置再 PUT，最后独立 GET 比对精确时长，不能只 PUT 局部片段。参考 [Managed OAuth](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/managed-oauth/)。
+3. 按实例风险选择 token 和授权会话时长，在 `oauth_configuration` 下设置 `grant.access_token_lifetime` 和 `grant.session_duration`。这些设置与应用普通会话时长不同。通过 API 更新时：
+   - GET 当前应用配置。
+   - 保留其他字段，将预期变更加入完整配置后 PUT。不能只 PUT 局部片段。
+   - 再次独立 GET 应用配置，比对精确时长。
+   - 参考 [Managed OAuth](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/managed-oauth/)。
 4. 机器发布另加 Service Auth 策略，仅选指定令牌且只关联目标应用；不要允许任意服务令牌。创建、轮换、禁用及环境配置见[机器发布](authentication.md#机器发布)。
 5. 保留 API Worker 的路由与绑定，在相应部署配置中替换鉴权变量（不是直接追加第二个 `[vars]`）：
 
@@ -189,10 +209,30 @@ MOTE_ACCESS_HOSTNAME = "mote.example.com"
 
 `MOTE_ACCESS_HOSTNAME` 是受保护的 API 主机，不是另一个 Viewer 主机。Access 签发 opaque token，Worker 校验 Access 注入的签名断言，不把客户端 token 当 JWT。错误签名、issuer/AUD/时间/身份/主机均拒绝；不信任邮箱头、Cookie、Client ID 或管理 API token。
 
-6. 人工确认部署环境、Worker、路由优先级、R2 后再部署选定配置；测试不可误用默认生产 deploy。已有生产迁移必须另行批准。
-7. 按[CLI 登录/状态/发布/退出](authentication.md#用户登录cli-与本地-stdio)及 Codex 指南复核。匿名发布应拒绝、发现 resource 精确匹配、用户与机器发布成功、无效凭据拒绝、阅读和图片匿名可用、备用主机不能发布。记录版本和结果，不记录秘密值。
+6. 部署前核对环境、Worker 名称、路由优先级和 bucket。
+   使用顶层配置时，先完成 Access 配置，再执行[步骤 5](#5-部署)中的命令。
+   使用命名测试环境时，明确选择该环境，不执行生产命令。
+   修改已有生产部署前，需要独立授权。
+7. 按[CLI 登录/状态/发布/退出](authentication.md#用户登录cli-与本地-stdio)及 [Codex 指南（英文）](../mcp.md#codex)逐项验证：
+   - 匿名发布被拒绝。
+   - 发现元数据中的 resource 等于完整 `/api/mcp` URL。
+   - 获准用户和已配置的 Service Token 可以发布。
+   - 无效凭据被拒绝。
+   - 文档和图片仍可匿名读取。
+   - 备用 Worker 主机不能发布。
+   - 记录版本和结果，不记录凭据值。
 
 已有 token 实例请按[迁移与回退步骤](migrations.md#将已有实例迁移到-access)操作，不留无鉴权窗口。凭据存储、兼容性与会话限制见[鉴权指南](authentication.md)。OAuth 登录授权不等于生产部署或配置变更授权。
+
+## fork 构建检查
+
+`pnpm build` 会精确核对本项目的生产与测试配置。在 fork 中使用此命令或启用 CI 前：
+
+1. 在 `scripts/workers/targets.json` 中填写自己的资源名称、域名、zone 与账号。
+2. 在 `scripts/workers/config.mjs` 中适配鉴权变量及环境。
+
+当前 API 预期配置固定为 Access。只改 Wrangler 域名或切换 token 模式会导致检查失败。
+步骤 5 的应用级 Wrangler dry-run 可以独立检查打包结果，不依赖这些项目白名单。
 
 ## 部署自动化
 
@@ -200,7 +240,9 @@ MOTE_ACCESS_HOSTNAME = "mote.example.com"
 
 资源、路由和鉴权审核完成后，再将两个生产 Worker 分别连接到自己的仓库。按[Workers Builds 预期设置](deployment.md#workers-builds-预期设置)使用 workspace 根目录 `/`、空 build command 和对应应用的 filtered Wrangler deploy command。构建凭据与构建变量配置在 Cloudflare，运行时 Secret 独立管理。步骤 5 的命令仍可用于首次自托管和明确获准的人工操作。
 
-启用 CI 前先按步骤 1 适配 fork 构建检查。CLI Release 代码还固定了 `flc1125/mote` 和 `mote-cli`，在 fork 启用包发布前需审核 `scripts/release/` 与 npm Trusted Publishing。
+启用 CI 前先适配 [fork 构建检查](#fork-构建检查)。
+CLI Release 代码还将仓库名和包名固定为 `flc1125/mote` 和 `mote-cli`。
+在 fork 中启用包发布前，审核 `scripts/release/` 与 npm Trusted Publishing。
 
 两个 Worker 最终必须对应同一个预期源码 SHA；独立上线期间保持向后兼容。验收、故障、重试和回退见[部署操作手册](deployment.md)。Workers Builds 不代建 DNS、R2 或 Access 策略；本生产方案也不自动部署独立的 `access-test` 环境。
 

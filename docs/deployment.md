@@ -53,14 +53,29 @@ Use this checklist for changes to Markdown syntax or reading interactions. Keep
 version-specific behavior and upgrade instructions in [Changelog](../CHANGELOG.md);
 the [Markdown reference](markdown.md) describes the complete supported format.
 
-- [ ] Record the intended source commit and successful CI checks, including documentation, Worker dry-runs and CLI package verification. Local browser checks complement CI; record each browser, viewport and unverified device or interaction.
-- [ ] Check both language guides, the support matrix and [publishable specimens](markdown.md#publishable-specimens) against the implemented syntax, budgets and fallbacks. Add an example when a new capability needs one.
-- [ ] Check the CLI/local stdio MCP and Viewer together when shared parsing changes. Include images inside the affected structures and image-like text in code or plain-text definitions; verify asset discovery, deduplication and unchanged source bytes. Updating a Viewer cannot recover assets omitted during an earlier publication.
-- [ ] Exercise representative mixed content: folded sections, tabs, code copying, images and footnotes. Check keyboard navigation and focus return, narrow and dark views, no-JavaScript reading, printing, deep links and matching GET/HEAD CSP. Record partial coverage explicitly.
-- [ ] Refresh affected, useful captures in [the screenshot inventory](assets/screenshots/README.md), including their source and validation limits; preserve brand assets in `docs/assets/`. Republish specimens when their source or bundled assets change, and record the new URLs. Viewer styling alone does not require republication; verify existing pages after rollout.
-- [ ] Record the source, version and license of added dependencies or copied resources, and verify required notices in the actual distributed artifacts.
-- [ ] Before a CLI release, choose the release version, move the relevant `Unreleased` entries into a dated version section and match the CLI package version and stable tag. Include client/Viewer upgrade order and changes to existing documents' rendering.
-- [ ] Verify the two Worker rollouts independently using [Validate a rollout](#validate-a-rollout), and record the installed publisher version used for any publishing checks. A merged PR, a successful dry-run or a CLI release does not prove the production revisions or behavior.
+- [ ] Record the intended source commit and successful CI checks.
+      Include documentation checks, Worker dry-runs and CLI package verification.
+      Local browser checks complement CI; record each browser, viewport and unverified device or interaction.
+- [ ] Compare both language guides, the support matrix and [publishable specimens](markdown.md#publishable-specimens) with the implementation.
+      Check syntax, processing limits and fallback behavior. Add an example when a new capability needs one.
+- [ ] Test the CLI/local stdio MCP and Viewer together when shared parsing changes.
+      Include images inside affected structures and image-like text in code or plain-text definitions.
+      Verify image discovery, deduplication and unchanged source bytes. A Viewer update cannot recover assets omitted during an earlier publication.
+- [ ] Test mixed content: folded sections, tabs, code copying, images and footnotes.
+      Check keyboard navigation and focus return, narrow and dark views, no-JavaScript reading, printing and deep links.
+      Verify matching GET/HEAD CSP. Record partial coverage explicitly.
+- [ ] Update affected, useful captures in [the screenshot inventory](assets/screenshots/README.md).
+      Record their source and validation limits. Preserve brand assets in `docs/assets/`.
+      Republish specimens when their source or bundled assets change, and record the new URLs.
+      Viewer styling alone does not require republication; verify existing pages after rollout.
+- [ ] Check licenses for added dependencies or copied resources.
+      Record each source, version and license. Verify required notices in the actual distributed artifacts.
+- [ ] Prepare the CLI release version before tagging.
+      Move relevant `Unreleased` entries into a dated version section. Match the CLI package version and stable tag.
+      Explain the client/Viewer upgrade order and rendering changes to existing documents.
+- [ ] Verify both Worker rollouts independently using [Validate a rollout](#validate-a-rollout).
+      Record the installed publisher version used for publication checks.
+      A merged PR, successful dry-run or CLI release does not prove the production revisions or behavior.
 
 ## Failed builds, retry and rollback
 
@@ -71,7 +86,7 @@ Inspect the affected Worker's Build log and current deployment first. Record the
 | Initialization, install or build failure | Resolve the prerequisite; read the active version rather than inferring it from the failed Build alone. |
 | Only one Worker deployed                 | Inspect both versions and compatibility; there is no shared transaction or automatic pair rollback.     |
 | Deploy timed out or outcome is unclear   | Read back the active version and traffic before retrying; deployment may have succeeded.                |
-| Builds succeeded but smoke checks failed | Treat the rollout as unaccepted; investigate routing, runtime behavior and edge challenges.             |
+| Builds succeeded but basic checks failed | Do not accept the rollout. Check routing, runtime behavior and Cloudflare security challenges.          |
 | A newer commit is already deployed       | Review whether the older Build is still appropriate before retrying.                                    |
 
 A maintainer performs retries and rollbacks in Cloudflare Dashboard after reviewing the exact target. Before retrying, recheck the current commands, branch, variables and credentials; do not assume the original settings are frozen. Before rollback, select known compatible Worker versions and account for pending automatic builds that could supersede recovery. Prefer a reviewed source correction through a PR when appropriate.

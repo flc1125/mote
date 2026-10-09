@@ -51,13 +51,50 @@ https://mote.example.com/7Vk3mQ9x2NFaP4Ls
 
 ## 3. XSS 与内容安全
 
-渲染管线（`@mote/renderer`）的多层防护：
+渲染管线（`@mote/renderer`）通过 HTML 净化、URL 校验和严格 CSP 阻止文档内容执行脚本。
 
-1. **Raw HTML 白名单净化**：Markdown 中的 HTML 经 `packages/renderer/src/sanitize.ts` 的允许名单净化器（基于 htmlparser2 真实词法解析）处理——仅保留展示性标签（`p[align]`、`picture/source/img`、`details/summary`、`sub/sup/kbd` 等）与逐标签审核过的属性；`script/iframe/svg/form/style/on*/class/id` 等一律剥除。未配对标签在 token 流级别保持嵌套正确；
-2. **危险协议拦截**：`javascript:`、`data:`、`vbscript:`、`file:`、协议相对 URL 及其反斜杠变体被拦截，覆盖 Markdown 链接和图片，以及 HTML `href`、`src` 与 `srcset`；
-3. **仅可信增强脚本**：正文、公式和图表仍在服务端生成。含标题、折叠区或标签组的文档附带固定的 `TOC_SCRIPT`，增强目录折叠、章节定位、标签切换和键盘/焦点管理，并在链接到隐藏内容时激活目标面板并展开必要的折叠祖先、在打印时展开折叠正文并显示所有标签面板；有可复制围栏时附带固定的 `COPY_SCRIPT`，仅在用户激活按钮后复制代码文本。有图片时附带固定的 `IMAGE_SCRIPT`，为独立大图提供原生 dialog 查看器；图片 URL 复用已有安全地址，用户文本通过 DOM 文本属性赋值，不能拼入脚本或 HTML。查看原图仍受 `img-src` 限制；不使用外部脚本或 fetch。含脚注引用时附带固定的 `FOOTNOTE_SCRIPT`：仅用 DOM API 重建已净化正文的静态子集，不复制 ID、ID 引用、控件或运行时状态，不解析 HTML 字符串；复制受节点、深度、文字/属性和图片预算限制，复杂内容保留原脚注跳转。禁用脚本时，全部标签面板可见，静态目录锚点、代码标题和重点行仍可使用；
-   文档页固定的 `THEME_SCRIPT` 与 `PAGE_SCRIPT` 提供主题和页面工具。复制 Markdown 使用 HTML 中独立携带的 UTF-8 Base64 数据，用户原文不会拼入可执行脚本；回退框仅通过 textarea 的 `value` 赋值，不解析原文 HTML。原文包括 front matter、注释及未在正文显示的内容，持有文档 URL 的读者可获取；编码只是安全传输表示，不是加密。复制不发起网络请求，图片路径保持原样。
-4. **严格 CSP**：
+### 原始 HTML 净化
+
+Markdown 中的 HTML 经 `packages/renderer/src/sanitize.ts` 的白名单净化器处理，使用 htmlparser2 做词法解析。
+只保留展示性标签及逐标签审核过的属性，例如 `p[align]`、`picture/source/img`、`details/summary` 和 `sub/sup/kbd`。
+`script/iframe/svg/form/style` 等危险标签，以及 `on*`、`class`、`id` 等用户属性均被移除。
+未配对标签在 token 流级别修正，保持输出嵌套正确。
+
+### 危险 URL 拦截
+
+`javascript:`、`data:`、`vbscript:`、`file:`、协议相对 URL 及其反斜杠变体均被拦截。
+校验覆盖 Markdown 链接和图片，以及 HTML 的 `href`、`src` 与 `srcset`。
+
+### 仅可信增强脚本
+
+正文、公式和图表仍在服务端生成。页面只附带固定的第一方脚本，用户内容不能修改脚本：
+
+| 脚本              | 插入条件               | 用途                                       |
+| ----------------- | ---------------------- | ------------------------------------------ |
+| `TOC_SCRIPT`      | 有目录、折叠区或标签组 | 目录、章节定位、标签切换、键盘与焦点管理   |
+| `COPY_SCRIPT`     | 有可复制的代码围栏     | 用户激活按钮后复制代码文本                 |
+| `IMAGE_SCRIPT`    | 有图片                 | 为符合条件的独立大图提供原生 dialog 查看器 |
+| `FOOTNOTE_SCRIPT` | 有脚注引用             | 在原引用旁显示脚注预览                     |
+| `THEME_SCRIPT`    | 每个文档页             | 应用和保存主题选择                         |
+| `PAGE_SCRIPT`     | 每个文档页             | 复制页面链接、复制 Markdown 和返回顶部     |
+
+导航脚本在链接到隐藏内容时，激活目标标签面板并展开包含目标的折叠区。
+打印时，它展开折叠正文并显示全部标签面板。禁用 JavaScript 后，全部面板可见，静态目录锚点、代码标题和重点行仍可使用。
+
+图片查看器复用已有安全 URL，查看原图仍受 `img-src` 限制，不使用外部脚本或 fetch。
+用户文本通过 DOM 文本属性赋值，不拼入脚本或 HTML。
+
+脚注预览仅用 DOM API 重建已净化正文的静态子集，不解析 HTML 字符串。
+它不复制 ID、ID 引用、控件或运行时状态。复制过程受节点数、深度、文字与属性长度、图片数量限额约束。
+复杂或超限内容保留原脚注跳转。
+
+复制 Markdown 使用 HTML 中独立携带的 UTF-8 Base64 数据，不把用户原文拼入可执行脚本。
+手动复制框通过 textarea 的 `value` 赋值，不解析原文 HTML。复制不发起网络请求，图片路径保持原样。
+
+**持有文档 URL 的读者可以获取完整原文，包括 front matter、注释和未显示在正文中的内容。**
+Base64 是传输编码，不是加密。发布前必须检查完整源文件，不能只检查渲染后的正文。
+
+### 严格 CSP
 
 ```text
 default-src 'none'; img-src 'self' https: http:; style-src 'unsafe-inline';
@@ -65,7 +102,12 @@ object-src 'none'; frame-src 'none'; script-src 'sha256-<TOC_SCRIPT 的 SHA-256 
 base-uri 'none'; form-action 'none'; frame-ancestors 'none'
 ```
 
-Viewer 在首次请求时计算固定脚本集合的哈希并复用，页面按需插入脚本，GET 与 HEAD 的策略一致，HEAD 不必读取正文。`script-src` 不允许 `self`、`unsafe-inline`、`unsafe-eval` 或外部源；首页的复制脚本使用独立哈希，不与文档页互相授权。基础 `documentSecurityHeaders()` 保留全禁脚本策略，文档响应显式使用 `tocDocumentSecurityHeaders()`。
+Viewer 在首次请求时计算固定脚本集合的哈希并复用，页面按需插入脚本。
+GET 与 HEAD 的策略一致，HEAD 不必读取正文。
+
+`script-src` 不允许 `self`、`unsafe-inline`、`unsafe-eval` 或外部源。
+首页的复制脚本使用独立哈希，不与文档页互相授权。
+基础 `documentSecurityHeaders()` 禁止所有脚本；文档响应显式使用 `tocDocumentSecurityHeaders()` 授权固定脚本哈希。
 
 外加 `X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`。
 
@@ -77,18 +119,34 @@ Viewer 在首次请求时计算固定脚本集合的哈希并复用，页面按�
 | ---------- | ------------------------------------------------------------------------------------------- |
 | 发布鉴权   | token 模式使用原生 HMAC 验证避免直接字符串比较；Access 模式验证受信签名断言，均先于正文读取 |
 | 图片白名单 | 仅 png/jpeg/webp/gif/avif，**按 Magic Bytes 判定**，不信任扩展名                            |
-| 排除 SVG   | SVG 可携带脚本（Active Content），V1 直接拒绝（415）                                        |
+| 排除 SVG   | SVG 可携带脚本等主动内容，上传时直接拒绝（415）；生成的图表 SVG 使用独立净化器              |
 | 大小限额   | Markdown ≤ 2 MiB、单图 ≤ 10 MiB、包 ≤ 20 MiB、上传资产 ≤ 50 个（413）                       |
 | 原子发布   | `manifest.json` 最后写入；写入中途失败不会产生半可见文档（Viewer 只认 manifest）            |
 | ID 冲突    | Document ID 撞库时服务端内部重试，不对客户端暴露 409                                        |
 
-CLI 侧：通过 Markdown AST 和 HTML tokenizer 收集图片引用，包含 `img src`、`img srcset` 与 `source srcset`；已识别 front matter 和数学源码中的图片语法不参与收集。只读取实际引用的文件，不扫描整个目录。图片须存在、为 regular file 且通过 MIME 检测，随后按 SHA-256 去重；上传前统一验证文档包限额。1 MiB = 1,048,576 字节，精确限额见[协议](protocol.md#大小与数量限额)。
+CLI 通过 Markdown AST 和 HTML tokenizer 收集图片引用，包括 `img src`、`img srcset` 与 `source srcset`。
+已识别的 front matter 和数学源码中的图片语法不参与收集。CLI 只读取实际引用的文件，不扫描目录。
+
+图片必须存在、为普通文件，并通过 MIME 检测。CLI 按 SHA-256 去重，上传前统一验证文档包限额。
+1 MiB = 1,048,576 字节，精确限额见[协议](protocol.md#大小与数量限额)。
 
 ## 5. 发布鉴权与凭据管理
 
-服务端 `MOTE_AUTH_MODE=token|cloudflare-access`，省略时兼容回退到 token，未知模式拒绝；仓库中的生产部署配置显式选择 `cloudflare-access`。客户端选择 `token|oauth|service`，不可与服务端枚举混用；客户端要求、配置与兼容性见[鉴权指南](zh-CN/authentication.md)。
+服务端 `MOTE_AUTH_MODE` 接受 `token` 或 `cloudflare-access`。服务端省略该配置时，使用 token 模式；未知模式被拒绝。
+仓库生产部署配置显式选择 `cloudflare-access`。
 
-Access 模式由 Cloudflare 校验 OAuth 或 Service Token 双凭据、注入 `Cf-Access-Jwt-Assertion`；Worker 仅接受配置的 HTTPS API 主机并校验签名、issuer、AUD、时间、类型与明确身份。用户为非空 sub；机器为合法 common_name 且空 sub，无歧义混用。旧 `MOTE_TOKEN`、邮箱头、Cookie、客户端自报身份及管理 API token 均不能绕过校验。公开阅读仍是 capability URL，不因发布者鉴权升级而要求读者登录。
+客户端接受 `token`、`oauth` 或 `service`，不能使用服务端取值 `cloudflare-access`。
+客户端的模式选择规则与服务端不同，详见[鉴权指南](zh-CN/authentication.md)。
+
+Access 模式由 Cloudflare 校验 OAuth token，或 Service Token 的 Client ID 和 Client Secret，再注入 `Cf-Access-Jwt-Assertion`。
+Worker 仅接受配置的 HTTPS API 主机，校验断言签名、issuer、AUD、时间、类型和身份。
+
+- 用户身份必须具有非空 `sub`。
+- 机器身份必须具有合法 `common_name` 和空 `sub`。
+- 类型与身份不能含混或混用。
+
+旧 `MOTE_TOKEN`、邮箱头、Cookie、客户端自报身份及管理 API token 均不能绕过校验。
+公开阅读仍使用 capability URL，不因发布者鉴权升级而要求读者登录。
 
 ### 兼容的静态 token 模式
 
@@ -104,18 +162,30 @@ Access 模式由 Cloudflare 校验 OAuth 或 Service Token 双凭据、注入 `C
 
 远程 MCP、REST 发布和 `/api/auth/session` 共用部署模式的鉴权入口，先鉴权再读取正文/访问存储：
 
-- Token **只能出现在 Authorization 请求头**（HTTPS），绝不放进 URL query、工具参数或聊天上下文；
+- 静态 token 和 OAuth token **只能出现在 Authorization 请求头**（HTTPS），绝不放进 URL query、工具参数或聊天上下文；
+- Service Token 使用 `CF-Access-Client-Id` 和 `CF-Access-Client-Secret` 请求头，同样不得放进 URL、工具参数或聊天上下文；
 - 含静态 header 的客户端配置须按秘密保护；Access OAuth 交给客户端自己的凭据存储，不复制到聊天或另一客户端；
 - 该端点无状态、无 session：每次请求独立鉴权，不签发任何会话凭证；
 - Access 泄露时撤销相应用户/应用授权或禁用 Service Token；静态 token 泄露时轮换 Worker secret 并更新其客户端。应用级撤权会影响其他会话，必须先确认范围。
 
 ### 本地存储、会话与失效
 
-Mote CLI/stdio 共享自身的按 API 目标、issuer/resource 绑定的凭据与进程间刷新锁，不读取 Codex Keychain。默认系统凭据库已验证 macOS Keychain；失败不会自动降级。`--credential-store file` 显式选择私有明文，目录 0700、文件 0600、当前用户所有；元数据和锁也不得擅自删除。Linux/Windows 未实机验收。
+Mote CLI/stdio 共享按 API 目标、issuer 和 resource 绑定的凭据，以及进程间刷新锁。它们不读取 Codex Keychain。
+默认系统凭据库已验证 macOS Keychain，失败时不会自动降级。Linux/Windows 未实机验收。
 
-OAuth logout 删除本地秘密并保留无秘密选择标记，阻止旧 token 自动复活；不执行远端撤权、不删静态配置、不禁用 Service Token。机器模式须显式选择，三项环境配置缺一/目标不同即拒绝；每次发送双凭据，不复用 cookie。`status --offline` 不是在线有效性证明，授权会话到期时间未知时返回 null。
+`--credential-store file` 显式选择私有明文文件。在已验证的 macOS 环境中，目录权限必须为 `0700`，文件权限为 `0600`，且归当前用户所有。
+即使凭据保存在 Keychain 中，也不得擅自删除元数据和锁。
 
-长生命周期增加泄露暴露窗口，应按实例风险选择并验证撤权和恢复流程；验证边界见[会话与撤权](zh-CN/authentication.md#会话时长退出与撤权)。并发刷新串行，未知交换或发布结果不自动重放。退出、撤权、禁用均不删除已发布内容；URL 泄露仍需按阅读能力凭证泄露处理。
+OAuth logout 删除本地凭据，但保留不含凭据的模式选择标记，阻止旧 token 自动生效。
+它不撤销远程授权，不删除静态配置，也不禁用 Service Token。
+机器模式须明确选择。service 配置必须包含实例源地址、Client ID 和 Client Secret，并与发布目标匹配。
+配置不完整或目标不匹配时，拒绝发布。每次请求发送 Client ID 和 Client Secret，不复用 Cookie。
+
+`status --offline` 不证明凭据在线有效。授权会话到期时间未知时返回 `null`。
+并发刷新使用锁串行执行，结果未知的凭据交换或发布不会自动重放。发布结果未知时，按 [CLI 排错步骤](zh-CN/cli.md#发布结果未知)处理。
+
+较长有效期会延长被盗凭据可能仍可使用的时间。按实例风险选择有效期，并验证撤权与恢复流程，验证范围见[会话与撤权](zh-CN/authentication.md#会话时长退出与撤权)。
+退出、撤权和禁用凭据都不会删除已发布内容。文档 URL 泄露应按阅读凭证泄露处理。
 
 `mote login` 的回环回调页（`http://127.0.0.1:<port>/oauth/callback`）是纯静态品牌页：不回显任何回调参数（state/code/error 都不会出现在 HTML 中），CSP 为 `default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'`——仅在默认全禁之上允许内联样式，并保持 `Cache-Control: no-store` 与 host/state 校验不变。
 
@@ -139,9 +209,11 @@ OAuth logout 删除本地秘密并保留无秘密选择标记，阻止旧 token 
 - Markdown 内容、资产内容；
 - 完整 Secret URL 到第三方日志系统（Document ID 仅可用于排错，接入第三方平台前需重新评估敏感等级）。
 
-## 7. 贡献者秘钥规范
+<a id="7-贡献者秘钥规范"></a>
 
-面向仓库贡献者的硬性规则（与本项目的运行时秘钥管理互补）：
+## 7. 贡献者凭据保护规范
+
+以下规则适用于仓库贡献者，与运行时凭据管理要求相互补充：
 
 - **严禁提交**：真实 token（任何环境/任何实例的）、`.dev.vars`、wrangler 本地配置（`~/Library/Preferences/.wrangler` 或 `~/.wrangler` 下内容）、`~/.config/mote/config.json`、任何 `*.pem` / 私钥；
 - **测试凭证**：一律使用显式假 token，命名必须自证其假（如 `test-only-publish-token-not-a-secret`），不得使用任何真实凭证的片段；
