@@ -4,6 +4,7 @@ import { sanitizeDiagramSvg } from './diagram-svg.js';
 import { renderMarkdown } from './markdown.js';
 import { normalizeFlowchart } from './flowchart.js';
 import { parseMermaid } from 'beautiful-mermaid';
+import { inspectHtml } from './test-helpers/html.js';
 
 const render = (source: string) => renderMarkdown(`~~~mermaid\n${source}\n~~~`, new Map()).html;
 const samples = [
@@ -66,6 +67,48 @@ describe('static Mermaid subset', () => {
   it('marks codeCopy so the page template inlines COPY_SCRIPT', () => {
     const { codeCopy } = renderMarkdown('~~~mermaid\nflowchart LR\n A-->B\n~~~', new Map());
     expect(codeCopy).toBe(true);
+  });
+  it.each([
+    {
+      label: '<SCRIPT>alert(1)</SCRIPT>',
+      escaped: '&lt;SCRIPT&gt;alert(1)&lt;/SCRIPT&gt;',
+    },
+    {
+      label: '<img src=x onerror=alert(1)>',
+      escaped: '&lt;img src=x onerror=alert(1)&gt;',
+    },
+    {
+      label: '<foreignObject><script>alert(1)</script></foreignObject>',
+      escaped: '&lt;foreignObject&gt;&lt;script&gt;alert(1)&lt;/script&gt;&lt;/foreignObject&gt;',
+    },
+  ])('keeps hostile Mermaid label $label inert in SVG and source', ({ label, escaped }) => {
+    const source = `flowchart LR\n A["${label}"]-->B`;
+    const html = render(source);
+    const inspection = inspectHtml(html);
+    expect(
+      inspection.elements.filter(
+        ({ tag, attributes }) => tag === 'svg' && attributes['aria-label'] === 'Mermaid diagram',
+      ),
+    ).toHaveLength(1);
+    expect(inspection.scripts).toEqual([]);
+    expect(
+      inspection.elements.filter(({ tag }) =>
+        ['script', 'style', 'foreignobject', 'image', 'a', 'iframe', 'object', 'embed'].includes(
+          tag.toLowerCase(),
+        ),
+      ),
+    ).toEqual([]);
+    for (const { attributes } of inspection.elements) {
+      expect(
+        Object.keys(attributes).filter(
+          (name) =>
+            name.toLowerCase().startsWith('on') ||
+            ['src', 'href', 'xlink:href', 'style'].includes(name.toLowerCase()),
+        ),
+      ).toEqual([]);
+    }
+    expect(html).toContain(`A[&quot;${escaped}&quot;]--&gt;B`);
+    expect(inspection.text).toContain(source);
   });
   it('allocates diagram-local marker IDs and renders deterministically', () => {
     const source = '~~~mermaid\nflowchart LR\n A-->B\n~~~\n\n~~~mermaid\nflowchart LR\n A-->B\n~~~';
@@ -159,5 +202,16 @@ describe('generated SVG isolation', () => {
     );
     expect(svg).toContain('Safe');
     expect(svg).not.toMatch(/onload|style=|href=|https:|javascript:|<style/);
+    const inspection = inspectHtml(svg!);
+    expect(inspection.scripts).toEqual([]);
+    for (const { attributes } of inspection.elements) {
+      expect(
+        Object.keys(attributes).filter(
+          (name) =>
+            name.toLowerCase().startsWith('on') ||
+            ['src', 'href', 'xlink:href', 'style'].includes(name.toLowerCase()),
+        ),
+      ).toEqual([]);
+    }
   });
 });

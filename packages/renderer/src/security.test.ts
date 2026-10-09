@@ -5,8 +5,13 @@ import type { DocumentManifest } from '@mote/protocol';
 import { render } from './index.js';
 import { THEME_SCRIPT } from './theme-script.js';
 import { PAGE_SCRIPT } from './page-script.js';
+import { inspectHtml } from './test-helpers/html.js';
 
 const DOCUMENT_ID = '7Vk3mQ9x2NFaP4Ls';
+const EXPECTED_PAGE_SCRIPTS = [
+  { attributes: {}, text: THEME_SCRIPT },
+  { attributes: {}, text: PAGE_SCRIPT },
+];
 
 const manifest = {
   version: 1,
@@ -33,13 +38,76 @@ function articleContent(html: string): string {
 describe('XSS security tests (§57)', () => {
   it('<script>alert(1)</script> must not become an element', () => {
     const html = renderAttack('<script>alert(1)</script>');
-    // The only script on the page is the fixed first-party theme script.
-    expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      PAGE_SCRIPT,
-    ]);
+    // Only the exact fixed first-party scripts, with no extra attributes.
+    expect(inspectHtml(html).scripts).toEqual(EXPECTED_PAGE_SCRIPTS);
     // The allowlist sanitizer drops the script subtree entirely.
     expect(html).not.toContain('alert(1)');
+  });
+
+  it.each([
+    ['uppercase tags', '<SCRIPT>alert(1)</SCRIPT>'],
+    ['mixed-case tags and attributes', '<ScRiPt type="text/javascript">alert(1)</ScRiPt>'],
+    ['an abnormal closing tag', '<script>alert(1)</script ignored>'],
+    ['the comment end-bang variant', '<!-- harmless --!><SCRIPT>alert(1)</SCRIPT>'],
+    ['an empty script', '<script></script>'],
+    ['an external script', '<script src="https://example.invalid/a.js"></script>'],
+    ['an HTML self-closing script', '<script/>alert(1)</script>'],
+  ])('keeps %s inert with only the trusted page scripts', (_name, source) => {
+    const html = renderAttack(source!);
+    const page = inspectHtml(html);
+    const article = inspectHtml(articleContent(html));
+    expect(page.scripts).toEqual(EXPECTED_PAGE_SCRIPTS);
+    expect(article.scripts).toEqual([]);
+    expect(
+      article.elements.filter(({ tag }) =>
+        ['script', 'style', 'iframe', 'object', 'embed', 'svg', 'math', 'form'].includes(
+          tag.toLowerCase(),
+        ),
+      ),
+    ).toEqual([]);
+    for (const { attributes } of page.elements) {
+      expect(Object.keys(attributes).filter((name) => name.toLowerCase().startsWith('on'))).toEqual(
+        [],
+      );
+    }
+  });
+
+  it('strips mixed-case event handlers without rejecting legitimate links or page icons', () => {
+    const html = renderAttack(
+      '<div ONCLICK="attack()"><a href="https://example.invalid/" OnMouseOver="attack()">Safe</a></div>',
+    );
+    const page = inspectHtml(html);
+    const article = inspectHtml(articleContent(html));
+    expect(page.scripts).toEqual(EXPECTED_PAGE_SCRIPTS);
+    expect(article.elements).toEqual([
+      { tag: 'div', attributes: {} },
+      { tag: 'a', attributes: { href: 'https://example.invalid/' } },
+    ]);
+    expect(page.elements.some(({ tag }) => tag === 'svg')).toBe(true);
+    for (const { attributes } of page.elements) {
+      expect(Object.keys(attributes).filter((name) => name.toLowerCase().startsWith('on'))).toEqual(
+        [],
+      );
+    }
+  });
+
+  it.each([
+    {
+      name: 'inline SVG',
+      source:
+        '<SvG OnLoAd="attack()"><foreignObject><ScRiPt>attack()</ScRiPt></foreignObject></SvG>',
+      expected: { elements: [{ tag: 'p', attributes: {} }], scripts: [], text: 'attack()\n' },
+    },
+    {
+      name: 'block iframe',
+      source: '<iframe src="https://example.invalid/"><SCRIPT>attack()</SCRIPT></iframe>',
+      expected: { elements: [], scripts: [], text: '' },
+    },
+  ])('neutralizes $name without adding executable elements', ({ source, expected }) => {
+    const html = renderAttack(source);
+    const article = inspectHtml(articleContent(html));
+    expect(inspectHtml(html).scripts).toEqual(EXPECTED_PAGE_SCRIPTS);
+    expect(article).toEqual(expected);
   });
 
   it('[click](javascript:alert(1)) must not produce a javascript URL', () => {
