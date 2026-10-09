@@ -1,6 +1,7 @@
 # Mote MCP Guide
 
-Mote offers two MCP integrations with the same goal: publish Markdown → get a URL. Both share one publish pipeline with the CLI — there is no separate upload logic.
+Mote offers remote and local MCP integrations. Both publish Markdown and return a URL.
+Local MCP reuses the CLI publishing pipeline. Remote MCP reuses the API Worker's validation and storage pipeline.
 
 |          | Remote MCP                                            | Local MCP (stdio)                                            |
 | -------- | ----------------------------------------------------- | ------------------------------------------------------------ |
@@ -13,7 +14,11 @@ Production `mote.pub` uses Access. Client/platform verification is listed above;
 
 ## Remote MCP
 
-A **stateless** Streamable HTTP endpoint (no MCP sessions, no SSE): `initialize`, `tools/list`, `tools/call` over POST; authenticated `GET` returns 405 and notifications return 202. Authentication runs before protocol handling, so anonymous requests to protected paths fail first. OAuth authorization sessions belong to Access, not the MCP Worker.
+The Streamable HTTP endpoint is **stateless**: it has no MCP sessions or SSE stream.
+It accepts `initialize`, `tools/list` and `tools/call` over POST. Authenticated GET requests return 405; notifications return 202.
+
+Authentication runs before protocol handling, so anonymous requests to protected paths fail first.
+OAuth authorization sessions belong to Access, not the MCP Worker.
 
 ### Tool: `publish_markdown`
 
@@ -24,33 +29,10 @@ A **stateless** Streamable HTTP endpoint (no MCP sessions, no SSE): `initialize`
 
 Returns `{ id, url }`.
 
-### Static-token deployments (legacy)
-
-The following is a protocol configuration example, not a compatibility claim for every client. Protect files containing credentials and never commit real header values.
-
-```json
-{
-  "mcpServers": {
-    "mote": {
-      "type": "http",
-      "url": "https://mote.example.com/api/mcp",
-      "headers": { "Authorization": "Bearer <your-token>" }
-    }
-  }
-}
-```
-
 ### Codex
 
-For your own legacy token deployment (replace the example host; production does not accept static tokens):
-
-```bash
-codex mcp add mote --url https://mote.example.com/api/mcp --bearer-token-env-var MOTE_TOKEN
-```
-
-This reads the token from the `MOTE_TOKEN` environment variable, so the secret never lands in `config.toml`.
-
-For an **Access-enabled** instance, remove `bearer_token_env_var` and any static Authorization headers from this server entry. Configure the existing public client and exact registered callback (all values below are placeholders):
+For an **Access-enabled** instance, remove `bearer_token_env_var` and any static Authorization headers from the server entry.
+Configure the existing public client and exact registered callback. All values below are placeholders:
 
 ```toml
 [mcp_servers.mote]
@@ -64,12 +46,43 @@ callback_port = 65432
 
 ```bash
 codex mcp login mote
-codex mcp logout mote
 ```
 
 Get the actual callback from your Codex setup; do not invent or copy another server's callback ID. Match both the registered URI and listening port. Use the MCP endpoint (including `/api/mcp`) as the OAuth resource. This configuration uses a pre-registered public client; do not add a duplicate `oauth_resource` override. Follow the [official Codex callback guidance](https://learn.chatgpt.com/zh-Hans/docs/extend/mcp).
 
-Codex stores its own tokens; Mote CLI/stdio must not read or copy them. MCP logout does not log out the Codex account or revoke Access grants. Verify login, tool discovery, publishing and anonymous reading against your own instance; use a non-sensitive document because each publish creates an immutable document with no user-facing deletion endpoint.
+Codex stores its own tokens; Mote CLI/stdio must not read or copy them.
+Use `codex mcp logout mote` to remove that MCP login. This does not log out the Codex account or revoke Access grants.
+
+Verify login, tool discovery, publishing and anonymous reading against your own instance.
+Use a non-sensitive document: each publication creates an immutable document with no user-facing deletion endpoint.
+
+<a id="static-token-deployments-legacy"></a>
+
+### Static-token deployments
+
+Token mode remains available for self-hosted instances. Production `mote.pub` does not accept static tokens.
+The following is a configuration example, not a compatibility claim for every client.
+Protect files containing credentials and never commit real header values.
+
+```json
+{
+  "mcpServers": {
+    "mote": {
+      "type": "http",
+      "url": "https://mote.example.com/api/mcp",
+      "headers": { "Authorization": "Bearer <your-token>" }
+    }
+  }
+}
+```
+
+For Codex, replace the example host with your own token-mode instance:
+
+```bash
+codex mcp add mote --url https://mote.example.com/api/mcp --bearer-token-env-var MOTE_TOKEN
+```
+
+This reads the token from `MOTE_TOKEN` instead of writing the secret into `config.toml`.
 
 ## Local MCP (stdio)
 
@@ -97,7 +110,13 @@ Replace `<repo>` below with the absolute path to that checkout. Configure:
 }
 ```
 
-Use the same OS user and `XDG_CONFIG_HOME` as the Mote CLI. After `mote login --api https://mote.example.com --auth-mode oauth`, explicitly pin the stdio target and mode by setting `MOTE_API_URL=https://mote.example.com` and `MOTE_AUTH_MODE=oauth` in the stdio process environment. Do not put OAuth tokens in the MCP JSON. Local tools share the Mote credential store and refresh lock; they never initiate browser login. A previously launched process reads the current credentials on each tool call, so logout causes it to refuse further OAuth publishing.
+Use the same OS user and `XDG_CONFIG_HOME` as the Mote CLI. For OAuth:
+
+1. Run `mote login --api https://mote.example.com --auth-mode oauth` interactively.
+2. Set `MOTE_API_URL=https://mote.example.com` and `MOTE_AUTH_MODE=oauth` in the stdio process environment.
+
+Do not put OAuth tokens in the MCP JSON. Local tools share the Mote credential store and refresh lock; they never initiate browser login.
+Each tool call reads current credentials. After logout, even an already-running process refuses further OAuth publishing.
 
 For unattended publishing, explicitly select `service` and inject the three service variables described in [machine publishing](authentication.md#machine-publishing). Static `MOTE_TOKEN`/config remains available only when token mode is selected. Environment selection belongs to the MCP parent process; changing an unrelated terminal's exports does not change it.
 
@@ -117,5 +136,5 @@ Returns `{ id, url, markdownBytes, assetCount, totalBytes }`.
 - **`no publish token configured`** (local) — static mode requires `MOTE_TOKEN` or config `token`; an Access instance instead requires OAuth login or explicit service mode.
 
 - **OAuth login required** — CLI/stdio: run `mote auth login --api <your-instance-origin> --auth-mode oauth` interactively for the same origin; Codex remote: use `codex mcp login mote`. Do not copy credentials between them.
-- **Service configuration invalid** — provide the whole target-bound triple and explicit service mode; never fall back to OAuth.
-- **Unknown publish outcome** — do not automatically repeat the call. A timeout may have occurred after the immutable write.
+- **Service configuration invalid** — set the service API origin, Client ID and Client Secret, and explicitly select service mode. Never fall back to OAuth.
+- **Unknown publish outcome** — do not automatically repeat the call. The document may have been stored; follow [Unknown publication outcome](cli.md#unknown-publication-outcome).

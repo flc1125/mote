@@ -17,9 +17,10 @@ Keep shared behavior in packages. Tests live beside source as `src/*.test.ts` or
 
 ## Build, Test, and Development Commands
 
-Use Node.js 20+ and the pinned pnpm version from `package.json`.
+Use Node.js 24 for development and repository checks, matching CI. The published CLI supports Node.js 20 or newer. Use the pinned pnpm version from `package.json`.
 
 - `pnpm install --frozen-lockfile`: install locked dependencies.
+- `pnpm docs:check`: validate documentation links, release references, and upload limits.
 - `pnpm lint`: run ESLint across the repository.
 - `pnpm typecheck`: type-check every workspace package.
 - `pnpm test`: run all Vitest suites, including Worker integration tests.

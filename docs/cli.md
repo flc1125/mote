@@ -67,7 +67,12 @@ Config file location: `$XDG_CONFIG_HOME/mote/config.json` (usually `~/.config/mo
 
 Recommended permissions: `chmod 600 ~/.config/mote/config.json`. The token is never written to logs, stdout, or error messages.
 
-Use an API **origin** (for example `https://mote.example.com`), not an endpoint path. Client modes are `token`, `oauth` and `service`; the server-only value `cloudflare-access` is not valid here. Explicit mode wins; absent a mode, even a logged-out OAuth profile prevents fallback to an old token. Defining any service environment variable replaces the entire service config triple. See [selection rules](authentication.md#configuration-selection).
+Use an API **origin**, such as `https://mote.example.com`, without an endpoint path.
+Client modes are `token`, `oauth` and `service`. The server-only value `cloudflare-access` is not valid here.
+
+An explicit mode takes precedence. Without one, an OAuth profile selects OAuth even after logout, preventing fallback to an old token.
+Defining any service environment variable makes all three service settings come from the environment, replacing the file's service configuration.
+Missing environment values are not filled from the file. See [selection rules](authentication.md#configuration-selection).
 
 ## Authentication commands
 
@@ -78,17 +83,19 @@ mote auth status --api https://mote.example.com --offline --json
 mote auth logout --api https://mote.example.com --json
 ```
 
-`mote login` is an alias for `mote auth login`; both remain supported. After credentials are saved successfully, login remembers the API origin in `auth/default-api.json`. You can then run `mote README.md` without `--api`, unless environment or config overrides select another instance. Explicit auth-mode settings still apply; a one-off `--api` publish does not change the saved default. Logout retains the default and OAuth selection marker but removes the selected target's OAuth credentials.
+`mote login` is an alias for `mote auth login`. After saving credentials, login remembers the API origin in `auth/default-api.json`.
+You can then run `mote README.md` without `--api`, unless environment variables or configuration select another instance.
+Explicit auth-mode settings still apply. Using `--api` for one publication does not change the saved default.
 
-Login requires an interactive terminal and rejects `--json`. It displays the full
-authorization URL and waits for you to choose an action; it does not open a
-browser automatically. Press `o` to open the link, `c` to copy it, or `Ctrl+C` to
-cancel. Opening or copying failures leave the link available for manual use.
-`--no-browser` selects manual link mode without keyboard actions. Output redirected
-to a file or a `TERM=dumb` terminal also uses manual mode; stdin must still be a TTY.
-Open the link in a browser on the same computer as the CLI, because authorization
-returns to its loopback callback. Keep the command running until it confirms that
-credentials have been saved.
+### Login steps
+
+Login requires an interactive terminal and rejects `--json`. It displays the full authorization URL and waits; it does not open a browser automatically.
+
+1. Press `o` to open the link, or `c` to copy it. Press `Ctrl+C` to cancel.
+2. If opening or copying fails, open the displayed link manually on the same computer as the CLI.
+3. Complete browser authorization. Keep the command running until it confirms that credentials have been saved.
+
+Authorization returns to the CLI through a local callback, so the browser must run on the same computer.
 
 ```text
 Mote · Sign in
@@ -103,22 +110,35 @@ Open this link to authorize:
 Waiting for authorization…
 ```
 
-The terminal reports browser/clipboard actions, then verification and credential
-storage, and finally success or an error. Human-readable status uses labeled fields;
-`--offline` explicitly identifies unverified cached state. Colors are disabled for
-redirected output, `TERM=dumb`, or when `NO_COLOR` is set. URLs are never truncated
-or manually wrapped, including in narrow terminals. Machine-readable `--json`
-results and exit codes are unchanged.
+The terminal reports browser or clipboard actions, verification, credential storage, and finally success or an error.
+
+### Terminal requirements
+
+`--no-browser` selects manual link mode without keyboard actions. Redirected output or `TERM=dumb` also selects manual mode.
+In every mode, stdin must be a TTY, meaning an interactive terminal input.
+
+Colors are disabled for redirected output, `TERM=dumb`, or when `NO_COLOR` is set.
+URLs are never truncated or manually wrapped, including in narrow terminals.
+Use `--json` for machine-readable status or logout results; login does not support this option.
+
+### Credentials and status
 
 `--client-id <public-id>` reuses a registration; keep its exact callback port using `--callback-port <port>`. Default storage is Keychain on verified macOS; `--credential-store file` explicitly opts into private plaintext files. There is no automatic fallback. See [storage and refresh](authentication.md#credential-storage-and-refresh).
 
-Online status verifies identity and may refresh; offline status reports cache only (`authenticated: null`). Status JSON contains mode, source, expiry if known, storage and identity, not tokens. Logout JSON includes `loggedOut: true` and `remoteRevoked: false`; it removes local OAuth credentials only and retains an OAuth selection marker. Static/service credentials and Codex credentials are unchanged.
+Online status verifies identity and may refresh credentials. Offline status reports unverified cached state only (`authenticated: null`).
+Human-readable status uses labeled fields. Status JSON contains mode, source, expiry if known, storage and identity, not tokens.
+
+Logout removes the selected target's local OAuth credentials. It retains the default instance and OAuth selection marker.
+Logout JSON includes `loggedOut: true` and `remoteRevoked: false`.
+Logout does not change static/service credentials or Codex credentials, and does not revoke remote authorization.
 
 ## Options
 
+These options apply to publishing. Login, status and logout have separate options described under [Authentication commands](#authentication-commands).
+
 | Option          | Description                                                         |
 | --------------- | ------------------------------------------------------------------- |
-| `--json`        | Print only `{"id","url"}` on stdout — for agents, CI and scripts    |
+| `--json`        | Print a JSON object containing only `id` and `url` on stdout        |
 | `--token`       | Publish token (overrides `MOTE_TOKEN`)                              |
 | `--auth-mode`   | Select `token`, `oauth` or `service`; no implicit fallback          |
 | `--api`         | API base URL (overrides `MOTE_API_URL`)                             |
@@ -167,7 +187,7 @@ URL=$(mote report.md --json | jq -r .url)
 
 ## How assets are handled
 
-The CLI parses the Markdown **AST** and collects local image references — inline (`![a](./a.png)`), reference-style (`![a][img]`), shortcut (`![img]`), and images nested in links. An HTML tokenizer also collects `img src`, `img srcset` and `source srcset`, including images inside `picture` and `details`.
+The CLI parses the Markdown **abstract syntax tree (AST)** and collects local image references — inline (`![a](./a.png)`), reference-style (`![a][img]`), shortcut (`![img]`), and images nested in links. An HTML tokenizer also collects `img src`, `img srcset` and `source srcset`, including images inside `picture` and `details`.
 
 Paths resolve relative to the Markdown file's directory. Unicode, spaces and percent-encoded references are supported. Recognized front matter and mathematical source do not contribute image references. See [Markdown compatibility](markdown.md#images-and-html).
 
@@ -182,21 +202,45 @@ Each referenced file must exist, be a regular file and have a supported MIME typ
 
 Upload limits use binary units: Markdown ≤ 2 MiB, each image ≤ 10 MiB, the bundle ≤ 20 MiB and at most 50 uploaded assets. The count is after CLI deduplication; remote images do not count. Byte values and server errors are defined in the [publish protocol](protocol.md#大小与数量限额).
 
-Publishing prepares authentication before reading the input bundle. It never opens a browser. Successful publish `--json` stdout remains exactly `{id,url}`; failures use stderr and exit code 1. Do not automatically retry unknown write outcomes.
+Publishing prepares authentication before reading the input bundle. It never opens a browser.
+On success, `--json` writes a JSON object containing only `id` and `url` to stdout.
+Failures use stderr and exit code 1. Do not automatically retry unknown publication outcomes.
 
 ## Troubleshooting
 
-| Error                             | Cause / fix                                                           |
-| --------------------------------- | --------------------------------------------------------------------- |
-| `no publish token configured`     | Set `MOTE_TOKEN`, pass `--token`, or add `"token"` to the config file |
-| `asset not found: <path>`         | A referenced image does not exist; fix the relative path              |
-| `unsupported image type`          | SVG or non-image referenced; convert to png/webp                      |
-| `markdown is … bytes, limit is …` | Markdown over 2 MiB — split the document                              |
-| `UNAUTHORIZED`                    | Wrong or expired token                                                |
-| `BUNDLE_TOO_LARGE`                | Bundle exceeds a size limit (see README limits)                       |
+| Error                             | Cause / fix                                                                                         |
+| --------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `no publish token configured`     | In token mode, configure the instance's token. For Access, select OAuth or service mode; see below. |
+| `asset not found: <path>`         | A referenced image does not exist; fix the relative path                                            |
+| `unsupported image type`          | SVG or non-image referenced; convert to png/webp                                                    |
+| `markdown is … bytes, limit is …` | Markdown over 2 MiB — split the document                                                            |
+| `UNAUTHORIZED`                    | Credentials were rejected. Check the instance and selected auth mode; see below.                    |
+| `publish failed: HTTP 413`        | A request size or asset count exceeds a limit; see [upload limits](protocol.md#大小与数量限额).     |
+
+The table quotes message prefixes; the CLI may append more text.
+REST error codes such as `BUNDLE_TOO_LARGE` belong to the [server protocol](protocol.md#错误), not the CLI's displayed messages.
+
+### Authentication failures
+
+- **Token mode:** check the instance's `MOTE_TOKEN`, `--token` or config `token` without printing the value.
+- **OAuth mode:** run `mote auth login --api <your-instance-origin> --auth-mode oauth` for the same instance.
+- **Service mode:** check the Client ID, Client Secret, matching instance origin and the application's Service Auth policy.
+
+For more specific authentication errors:
 
 - **Login required / refresh pending**: explicitly run `mote auth login --api <your-instance-origin> --auth-mode oauth` for the same API. Do not delete metadata to reactivate an old token.
 - **Service mode requires matching variables**: set all three service variables, explicitly select `service`, and match the API origin. Do not paste secrets into bug reports.
 - **Keyring or permissions error**: fix the system credential store or use an explicitly chosen private file backend after logout; no silent fallback is performed.
 - **Callback mismatch / port occupied**: reuse the exact registered URI and available fixed port, or register a new client. Start a fresh login instead of replaying a previous code.
 - **Online status on an older server**: `/api/auth/session` requires the matching server implementation; a failure is not evidence that an older static-token publisher is broken.
+
+### Unknown publication outcome
+
+A timeout, server error or invalid response can occur after the document was stored. The CLI does not automatically retry uploads.
+
+1. Check stdout for a returned document URL. If present, open it and check the expected document.
+2. If no URL was returned, preserve the error, request time and instance address. Ask the instance administrator to investigate.
+3. If the outcome cannot be confirmed, report that uncertainty. Another publication may create a duplicate document; review this risk before publishing again.
+
+Do not include credentials or private document URLs in shared logs or bug reports.
+`mote auth status` checks authentication; it does not query publication outcomes or recover a missing URL.

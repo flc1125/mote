@@ -34,7 +34,7 @@ The following is literal code, not an image or an executable element.
 
 ## 4. Invalid metadata
 
-The invalid starting number discards the entire metadata tail. There is no file title or line numbering; JavaScript highlighting and copying still work.
+The invalid starting number discards the entire metadata tail. There is no file title or line numbering. Syntax highlighting for JavaScript code still works. Code copying also remains available.
 
 ```js title="must-not-appear.js" linenums="0"
 const unchanged = true;

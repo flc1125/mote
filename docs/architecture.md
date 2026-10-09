@@ -37,9 +37,13 @@ Mote 完全运行在 Cloudflare 上，由两个职责分离的 Worker 与一个 
                       mote-documents
 ```
 
-V1 不引入：数据库、KV、D1、Durable Object、Queue、独立服务器。
+当前架构不使用数据库、KV、D1、Durable Object、Queue 或独立服务器。
 
-Access 发布鉴权链路：CLI/远程 MCP → Cloudflare Access 校验 OAuth 或机器双凭据 → API Worker 校验签名断言 → 发布管线。读取侧不变。未指定模式时保留 `token` 回退，仓库生产部署配置显式选择 Access；客户端要求、模式选择与凭据存储见[鉴权指南](zh-CN/authentication.md)。
+Access 发布鉴权链路：CLI/远程 MCP → Cloudflare Access 校验 OAuth 或 Service Token 的 Client ID 和 Client Secret → API Worker 校验签名断言 → 发布管线。
+文档和图片仍可匿名读取。
+
+服务端未配置 `MOTE_AUTH_MODE` 时，使用 `token` 模式。仓库生产部署配置显式选择 Access。
+客户端的模式选择规则与服务端不同，详见[鉴权指南](zh-CN/authentication.md)。
 
 发布端点：`POST https://mote.pub/api/v1/publish`。两个 Worker 通过 Cloudflare Routes 共用同一域名，按路径前缀分流（最具体路由优先）；本部署为两个 Worker 使用 Routes 和代理 DNS。
 
@@ -53,7 +57,8 @@ The URL is the capability.         → 知道 URL 即可访问，无登录/ACL
 The CDN is the materialized view.  → 渲染结果由 CDN 长缓存
 ```
 
-不可变针对存储的 Markdown 和已上传资产；Viewer/Theme 更新可改变呈现效果。远程图片依赖外部站点，文档可访问性依赖实例和 R2 持续运行。
+不可变针对存储的 Markdown 和已上传资产；Viewer/Theme 更新可改变呈现效果。
+远程图片依赖外部站点。页面能否持续访问，取决于实例和 R2 是否正常运行。
 
 ## Worker 划分
 
@@ -66,9 +71,10 @@ The CDN is the materialized view.  → 渲染结果由 CDN 长缓存
 
 ## 构建、部署与包发布
 
-GitHub Actions 在 PR 和 `main` 推送时执行质量检查；Cloudflare Workers Builds 独立监听 `main`，分别构建、部署 `mote-api` 和 `mote-viewer`。稳定 `vX.Y.Z` 标签只触发 npm 与 GitHub Release，不再部署 Worker。
+GitHub Actions 在 PR 和 `main` 推送时执行质量检查；Cloudflare Workers Builds 独立监听 `main`，分别构建、部署 `mote-api` 和 `mote-viewer`。稳定 `vX.Y.Z` 标签只触发 npm 与 GitHub Release，不部署 Worker。
 
-两个 Worker 没有跨服务部署事务，允许短暂混合版本；跨 API/CLI/Viewer 的变更须采用向后兼容的两阶段发布。以同一源码 SHA、各自 Build/版本和生产冒烟结果共同验收，不能把 GitHub CI 成功当作部署完成。
+两个 Worker 没有跨服务部署事务，部署期间可能短暂运行不同版本。跨 API/CLI/Viewer 的变更须采用向后兼容的两阶段发布。
+验收时，核对同一源码 SHA、各自构建与版本，以及生产基础功能检查结果。GitHub CI 成功不代表部署完成。
 
 Worker 配置以仓库中的 Wrangler 文件为准；Cloudflare 管理 Git 连接、构建设置和构建凭据，运行时 Secret 单独管理。重试、回退由维护者在 Cloudflare Dashboard 操作；R2 数据和 Access 策略不随 Worker 回退自动恢复。详见[部署操作手册](zh-CN/deployment.md) / [English operations guide](deployment.md)。
 
@@ -91,20 +97,56 @@ documents/
 
 ## 渲染与缓存
 
-- CLI 与 Viewer 共用 `@mote/core` 的 `documentSyntax`，以相同规则识别脚注、受保护的代码/数学区域、扩展提示块、内容标签组、图片宽度/图注及文本高亮/定义列表及文档内缩写，保持图片扫描与正文渲染一致。提示块使用受控类型和纯文本标题，与 GitHub Alerts 共用视觉样式；折叠使用原生 `details/summary`，固定导航脚本统一处理目录、标签切换、深链接展开及打印恢复。标签组先输出全部面板与可链接标题，成功初始化后才增加 tabs 语义和隐藏状态；共用提示块的源码、层级和组件预算。
+### 共享解析
 
-- Viewer 在请求时用 markdown-it 把 Markdown 渲染为 HTML（GFM：表格、删除线、任务列表、脚注；Raw HTML 经白名单净化器处理，见[安全模型](security.md)），本地图片引用按 manifest 重写为 `/{document-id}/a/{asset-id}`。
-- 文档页明暗主题默认跟随系统（`prefers-color-scheme`）；读者可通过 banner 的主题按钮在 auto/light/dark 间循环，选择按浏览器存入 `localStorage["mote-theme"]`，由固定的第一方脚本在首帧前设置 `<html data-theme>` 避免闪烁，无 JavaScript 时回退系统主题；打印始终使用亮色配色。主题脚本按其精确 CSP 哈希授权，GET/HEAD 策略一致。
-- 页面工具由另一个固定脚本提供：banner 复制链接按钮复制规范 URL（丢弃 hash/query），返回顶部控件在滚动约两屏后出现且避开桌面目录侧栏；标题节锚点点击只复制不跳转。无 JavaScript 或剪贴板不可用时这些控件保持隐藏，文档完整可读。
-- 缩写定义与匹配均有文档级预算，输出静态 abbr；脚注预览由固定脚本按需增强，仅复制已净化 DOM 的静态子集，删除 ID/控件/运行时状态，超限或复杂内容保持原始锚点跳转。文末脚注与回链始终保留。
-- 渲染结果交给 Workers Cache（非 Cache API）：Document 边缘缓存 1 年，Asset `immutable`。
-- 保持 Workers Cache 默认的「Worker Version 纳入 Cache Key」行为：Renderer/Theme 发新版自动使用新缓存，无需 purge。
+CLI 与 Viewer 共用 `@mote/core` 的 `documentSyntax`，保持图片扫描与正文渲染一致。共享规则识别：
+
+- 脚注，以及不会解释图片语法的代码和数学区域。
+- 扩展提示块与内容标签组。
+- 图片宽度与图注。
+- 文本高亮、定义列表和文档内缩写。
+
+### 正文与组件
+
+Viewer 在请求时用 markdown-it 将 Markdown 渲染为 HTML，支持表格、删除线、任务列表和脚注。
+原始 HTML 经白名单净化器处理，详见[安全模型](security.md)。本地图片引用按 manifest 重写为 `/{document-id}/a/{asset-id}`。
+
+提示块使用受控类型和纯文本标题，与 GitHub Alerts 共用视觉样式。折叠使用原生 `details/summary`。
+标签组先输出全部面板和可链接标题，脚本初始化成功后才添加 tabs 语义并隐藏未选面板。
+标签组与提示块共用源码长度、嵌套层级和组件数量限额，详见[渲染预算](zh-CN/markdown.md#渲染预算)。
+
+### 阅读操作
+
+固定导航脚本处理目录、标签切换、深链接展开及打印后的状态恢复。
+缩写输出静态 `abbr`，定义与匹配受文档级限额约束。
+脚注预览只复制已净化 DOM 的静态子集，移除 ID、控件和运行时状态。复杂或超限内容使用原脚注链接，文末脚注与回链始终保留。
+
+主题默认跟随系统（`prefers-color-scheme`）。读者点击页面顶部的主题按钮，打开菜单后选择 Auto、Light 或 Dark。
+Light 和 Dark 选择存入 `localStorage["mote-theme"]`；Auto 清除该值并跟随系统。
+固定脚本在首帧前设置 `<html data-theme>`，避免主题闪烁。禁用 JavaScript 时跟随系统主题；打印始终使用亮色配色。
+
+页面工具由另一个固定脚本提供：
+
+- 复制页面链接时使用规范 URL，移除 hash 和 query。
+- 复制 Markdown 时保留原始正文、隐藏元数据、注释及图片路径。剪贴板不可用时，支持原生 dialog 的浏览器提供只读源码框供手动复制。
+- 返回顶部按钮在滚动约两屏后出现，并避开桌面目录侧栏。
+
+标题锚点由导航脚本处理。浏览器提供剪贴板 API 时，点击锚点复制章节链接而不跳转；否则保留普通页内跳转。
+
+禁用 JavaScript 时，页面工具保持隐藏，标题锚点仍可跳转，正文完整可读。
+浏览器没有剪贴板 API 时，复制页面链接按钮隐藏，但返回顶部仍可使用。
+脚本按精确 CSP 哈希授权，GET 与 HEAD 的策略一致。
+
+### 边缘缓存
+
+渲染结果交给 Workers Cache，而非 Cache API。文档边缘缓存 1 年，图片资产使用 `immutable` 缓存。
+保留默认的「Worker Version 纳入 Cache Key」行为。Renderer/Theme 发布新版本后自动使用新缓存，无需清除旧缓存。
 
 ## 安全要点
 
 - 图片宽度和图注在共享解析层处理，保持原始引用及上传去重。图片查看器是固定脚本的渐进增强：原生 dialog、焦点恢复、适应窗口/原始尺寸，跳过链接、行内和响应式 picture 图片；不增加用户 HTML 权限。
-- Raw HTML 白名单净化、仅允许固定导航、代码复制、图片查看及脚注预览脚本哈希的严格 CSP、`Referrer-Policy: no-referrer`、noindex。
-- 图片 MIME 以 Magic Bytes 为准；V1 不支持 SVG（Active Content 风险）。
+- 原始 HTML 经白名单净化。严格 CSP 仅授权固定第一方脚本的哈希，另有 `Referrer-Policy: no-referrer` 与 noindex 指令。
+- 图片 MIME 以文件头特征字节（Magic Bytes）为准。不支持上传 SVG，因为它可能包含脚本等主动内容；生成的图表 SVG 使用独立净化器。
 - 发布接口：静态 token 或经过 Access 的签名身份；Bundle ≤ 20 MiB（20 × 1,048,576 字节）、上传 Asset ≤ 50 个。Access 模式绑定 issuer/AUD/API 主机，不支持从备用 Worker 域名旁路。
 - CLI 与本地 stdio 共享 Mote 凭据存储、刷新锁与发布管线；Codex 独立保存自己的 OAuth 凭据。远程 MCP 保持无状态，无文档所有权或用户配额新增。
 

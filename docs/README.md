@@ -16,7 +16,7 @@ Publish Markdown from your terminal or an AI agent, operate your own instance, o
 - [Authentication](authentication.md) — browser login, credential storage, Service Tokens and instance selection.
 - [MCP guide](mcp.md) — connect an agent over remote HTTP or local stdio.
 - [Publishing Skill](skill.md) — give an agent instructions for using the CLI or MCP tools.
-- [Markdown compatibility](markdown.md) — supported syntax, images and rendering budgets.
+- [Markdown compatibility](markdown.md) — supported syntax, images, reading controls and rendering processing limits.
 - [Example documents](examples/) — source files to read or publish on your instance.
 
 ## Instance operations

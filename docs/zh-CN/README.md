@@ -16,7 +16,7 @@
 - [鉴权指南](authentication.md)——浏览器登录、凭据存储、Service Token 与实例选择。
 - [MCP 指南（英文）](../mcp.md)——通过远程 HTTP 或本地 stdio 连接 Agent。
 - [发布 Skill（英文）](../skill.md)——让 Agent 按指引使用 CLI 或 MCP 工具。
-- [Markdown 兼容性](markdown.md)——支持的语法、图片与渲染预算。
+- [Markdown 兼容性](markdown.md)——支持的语法、图片、阅读操作与渲染处理限额。
 - [示例文档（英文）](../examples/)——可阅读或发布到自己实例的源文件。
 
 ## 实例运维
