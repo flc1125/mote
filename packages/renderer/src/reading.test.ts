@@ -5,6 +5,7 @@ import { renderHtmlPage } from './template.js';
 import { FOOTNOTE_SCRIPT } from './footnote-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
 import { PAGE_SCRIPT } from './page-script.js';
+import { inspectHtml } from './test-helpers/html.js';
 
 describe('abbreviations and footnote reading', () => {
   it('keeps visible heading anchors and escapes abbreviation explanations', () => {
@@ -15,23 +16,23 @@ describe('abbreviations and footnote reading', () => {
     expect(headings[0]?.slug).toBe('api');
     expect(headings[0]?.text).toBe('API');
     expect(html).toContain('&quot;&lt;/abbr&gt;&lt;script&gt;');
-    expect(html).not.toContain('<script>');
+    expect(inspectHtml(html).scripts).toEqual([]);
   });
   it('enhances footnotes without a heading and preserves static navigation', () => {
     const { html } = renderMarkdown('Text[^n]\n\n[^n]: A note.', new Map());
     const page = renderHtmlPage({ title: 'Notes', tocHtml: '', contentHtml: html });
-    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      FOOTNOTE_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(page).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: FOOTNOTE_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
     expect(html).toContain('href="#fn1"');
     expect(html).toContain('href="#fnref1"');
     expect(html).not.toContain('hidden');
     const plain = renderHtmlPage({ title: 'Plain', tocHtml: '', contentHtml: '<p>No notes</p>' });
-    expect([...plain.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(plain).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
   });
   it('renders the mixed specimen with one real asset and protected code', () => {

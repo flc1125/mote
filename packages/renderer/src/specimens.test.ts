@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { render, TOC_SCRIPT } from './index.js';
 import { renderMarkdown } from './markdown.js';
 import { COPY_SCRIPT } from './copy-script.js';
+import { inspectHtml } from './test-helpers/html.js';
 
 const specimen = (name: string) =>
   readFileSync(new URL(`../../../docs/examples/${name}.md`, import.meta.url), 'utf8');
@@ -71,23 +72,16 @@ describe('committed compatibility specimens', () => {
     expect(html).toContain('hljs-keyword');
     expect(html).not.toContain('Metadata does not override');
     expect(html).not.toContain('暂以源码显示');
-    expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
-      THEME_SCRIPT,
-      TOC_SCRIPT,
-      COPY_SCRIPT,
-      IMAGE_SCRIPT,
-      FOOTNOTE_SCRIPT,
-      PAGE_SCRIPT,
+    const { scripts, elements } = inspectHtml(html);
+    expect(scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: TOC_SCRIPT },
+      { attributes: {}, text: COPY_SCRIPT },
+      { attributes: {}, text: IMAGE_SCRIPT },
+      { attributes: {}, text: FOOTNOTE_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
-    expect(
-      html
-        .replace(`<script>${THEME_SCRIPT}</script>`, '')
-        .replace(`<script>${PAGE_SCRIPT}</script>`, '')
-        .replace(`<script>${TOC_SCRIPT}</script>`, '')
-        .replace(`<script>${COPY_SCRIPT}</script>`, '')
-        .replace(`<script>${IMAGE_SCRIPT}</script>`, '')
-        .replace(`<script>${FOOTNOTE_SCRIPT}</script>`, ''),
-    ).not.toMatch(/<(?:script|iframe|foreignObject)\b/);
+    expect(elements.filter(({ tag }) => ['iframe', 'foreignobject'].includes(tag))).toEqual([]);
   });
   it('renders supplementary charts with all relationship labels and series', () => {
     const html = renderMarkdown(specimen('markdown-diagrams'), new Map()).html;
@@ -106,6 +100,12 @@ describe('committed compatibility specimens', () => {
     expect(html).toContain('[!CUSTOM]');
     expect(html).toContain('&lt;script&gt;example()&lt;/script&gt;');
     expect(html.match(/暂以源码显示/g)).toHaveLength(2);
-    expect(html).not.toMatch(/<math\b|aria-label="Mermaid diagram"|<script\b/);
+    const { scripts, elements } = inspectHtml(html);
+    expect(scripts).toEqual([]);
+    expect(
+      elements.filter(
+        ({ tag, attributes }) => tag === 'math' || attributes['aria-label'] === 'Mermaid diagram',
+      ),
+    ).toEqual([]);
   });
 });

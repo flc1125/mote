@@ -5,6 +5,7 @@ import { TOC_SCRIPT } from '../../../packages/renderer/src/toc-script.js';
 import { THEME_SCRIPT } from '../../../packages/renderer/src/theme-script.js';
 import { PAGE_SCRIPT } from '../../../packages/renderer/src/page-script.js';
 import { COPY_SCRIPT } from '../../../packages/renderer/src/copy-script.js';
+import { inspectHtml } from '../../../packages/renderer/src/test-helpers/html.js';
 import { execFile } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
@@ -136,16 +137,30 @@ function assetPaths(html: string): string[] {
   );
 }
 
-function expectTocPolicy(response: Response, html: string, copy = false): void {
-  const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
-  expect(scripts).toEqual([
-    THEME_SCRIPT,
-    TOC_SCRIPT,
-    ...(copy ? [COPY_SCRIPT] : []),
-    ...(html.includes('<img ') ? [IMAGE_SCRIPT] : []),
-    ...(html.includes('class="footnote-ref"') ? [FOOTNOTE_SCRIPT] : []),
-    PAGE_SCRIPT,
-  ]);
+function expectTocPolicy(
+  response: Response,
+  html: string,
+  {
+    copy = false,
+    images = false,
+    footnotes = false,
+  }: {
+    copy?: boolean;
+    images?: boolean;
+    footnotes?: boolean;
+  } = {},
+): void {
+  const scripts = inspectHtml(html).scripts;
+  expect(scripts).toEqual(
+    [
+      THEME_SCRIPT,
+      TOC_SCRIPT,
+      ...(copy ? [COPY_SCRIPT] : []),
+      ...(images ? [IMAGE_SCRIPT] : []),
+      ...(footnotes ? [FOOTNOTE_SCRIPT] : []),
+      PAGE_SCRIPT,
+    ].map((text) => ({ attributes: {}, text })),
+  );
   const hashes = [
     TOC_SCRIPT,
     COPY_SCRIPT,
@@ -162,6 +177,31 @@ function expectTocPolicy(response: Response, html: string, copy = false): void {
 }
 
 describe('E2E (§59)', () => {
+  it('rejects script output not requested by the E2E input', async () => {
+    const file = await makeDoc({ 'README.md': '# Script contract\n\nPlain text.\n' });
+    const { id } = await publishDoc(file);
+    const response = await view(`/${id}`);
+    const html = await response.text();
+    expectTocPolicy(response, html);
+    for (const unsafe of [
+      html + '<SCRIPT>unexpected()</SCRIPT>',
+      html + '<script></script>',
+      html + '<script src="https://example.invalid/a.js"></script>',
+      html.replace(
+        `<script>${THEME_SCRIPT}</script>`,
+        `<script type="module">${THEME_SCRIPT}</script>`,
+      ),
+      // Even matching output markup must not opt the fixture into an extra script.
+      html.replace(
+        `<script>${PAGE_SCRIPT}</script>`,
+        `<img src="https://example.invalid/x.png"><script>${IMAGE_SCRIPT}</script><script>${PAGE_SCRIPT}</script>`,
+      ),
+    ]) {
+      inspectHtml(unsafe); // Parser errors must fail this test, not count as successful detection.
+      expect(() => expectTocPolicy(response, unsafe)).toThrow(/^expected /);
+    }
+  });
+
   it('publishes abbreviation and footnote content with fixed preview CSP and unchanged source', async () => {
     const file = fileURLToPath(
       new URL('../../../docs/examples/markdown-reading.md', import.meta.url),
@@ -171,7 +211,7 @@ describe('E2E (§59)', () => {
     expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
     const response = await view(`/${id}`);
     const html = await response.text();
-    expectTocPolicy(response, html, true);
+    expectTocPolicy(response, html, { copy: true, images: true, footnotes: true });
     expect(html).toContain('<abbr title="Application Programming Interface">API</abbr>');
     expect(html).toContain('href="#fnref1:1"');
     expect(new Set(assetPaths(html)).size).toBe(1);
@@ -250,7 +290,7 @@ describe('E2E (§59)', () => {
     expect(manifest.assets).toEqual([]);
     const page = await view(`/${id}`);
     const html = await page.text();
-    expectTocPolicy(page, html, true);
+    expectTocPolicy(page, html, { copy: true });
     expect(html).toContain('class="code-title">config.ts</span>');
     expect(html).toContain('data-line="10"');
     expect(html.match(/code-line is-highlighted/g)).toHaveLength(3);
@@ -279,7 +319,7 @@ describe('E2E (§59)', () => {
     const response = await view(`/${id}`);
     const html = await response.text();
     expect(response.status).toBe(200);
-    expectTocPolicy(response, html, true);
+    expectTocPolicy(response, html, { copy: true, images: true });
     expect(html.match(/<details id="mote-admonition-/g)).toHaveLength(4);
     expect(html.match(/class="markdown-alert markdown-alert-success" open=""/g)).toHaveLength(1);
     expect(html).toContain('<h3 id="nested-details">Nested details<a class="heading-anchor"');
@@ -319,7 +359,7 @@ describe('E2E (§59)', () => {
     expect(manifest.assets).toHaveLength(1);
     const response = await view(`/${id}`);
     const html = await response.text();
-    expectTocPolicy(response, html, true);
+    expectTocPolicy(response, html, { copy: true, images: true, footnotes: true });
     expect(html).toContain('<mark>important conclusion</mark>');
     expect(html).toContain('<dt>Capability URL</dt>');
     expect(html).toContain('<figcaption>A visible caption inside a definition.</figcaption>');
@@ -340,7 +380,7 @@ describe('E2E (§59)', () => {
     expect(manifest.assets).toHaveLength(3);
     const response = await view(`/${id}`);
     const html = await response.text();
-    expectTocPolicy(response, html, true);
+    expectTocPolicy(response, html, { copy: true, images: true });
     expect(html.match(/<figure class="mote-figure">/g)).toHaveLength(4);
     expect(html).toContain('width="50%"');
     expect(html).toContain('<figcaption><strong>Content tabs</strong>');
@@ -367,7 +407,7 @@ describe('E2E (§59)', () => {
     const response = await view(`/${id}`);
     const html = await response.text();
     expect(response.status).toBe(200);
-    expectTocPolicy(response, html, true);
+    expectTocPolicy(response, html, { copy: true, images: true, footnotes: true });
     expect(html.match(/<div class="content-tabs">/g)).toHaveLength(7);
     expect(html.match(/<section class="content-panel"/g)).toHaveLength(12);
     expect(html).toContain('<h3 id="verify-the-installation">');
@@ -397,7 +437,7 @@ describe('E2E (§59)', () => {
     const page = await view(`/${id}`);
     expect(page.status).toBe(200);
     const html = await page.text();
-    expectTocPolicy(page, html, true);
+    expectTocPolicy(page, html, { copy: true, images: true, footnotes: true });
     expect(html.match(/aria-label="Mermaid diagram"/g)).toHaveLength(4);
     expect(html.match(/<math\b/g)).toHaveLength(6);
     const paths = assetPaths(html);
@@ -417,7 +457,7 @@ describe('E2E (§59)', () => {
     expect(await (await bucket.get(`documents/${id}/document.md`))?.text()).toBe(source);
     const response = await view(`/${id}`);
     const html = await response.text();
-    expectTocPolicy(response, html, true);
+    expectTocPolicy(response, html, { copy: true, images: true });
     expect(html).toContain('<title>Body title</title>');
     expect(html).not.toContain('Hidden metadata');
     expect(html).not.toContain('missing.png');
@@ -438,7 +478,7 @@ describe('E2E (§59)', () => {
     const page = await view(`/${id}`);
     expect(page.status).toBe(200);
     const html = await page.text();
-    expectTocPolicy(page, html);
+    expectTocPolicy(page, html, { images: true });
     expect(html).toContain('class="markdown-alert markdown-alert-note"');
     expect(html).toContain('<strong>说明：</strong>');
     const paths = assetPaths(html);

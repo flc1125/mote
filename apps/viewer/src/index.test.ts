@@ -11,7 +11,9 @@ import {
   THEME_SCRIPT,
   PAGE_SCRIPT,
 } from '@mote/renderer';
+import { inspectHtml } from '../../../packages/renderer/src/test-helpers/html.js';
 import { HOME_HTML } from './home.js';
+import { HOME_SCRIPT } from './home-script.js';
 import { FAVICON_BASE64, ICON_SVG } from './brand.generated.js';
 import viewer from './index.js';
 
@@ -103,19 +105,14 @@ describe('GET /{document-id}', () => {
       expect(html).toContain('<math');
       expect(html.match(/aria-label="Mermaid diagram"/g)).toHaveLength(2);
       expect(html).not.toContain('fonts.googleapis');
-      expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
-        THEME_SCRIPT,
-        TOC_SCRIPT,
-        COPY_SCRIPT,
-        PAGE_SCRIPT,
+      const { scripts, elements } = inspectHtml(html);
+      expect(scripts).toEqual([
+        { attributes: {}, text: THEME_SCRIPT },
+        { attributes: {}, text: TOC_SCRIPT },
+        { attributes: {}, text: COPY_SCRIPT },
+        { attributes: {}, text: PAGE_SCRIPT },
       ]);
-      expect(
-        html
-          .replace(`<script>${THEME_SCRIPT}</script>`, '')
-          .replace(`<script>${TOC_SCRIPT}</script>`, '')
-          .replace(`<script>${COPY_SCRIPT}</script>`, '')
-          .replace(`<script>${PAGE_SCRIPT}</script>`, ''),
-      ).not.toMatch(/<(?:script|foreignObject|image)\b/);
+      expect(elements.filter(({ tag }) => ['foreignobject', 'image'].includes(tag))).toEqual([]);
       if (previous) expect(html).toBe(previous);
       previous = html;
     }
@@ -263,8 +260,9 @@ describe('public homepage and branding', () => {
     expect(html).toContain('npx skills add flc1125/mote --skill mote');
     expect(html).toContain('#ef5552');
     expect(html).toContain('prefers-color-scheme: dark');
-    expect(html).not.toMatch(/<form/i);
-    expect(html.match(/<input\b/g)).toBeNull();
+    expect(inspectHtml(html).elements.filter(({ tag }) => ['form', 'input'].includes(tag))).toEqual(
+      [],
+    );
     expect(html).not.toContain(ID);
     expect(html).not.toContain(ASSET_ID);
     expect(html).not.toContain('Hello Mote');
@@ -283,20 +281,36 @@ describe('public homepage and branding', () => {
       ([, code]) => code!,
     );
     expect(commands).toHaveLength(3);
-    const text = commands.map((code) => code.replace(/<[^>]*>/g, ''));
+    const inspections = commands.map((code) => inspectHtml(code));
+    const text = inspections.map(({ text }) => text);
     expect(text).toEqual([
       'npm install -g mote-cli\nmote login\nmote README.md',
       'codex mcp add mote --url https://mote.pub/api/mcp\ncodex mcp login mote',
       'npx skills add flc1125/mote --skill mote',
     ]);
+    for (const [index, { scripts, elements }] of inspections.entries()) {
+      expect(scripts).toEqual([]);
+      const prompts = elements.filter(({ attributes }) => attributes.class === 'prompt');
+      expect(prompts).toHaveLength([3, 2, 1][index]!);
+      for (const prompt of prompts) {
+        expect(prompt).toEqual({
+          tag: 'span',
+          attributes: { class: 'prompt', 'aria-hidden': 'true' },
+        });
+      }
+    }
   });
 
   it('isolates the homepage copy script from the document TOC script', async () => {
     const response = await workerFetch('http://localhost/');
     const html = await response.text();
-    const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+    const scripts = inspectHtml(html).scripts;
     expect(scripts).toHaveLength(1);
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(scripts[0]![1]!));
+    expect(scripts).toEqual([{ attributes: {}, text: HOME_SCRIPT }]);
+    const digest = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(scripts[0]!.text),
+    );
     const hash = btoa(String.fromCharCode(...new Uint8Array(digest)));
     const policy = response.headers.get('Content-Security-Policy')!;
     expect(policy.split('; ').find((directive) => directive.startsWith('script-src '))).toBe(
@@ -311,12 +325,12 @@ describe('public homepage and branding', () => {
     }
     const document = await workerFetch(`http://localhost/${ID}`);
     const documentHtml = await document.text();
-    const tocScript = [...documentHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)];
-    expect(tocScript.map((match) => match[1])).toEqual([
-      THEME_SCRIPT,
-      TOC_SCRIPT,
-      IMAGE_SCRIPT,
-      PAGE_SCRIPT,
+    const tocScript = inspectHtml(documentHtml).scripts;
+    expect(tocScript).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: TOC_SCRIPT },
+      { attributes: {}, text: IMAGE_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
     const tocDigest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(TOC_SCRIPT));
     const tocHash = btoa(String.fromCharCode(...new Uint8Array(tocDigest)));
