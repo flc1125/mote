@@ -7,6 +7,7 @@ import { TOC_SCRIPT } from './toc-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
 import { PAGE_SCRIPT } from './page-script.js';
 import { COPY_SCRIPT } from './copy-script.js';
+import { inspectHtml } from './test-helpers/html.js';
 
 const source = '=== "npm"\n\n    ```sh\n    npm install\n    ```\n\n=== "pnpm"\n\n    Second.';
 const id = '7Vk3mQ9x2NFaP4Ls';
@@ -25,11 +26,11 @@ describe('content tab rendering', () => {
     expect(html).toContain('<a href="#mote-tab-2">pnpm</a>');
     expect(html).toContain('<p>Second.</p>');
     expect(html).not.toContain('<aside');
-    expect([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      TOC_SCRIPT,
-      COPY_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(html).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: TOC_SCRIPT },
+      { attributes: {}, text: COPY_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
     const fragment = renderMarkdown(source, new Map()).html;
     expect(fragment).not.toMatch(/role="tab|<section[^>]* hidden/);
@@ -55,7 +56,14 @@ describe('content tab rendering', () => {
     ).html;
     expect(html).toContain('&lt;img src=x onerror=attack()&gt; **bold**');
     expect(html).toContain('<div>Safe</div>');
-    expect(html).not.toMatch(/<img|<script|onclick=|role="tabpanel"/);
+    const { scripts, elements } = inspectHtml(html);
+    expect(scripts).toEqual([]);
+    expect(
+      elements.filter(({ tag, attributes }) => tag === 'img' || attributes.role === 'tabpanel'),
+    ).toEqual([]);
+    for (const { attributes } of elements) {
+      expect(Object.keys(attributes).filter((name) => name.startsWith('on'))).toEqual([]);
+    }
   });
   it('preserves existing code and diagram budgets across panels', () => {
     const block = '    ```js\n    x();\n    ```\n\n';

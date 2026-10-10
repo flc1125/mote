@@ -4,6 +4,7 @@ import { renderMarkdown } from './markdown.js';
 import { renderHtmlPage } from './template.js';
 import { THEME_SCRIPT } from './theme-script.js';
 import { PAGE_SCRIPT } from './page-script.js';
+import { inspectHtml } from './test-helpers/html.js';
 
 const render = (source: string) => renderMarkdown(source, new Map([['photo.png', '/asset/photo']]));
 
@@ -13,16 +14,20 @@ describe('typography rendering', () => {
     expect(html).toContain('<mark>Important</mark>');
     expect(html).toContain('<dl>\n<dt>Term</dt>\n<dd>Definition</dd>');
     const page = renderHtmlPage({ title: 'Typography', tocHtml: '', contentHtml: html });
-    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(page).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
   });
   it('sanitizes HTML within marks and definitions while rewriting real images', () => {
     const { html } = render(
       '==<img src="photo.png" onerror="attack()">==\n\nTerm\n: <script>attack()</script>\n\n    ![Real](photo.png)\n\n    ```md\n    ![Fake](missing.png)\n    ```',
     );
-    expect(html).not.toMatch(/<script|onerror=/);
+    const { scripts, elements } = inspectHtml(html);
+    expect(scripts).toEqual([]);
+    for (const { attributes } of elements) {
+      expect(Object.keys(attributes).filter((name) => name.startsWith('on'))).toEqual([]);
+    }
     expect(html).toContain('src="/asset/photo"');
     expect(html).not.toContain('src="missing.png"');
   });

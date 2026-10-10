@@ -8,6 +8,7 @@ import { THEME_SCRIPT } from './theme-script.js';
 import { PAGE_SCRIPT } from './page-script.js';
 import MarkdownIt from 'markdown-it';
 import { codeBlockCases } from './fixtures/code-blocks.js';
+import { inspectHtml } from './test-helpers/html.js';
 
 function inspect(html: string) {
   const codes: string[] = [];
@@ -90,7 +91,7 @@ describe('code block enhancements', () => {
       const source = '<script>unsafe()</script> & ">\n\n';
       const result = render(fence(`${lang}${lang ? ' linenums="1"' : ''}`, source));
       expect(inspect(result.html).codes).toEqual([source]);
-      expect(result.html).not.toContain('<script>');
+      expect(inspectHtml(result.html).scripts).toEqual([]);
       expect(result.codeCopy).toBe(true);
     },
   );
@@ -132,7 +133,7 @@ describe('code block enhancements', () => {
   it('escapes title text and ignores a malformed metadata tail atomically', () => {
     const result = render(fence('js title="</script><img src=x onerror=bad>"', 'const x = 1;\n'));
     expect(result.html).toContain('&lt;/script&gt;&lt;img src=x onerror=bad&gt;');
-    expect(result.html).not.toContain('<img');
+    expect(inspectHtml(result.html).elements.filter(({ tag }) => tag === 'img')).toEqual([]);
     const invalid = render(fence('js title="valid" linenums="0"', 'const x = 1;\n'));
     expect(invalid.html).not.toContain('code-title');
     expect(invalid.html).toContain('hljs-keyword');
@@ -202,16 +203,16 @@ describe('code block enhancements', () => {
       contentHtml: result.html,
       codeCopy: result.codeCopy,
     });
-    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      COPY_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(page).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: COPY_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
-    // A plain page still carries the always-on theme script, nothing else.
+    // A plain page carries only the always-on theme and page scripts.
     const plain = renderHtmlPage({ title: 'Plain', tocHtml: '', contentHtml: '<p>text</p>' });
-    expect([...plain.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(plain).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
   });
   it('renders the committed specimen with code text intact and no image assets', () => {

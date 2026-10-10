@@ -8,6 +8,7 @@ import { TOC_SCRIPT } from './toc-script.js';
 import { COPY_SCRIPT } from './copy-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
 import { PAGE_SCRIPT } from './page-script.js';
+import { inspectHtml } from './test-helpers/html.js';
 
 const id = '7Vk3mQ9x2NFaP4Ls';
 const manifest = {
@@ -54,7 +55,14 @@ describe('shared admonition presentation', () => {
     );
     expect(result).toContain('&lt;img src=x onerror=alert(1)&gt; **raw**');
     expect(result).not.toContain('<strong>raw');
-    expect(result).not.toMatch(/<script|onerror="|<img src=x/);
+    const { scripts, elements } = inspectHtml(result);
+    expect(scripts).toEqual([]);
+    expect(
+      elements.filter(({ tag, attributes }) => tag === 'img' && attributes.src === 'x'),
+    ).toEqual([]);
+    for (const { attributes } of elements) {
+      expect(Object.keys(attributes).filter((name) => name.startsWith('on'))).toEqual([]);
+    }
   });
   it('allocates component IDs after all headings and keeps legacy alert nesting unchanged', () => {
     const result = html(
@@ -74,18 +82,18 @@ describe('shared admonition presentation', () => {
       id,
     );
     expect(page).not.toContain('<aside');
-    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      TOC_SCRIPT,
-      COPY_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(page).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: TOC_SCRIPT },
+      { attributes: {}, text: COPY_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
   });
   it('keeps an ordinary heading-free static admonition script-free', () => {
     const page = render('!!! note\n\n    Body.', manifest, id);
-    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(page).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
   });
   it('preserves native HTML summary content and open state without accepting custom attributes', () => {
@@ -99,10 +107,10 @@ describe('shared admonition presentation', () => {
     expect(page).not.toContain('class="custom"');
     expect(page).not.toContain('style="color:red"');
     expect(page).not.toContain('<aside');
-    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      TOC_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(page).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: TOC_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
   });
   it('preserves nested math, diagrams, code and headings', () => {

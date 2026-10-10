@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { CONTENT_SECURITY_POLICY, documentSecurityHeaders } from './headers.js';
+import { inspectHtml } from './test-helpers/html.js';
 
 describe('CONTENT_SECURITY_POLICY (§33)', () => {
   it('matches the agreed strict policy', () => {
@@ -37,8 +38,12 @@ describe('trusted document script policy', () => {
     const { tocDocumentSecurityHeaders } = await import('./headers.js');
     const { renderHtmlPage } = await import('./template.js');
     const html = renderHtmlPage({ title: 'TOC', tocHtml: '<nav></nav>', contentHtml: '' });
-    const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
-    expect(scripts).toEqual([THEME_SCRIPT, TOC_SCRIPT, PAGE_SCRIPT]);
+    const scripts = inspectHtml(html).scripts;
+    expect(scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: TOC_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
+    ]);
     const hashes = [
       TOC_SCRIPT,
       COPY_SCRIPT,

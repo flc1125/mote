@@ -4,6 +4,7 @@ import { TOC_SCRIPT } from './toc-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
 import { PAGE_SCRIPT } from './page-script.js';
 import { renderHtmlPage } from './template.js';
+import { inspectHtml } from './test-helpers/html.js';
 
 const page = renderHtmlPage({
   title: 'Doc <One>',
@@ -21,10 +22,10 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
   it('inlines CSS plus the fixed theme and TOC enhancements', () => {
     expect(page).toContain('<style>');
     expect(page).toContain('prefers-color-scheme: dark');
-    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
-      THEME_SCRIPT,
-      TOC_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(page).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: TOC_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
   });
 
@@ -90,9 +91,9 @@ describe('renderHtmlPage (§29, §32, §34)', () => {
     expect(bare).not.toContain('<aside class="toc-drawer"');
     expect(bare).not.toContain('<a class="toc-trigger"');
     // The theme script stays: the toggle lives on every document page.
-    expect([...bare.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1])).toEqual([
-      THEME_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(bare).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
   });
 

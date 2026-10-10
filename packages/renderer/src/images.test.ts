@@ -4,6 +4,7 @@ import { renderHtmlPage } from './template.js';
 import { IMAGE_SCRIPT } from './image-script.js';
 import { THEME_SCRIPT } from './theme-script.js';
 import { PAGE_SCRIPT } from './page-script.js';
+import { inspectHtml } from './test-helpers/html.js';
 
 const render = (source: string) => renderMarkdown(source, new Map([['photo.png', '/asset/photo']]));
 describe('image presentation', () => {
@@ -14,7 +15,11 @@ describe('image presentation', () => {
     expect(html).toContain('<figure class="mote-figure">');
     expect(html).toContain('src="/asset/photo" alt="Alternative" title="Tooltip" width="640"');
     expect(html).toContain('<figcaption><strong>Visible</strong>');
-    expect(html).not.toMatch(/<script|onerror/);
+    const { scripts, elements } = inspectHtml(html);
+    expect(scripts).toEqual([]);
+    for (const { attributes } of elements) {
+      expect(Object.keys(attributes).filter((name) => name.startsWith('on'))).toEqual([]);
+    }
   });
   it('keeps the first Markdown image eager and marks later ones lazy without changing raw HTML', () => {
     const { html } = render('![one](photo.png)\n\n![two](photo.png)\n\n<img src="photo.png">');
@@ -27,14 +32,16 @@ describe('image presentation', () => {
   it('injects the fixed image script on an image-only page, with a readable no-script body', () => {
     const { html } = render('![alt](photo.png)');
     const page = renderHtmlPage({ title: 'Image', tocHtml: '', contentHtml: html });
-    expect([...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])).toEqual([
-      THEME_SCRIPT,
-      IMAGE_SCRIPT,
-      PAGE_SCRIPT,
+    expect(inspectHtml(page).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: IMAGE_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
     ]);
     expect(html).not.toMatch(/button|dialog|hidden/);
-    expect(
-      renderHtmlPage({ title: 'Text', tocHtml: '', contentHtml: '<p>text</p>' }),
-    ).not.toContain(`<script>${IMAGE_SCRIPT}`);
+    const plain = renderHtmlPage({ title: 'Text', tocHtml: '', contentHtml: '<p>text</p>' });
+    expect(inspectHtml(plain).scripts).toEqual([
+      { attributes: {}, text: THEME_SCRIPT },
+      { attributes: {}, text: PAGE_SCRIPT },
+    ]);
   });
 });
