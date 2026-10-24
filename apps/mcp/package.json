@@ -27,7 +27,7 @@
     "@napi-rs/keyring": "2.0.0"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.0",
     "miniflare": "^4.0.0"
   }
 }
