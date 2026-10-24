@@ -30,7 +30,9 @@
 | Build watch paths            | Include `*`；Exclude 留空                               | Include `*`；Exclude 留空                                  |
 | Build cache                  | 开启                                                    | 开启                                                       |
 | `NODE_VERSION`               | `24`                                                    | `24`                                                       |
-| `PNPM_VERSION`               | `11.23.0`                                               | `11.23.0`                                                  |
+| `PNPM_VERSION`               | `12.15.0`                                               | `12.15.0`                                                  |
+
+升级 pnpm 时，单独审核两个 Worker 的构建变量，并从构建日志确认实际版本与根 `package.json` 一致。表格记录的是预期配置，修改本文不会更新 Cloudflare 中的设置。
 
 根目录保持为 workspace 根目录以安装依赖；`pnpm --filter` 在选定应用目录执行 Wrangler。显式 `--env=""` 选择顶层生产配置。Wrangler 在部署阶段打包 TypeScript，因此无需独立 build command。监听所有路径可覆盖共享包、锁文件、根配置，也会触发纯文档提交的构建。
 

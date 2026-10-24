@@ -25,7 +25,7 @@ Installing an npm package does not deploy Workers; repository workflows are desc
 ## Prerequisites
 
 - A [Cloudflare account](https://dash.cloudflare.com/sign-up) with a domain added as a **zone** (nameservers pointing to Cloudflare)
-- Node.js 24 (the CI development baseline) and pnpm 11.23.0, pinned in the root `package.json`
+- Node.js 24 (the CI development baseline) and pnpm 12.15.0, pinned in the root `package.json`
 - A checkout of this repository:
 
 ```bash
