@@ -23,7 +23,7 @@ jobs:
     outputs:
       manifest_digest: ${{ steps.manifest.outputs.digest }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
@@ -61,7 +61,7 @@ jobs:
     env:
       MOTE_MANIFEST_DIGEST: ${{ needs.prepare.outputs.manifest_digest }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
@@ -91,7 +91,7 @@ jobs:
     env:
       MOTE_MANIFEST_DIGEST: ${{ needs.prepare.outputs.manifest_digest }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
@@ -128,7 +128,7 @@ jobs:
     env:
       MOTE_MANIFEST_DIGEST: ${{ needs.prepare.outputs.manifest_digest }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
