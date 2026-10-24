@@ -44,7 +44,7 @@ jobs:
         name: Record the verified release manifest digest
         shell: bash
         run: echo "digest=$(shasum -a 256 '${{ runner.temp }}/mote-release/release-manifest.json' | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: mote-release-${{ github.run_id }}
           path: ${{ runner.temp }}/mote-release/
@@ -110,7 +110,7 @@ jobs:
         run: node scripts/release/action.mjs npm
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: mote-npm-result-${{ github.run_id }}-${{ github.run_attempt }}
@@ -146,7 +146,7 @@ jobs:
         run: node scripts/release/action.mjs github
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: mote-release-result-${{ github.run_id }}-${{ github.run_attempt }}
