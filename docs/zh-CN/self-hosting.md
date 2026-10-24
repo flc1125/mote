@@ -24,7 +24,7 @@ Mote 使用 Cloudflare 上的两个 Worker 和一个 R2 存储桶，无需管理
 ## 前置条件
 
 - 一个 [Cloudflare 账号](https://dash.cloudflare.com/sign-up)，且域名已作为 **zone** 托管在 Cloudflare（NS 指向 Cloudflare）
-- Node.js 24（CI 开发基线）与根 `package.json` 固定的 pnpm 11.23.0
+- Node.js 24（CI 开发基线）与根 `package.json` 固定的 pnpm 12.15.0
 - 克隆本仓库并安装依赖：
 
 ```bash

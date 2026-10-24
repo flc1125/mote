@@ -30,7 +30,9 @@ In each Worker's **Settings → Build**, review these production settings. Forks
 | Build watch paths            | Include `*`; no exclusions                              | Include `*`; no exclusions                                 |
 | Build cache                  | Enabled                                                 | Enabled                                                    |
 | `NODE_VERSION`               | `24`                                                    | `24`                                                       |
-| `PNPM_VERSION`               | `11.23.0`                                               | `11.23.0`                                                  |
+| `PNPM_VERSION`               | `12.15.0`                                               | `12.15.0`                                                  |
+
+When upgrading pnpm, separately review both Workers' build variables and confirm that the version in their build logs matches the root `package.json`. This table records the expected configuration; editing this guide does not update Cloudflare settings.
 
 The root stays at the workspace root for dependency installation; `pnpm --filter` executes Wrangler in the selected app. Explicit `--env=""` selects top-level production configuration. Wrangler bundles TypeScript during deploy, so there is no separate build command. Watching all paths includes shared packages, the lockfile, root configuration and documentation-only commits.
 
