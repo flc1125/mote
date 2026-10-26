@@ -58,7 +58,7 @@
     "@mote/core": "workspace:*",
     "@mote/protocol": "workspace:*",
     "@mote/theme": "workspace:*",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.0",
     "markdown-it": "^15.0.1",
     "miniflare": "^4.0.0",
     "oauth4webapi": "3.8.8"
