@@ -24,7 +24,7 @@
     "zod": "^4.5.4"
   },
   "optionalDependencies": {
-    "@napi-rs/keyring": "2.0.0"
+    "@napi-rs/keyring": "2.1.2"
   },
   "devDependencies": {
     "esbuild": "^0.28.0",
