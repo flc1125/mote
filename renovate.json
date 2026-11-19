@@ -3,6 +3,7 @@
   "extends": ["config:recommended", ":semanticCommits"],
   "enabledManagers": ["npm", "github-actions"],
   "automerge": false,
+  "minimumReleaseAge": "1 day",
   "packageRules": [
     {
       "matchManagers": ["npm"],
