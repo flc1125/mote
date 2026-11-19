@@ -88,7 +88,7 @@ This reads the token from `MOTE_TOKEN` instead of writing the secret into `confi
 
 The local server additionally exposes `publish_markdown_file`, which runs the CLI's asset scanning chain (local images uploaded and deduplicated automatically).
 
-The local MCP server is a private workspace package; installing `mote-cli` does not install `mote-mcp`. Build it from source using Node.js 24 and the pnpm version pinned in the root `package.json`:
+The local MCP server is a private workspace package; installing `mote-cli` does not install `mote-mcp`. Build it from source using Node.js 26 and the pnpm version pinned in the root `package.json`:
 
 ```bash
 git clone https://github.com/flc1125/mote.git

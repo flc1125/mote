@@ -4,11 +4,11 @@ This guide covers working on Mote from a source checkout. For publishing documen
 
 ## Development tools
 
-- Use **Node.js 24**, matching [CI](.github/workflows/ci.yml).
+- Use **Node.js 26**, matching [CI](.github/workflows/ci.yml).
 - Use the exact **pnpm** version in the root [`packageManager`](package.json) field. With Corepack installed, run `corepack enable` and let the project select its pinned version. Otherwise, install that exact pnpm version before proceeding.
 - Use Git to create a branch and submit a pull request.
 
-The published CLI supports Node.js 20 or newer. Contributor tooling and Worker checks use Node.js 24; the CLI's minimum runtime is not the recommended development environment.
+The published CLI supports Node.js 20 or newer. Contributor tooling and Worker checks use Node.js 26; the CLI's minimum runtime is not the recommended development environment.
 
 ## Set up a checkout
 
@@ -86,7 +86,7 @@ Use `pnpm format` to apply repository formatting, then review the diff. For docu
 
 ### Documentation checks
 
-Run `pnpm docs:check` with the contributor Node.js 24 environment. It imports the core upload constants directly from TypeScript, so no build is required.
+Run `pnpm docs:check` with the contributor Node.js 26 environment. It imports the core upload constants directly from TypeScript, so no build is required.
 
 - The inventory comes from `git ls-files`; content is read from the working tree. Stage new documents and assets with `git add` before checking them. A link to an untracked file fails even if that file exists locally. Scratch directories (`.docs`), dependencies and build output are excluded.
 - Markdown links and images, reference-style links, HTML `href`/`src`/`srcset`, GitHub-style heading anchors and explicit HTML IDs are checked. Root-relative paths start at the repository root. Fenced, indented and inline code, HTML code examples and comments are excluded from link scanning. JSON fences must parse.
