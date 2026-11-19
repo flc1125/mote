@@ -18,7 +18,7 @@ mote publish <markdown-file>
 npm install -g mote-cli
 ```
 
-**从源码安装**（推荐开发环境：Node.js 24 与根 `package.json` 固定的 pnpm 版本）：
+**从源码安装**（推荐开发环境：Node.js 26 与根 `package.json` 固定的 pnpm 版本）：
 
 ```bash
 git clone https://github.com/flc1125/mote.git

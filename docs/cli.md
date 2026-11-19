@@ -18,7 +18,7 @@ mote publish <markdown-file>
 npm install -g mote-cli
 ```
 
-**From source** (recommended development environment: Node.js 24 and the pnpm version pinned in the root `package.json`):
+**From source** (recommended development environment: Node.js 26 and the pnpm version pinned in the root `package.json`):
 
 ```bash
 git clone https://github.com/flc1125/mote.git
